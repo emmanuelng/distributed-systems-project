@@ -1,5 +1,7 @@
 package cars;
 
-public interface CarManager {
+import java.rmi.Remote;
+
+public interface CarManager extends Remote {
 
 }
