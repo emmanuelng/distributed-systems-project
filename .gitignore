@@ -1,6 +1,6 @@
 ### General ###
-.class
 
+*.class
 
 ### Eclipse ###
 
@@ -28,7 +28,6 @@ local.properties
 # Code Recommenders
 .recommenders/
 
-### Eclipse Patch ###
 # Eclipse Core
 .project
 
