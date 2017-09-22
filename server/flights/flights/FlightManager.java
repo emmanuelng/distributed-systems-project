@@ -1,5 +1,7 @@
 package flights;
 
-public interface FlightManager {
+import java.rmi.Remote;
+
+public interface FlightManager extends Remote {
 
 }
