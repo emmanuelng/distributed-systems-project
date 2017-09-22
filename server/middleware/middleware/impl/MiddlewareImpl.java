@@ -22,7 +22,6 @@ public class MiddlewareImpl implements Middleware {
 			port = Integer.parseInt(args[0]);
 		} else if (args.length != 0 && args.length != 1) {
 			System.err.println("Wrong usage");
-			System.out.println("Usage: java ResImpl.ResourceManagerImpl [port]");
 			System.exit(1);
 		}
 
