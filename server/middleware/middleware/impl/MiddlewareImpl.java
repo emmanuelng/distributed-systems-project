@@ -28,7 +28,7 @@ public class MiddlewareImpl implements Middleware {
 		String[] servers = new String[3];
 		int[] ports = { 1099, 1099, 1099 };
 
-		if (args.length != 3 || args.length != 6 || args.length != 4 || args.length != 7) {
+		if (args.length != 3 && args.length != 6 && args.length != 4 && args.length != 7) {
 			System.err.println("Usage: middleware [cars server] [flight server] [hotel server]\n"
 					+ "\tor middleware [cars server] [flight server] [hotel server] [middleware port]\n"
 					+ "\tor middleware [car server] [flight server] [hotel server] [car port] [flight port] [hotel port]\n"
