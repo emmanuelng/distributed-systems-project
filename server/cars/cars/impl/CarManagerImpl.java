@@ -12,11 +12,9 @@ public class CarManagerImpl implements CarManager {
 	
 	public static void main(String[] args) {
 		// Figure out where server is running
-		String server = "localhost";
 		int port = 1099;
 
 		if (args.length == 1) {
-			server = server + ":" + args[0];
 			port = Integer.parseInt(args[0]);
 		} else if (args.length != 0 && args.length != 1) {
 			System.err.println("Wrong usage");
@@ -26,11 +24,11 @@ public class CarManagerImpl implements CarManager {
 		try {
 			// Create a new server object and dynamically generate the stub (client proxy)
 			CarManagerImpl obj = new CarManagerImpl();
-			CarManager cm = (CarManager) UnicastRemoteObject.exportObject(obj, 0);
+			CarManager proxyObj = (CarManager) UnicastRemoteObject.exportObject(obj, 0);
 
 			// Bind the remote object's stub in the registry
 			Registry registry = LocateRegistry.getRegistry(port);
-			registry.rebind("cars.group20", cm);
+			registry.rebind("cars.group20", proxyObj);
 
 			System.out.println("Car server ready");
 		} catch (Exception e) {

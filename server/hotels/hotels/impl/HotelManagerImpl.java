@@ -26,11 +26,11 @@ public class HotelManagerImpl implements HotelManager {
 		try {
 			// Create a new server object and dynamically generate the stub (client proxy)
 			HotelManagerImpl obj = new HotelManagerImpl();
-			HotelManager hm = (HotelManager) UnicastRemoteObject.exportObject(obj, 0);
+			HotelManager proxyObj = (HotelManager) UnicastRemoteObject.exportObject(obj, 0);
 
 			// Bind the remote object's stub in the registry
 			Registry registry = LocateRegistry.getRegistry(port);
-			registry.rebind("hotels.group20", hm);
+			registry.rebind("hotels.group20", proxyObj);
 
 			System.out.println("Hotel server ready");
 		} catch (Exception e) {

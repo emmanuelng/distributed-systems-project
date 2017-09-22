@@ -26,11 +26,11 @@ public class FlightManagerImpl implements FlightManager {
 		try {
 			// Create a new server object and dynamically generate the stub (client proxy)
 			FlightManagerImpl obj = new FlightManagerImpl();
-			FlightManager fm = (FlightManager) UnicastRemoteObject.exportObject(obj, 0);
+			FlightManager proxyObj = (FlightManager) UnicastRemoteObject.exportObject(obj, 0);
 
 			// Bind the remote object's stub in the registry
 			Registry registry = LocateRegistry.getRegistry(port);
-			registry.rebind("flights.group20", fm);
+			registry.rebind("flights.group20", proxyObj);
 
 			System.out.println("Flight server ready");
 		} catch (Exception e) {
