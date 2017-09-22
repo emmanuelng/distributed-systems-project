@@ -89,7 +89,7 @@ public class MiddlewareImpl implements Middleware {
 			}
 
 		} catch (RemoteException | NotBoundException e) {
-			System.err.println("Error: Unable to locate " + name);
+			System.err.println("Error: Unable to locate " + name + " on " + server);
 			System.exit(1);
 		}
 
