@@ -29,10 +29,10 @@ public class MiddlewareImpl implements Middleware {
 		int[] ports = { 1099, 1099, 1099 };
 
 		if (args.length != 3 || args.length != 6 || args.length != 4 || args.length != 7) {
-			System.err.println("Usage:\n\tmiddleware [cars server] [flight server] [hotel server]\n"
+			System.err.println("Usage: middleware [cars server] [flight server] [hotel server]\n"
 					+ "\tor middleware [cars server] [flight server] [hotel server] [middleware port]\n"
 					+ "\tor middleware [car server] [flight server] [hotel server] [car port] [flight port] [hotel port]\n"
-					+ "\tor middleware [car server] [flight server] [hotel server] [car port] [flight port] [hotel port] [middleware port]");
+					+ "\tor middleware [car server] [flight server] [hotel server] [car port] [flight port] [hotel port] [middleware port]\n");
 			System.exit(1);
 		} else {
 			servers[0] = args[0];
