@@ -7,3 +7,7 @@
 * In Eclipse, go to `File > Import...` and select `General > Project from folder or archive`
 * Select the `comp512-project/client/` folder
 * Repeat for the `comp512-project/server/` folder
+
+## Available scripts
+
+* `/.compile.sh`: compiles all the java files and updates the .jar files
