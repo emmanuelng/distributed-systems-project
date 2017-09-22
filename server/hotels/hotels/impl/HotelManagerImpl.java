@@ -6,8 +6,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import hotels.HotelManager;
-import middleware.Middleware;
-import middleware.impl.MiddlewareImpl;
 
 @SuppressWarnings("deprecation")
 public class HotelManagerImpl implements HotelManager {
@@ -27,14 +25,14 @@ public class HotelManagerImpl implements HotelManager {
 
 		try {
 			// Create a new server object and dynamically generate the stub (client proxy)
-			MiddlewareImpl obj = new MiddlewareImpl();
-			Middleware rm = (Middleware) UnicastRemoteObject.exportObject(obj, 0);
+			HotelManagerImpl obj = new HotelManagerImpl();
+			HotelManager hm = (HotelManager) UnicastRemoteObject.exportObject(obj, 0);
 
 			// Bind the remote object's stub in the registry
 			Registry registry = LocateRegistry.getRegistry(port);
-			registry.rebind("hotels.group20", rm);
+			registry.rebind("hotels.group20", hm);
 
-			System.out.println("Server ready");
+			System.out.println("Hotel server ready");
 		} catch (Exception e) {
 			System.err.println("Server exception: " + e.toString());
 			e.printStackTrace();

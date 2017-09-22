@@ -1,5 +1,7 @@
 package hotels;
 
-public interface HotelManager {
+import java.rmi.Remote;
+
+public interface HotelManager extends Remote {
 
 }
