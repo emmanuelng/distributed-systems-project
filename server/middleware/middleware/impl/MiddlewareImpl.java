@@ -7,9 +7,13 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Calendar;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import cars.CarManager;
+import customers.CustomerManager;
+import customers.impl.CustomerManagerImpl;
 import flights.FlightManager;
 import hotels.HotelManager;
 import middleware.Middleware;
@@ -99,11 +103,15 @@ public class MiddlewareImpl implements Middleware {
 	private CarManager carManager;
 	private FlightManager flightManager;
 	private HotelManager hotelManager;
+	private CustomerManager customerManager;
 
 	public MiddlewareImpl(CarManager carManager, FlightManager flightManager, HotelManager hotelManager) {
 		this.carManager = carManager;
 		this.flightManager = flightManager;
 		this.hotelManager = hotelManager;
+
+		// The customers are handled in the middleware server
+		this.customerManager = new CustomerManagerImpl();
 	}
 
 	@Override
@@ -123,14 +131,12 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public int newCustomer(int id) throws RemoteException {
-		// TODO Auto-generated method stub
-		return 0;
+		return customerManager.newCustomer(id);
 	}
 
 	@Override
 	public boolean newCustomer(int id, int cid) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		return customerManager.newCustomer(id, cid);
 	}
 
 	@Override
@@ -150,8 +156,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean deleteCustomer(int id, int customer) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		return customerManager.deleteCustomer(id, customer);
 	}
 
 	@Override
@@ -171,8 +176,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public String queryCustomerInfo(int id, int customer) throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		return customerManager.queryCustomerInfo(id, customer);
 	}
 
 	@Override
