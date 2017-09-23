@@ -25,6 +25,9 @@ if [ $# -gt 0 ]; then
 	if [ $1 == "middleware" ]; then
 		echo "Launching middleware..."
 		export CLASSPATH=$DIR/server/middleware/
+		# The customers are currently handled in the middleware server.
+		# Comment the following line if the customers are handled in a separate server.
+		export CLASSPATH=$CLASSPATH:$DIR/server/customers/
 		export CLASSPATH=$CLASSPATH:$DIR/server/middleware/CarManagerInterface.jar
 		export CLASSPATH=$CLASSPATH:$DIR/server/middleware/FlightManagerInterface.jar
 		export CLASSPATH=$CLASSPATH:$DIR/server/middleware/HotelManagerInterface.jar
