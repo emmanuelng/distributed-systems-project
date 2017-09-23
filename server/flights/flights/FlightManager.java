@@ -1,6 +1,7 @@
 package flights;
 
 import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 public interface FlightManager extends Remote {
 
@@ -11,7 +12,7 @@ public interface FlightManager extends Remote {
 	 *
 	 * @return success.
 	 */
-	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice);
+	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException;
 
 	/**
 	 * Deletes the entire flight. Implies whole deletion of the flight. all seats,
@@ -20,21 +21,21 @@ public interface FlightManager extends Remote {
 	 *
 	 * @return success.
 	 */
-	public boolean deleteFlight(int id, int flightNum);
+	public boolean deleteFlight(int id, int flightNum) throws RemoteException;
 
 	/**
 	 * Returns the number of empty seats.
 	 */
-	public int queryFlight(int id, int flightNumber);
+	public int queryFlight(int id, int flightNumber) throws RemoteException;
 
 	/**
 	 * Returns the price of a seat on this flight.
 	 */
-	public int queryFlightPrice(int id, int flightNumber);
+	public int queryFlightPrice(int id, int flightNumber) throws RemoteException;
 
 	/**
 	 * Reserves a seat on this flight.
 	 */
-	public boolean reserveFlight(int id, int customer, int flightNumber);
+	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException;
 
 }
