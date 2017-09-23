@@ -10,4 +10,5 @@
 
 ## Available scripts
 
-* `/.compile.sh`: compiles all the java files and updates the .jar files
+* `./compile.sh`: compiles all the java files and updates the .jar files
+* `./server.sh [middleware|cars|flights|hotels] [parameters]`: launches the servers
