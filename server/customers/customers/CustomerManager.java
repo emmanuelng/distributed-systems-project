@@ -1,6 +1,8 @@
 package customers;
 
-public interface CustomerManager {
+import java.rmi.Remote;
+
+public interface CustomerManager extends Remote {
 
 	/**
 	 * Returns a unique customer identifier.
