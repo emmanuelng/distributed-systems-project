@@ -32,6 +32,18 @@ echo "Compiling the flight manager..."
 	mv FlightManagerInterface.jar $DIR/server/middleware/
 } &> /dev/null
 
+# Compile the customer manager
+echo "Compiling the customer manager..."
+{
+	cd $DIR/server/customers/
+	javac $DIR/server/customers/customers/CustomerManager.java
+	javac $DIR/server/customers/customers/impl/*.java
+	# The customers are currently handled in the middleware server.
+	# Uncomment the two following lines if the customers are handled in a separate server.
+	# jar cvf CustomerManagerInterface.jar customers/*.class
+	# mv CustomerManagerInterface.jar $DIR/server/middleware/
+} &> /dev/null
+
 # Compile the middleware
 echo "Compiling the middleware..."	
 {
