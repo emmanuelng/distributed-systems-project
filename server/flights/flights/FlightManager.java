@@ -11,7 +11,7 @@ public interface FlightManager extends Remote {
 	 *
 	 * @return success.
 	 */
-	boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice);
+	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice);
 
 	/**
 	 * Deletes the entire flight. Implies whole deletion of the flight. all seats,
@@ -20,21 +20,21 @@ public interface FlightManager extends Remote {
 	 *
 	 * @return success.
 	 */
-	boolean deleteFlight(int id, int flightNum);
+	public boolean deleteFlight(int id, int flightNum);
 
 	/**
 	 * Returns the number of empty seats.
 	 */
-	int queryFlight(int id, int flightNumber);
+	public int queryFlight(int id, int flightNumber);
 
 	/**
 	 * Returns the price of a seat on this flight.
 	 */
-	int queryFlightPrice(int id, int flightNumber);
+	public int queryFlightPrice(int id, int flightNumber);
 
 	/**
 	 * Reserves a seat on this flight.
 	 */
-	boolean reserveFlight(int id, int customer, int flightNumber);
+	public boolean reserveFlight(int id, int customer, int flightNumber);
 
 }
