@@ -7,8 +7,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Calendar;
-import java.util.Hashtable;
 import java.util.Vector;
 
 import cars.CarManager;
