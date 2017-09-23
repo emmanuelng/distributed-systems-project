@@ -49,12 +49,11 @@ echo "Compiling the middleware..."
 {
 	cd $DIR/server/middleware/
 	export CLASSPATH=$DIR/server/middleware/
+	export CLASSPATH=$CLASSPATH:$DIR/server/customers
 	export CLASSPATH=$CLASSPATH:$DIR/server/middleware/CarManagerInterface.jar
 	export CLASSPATH=$CLASSPATH:$DIR/server/middleware/FlightManagerInterface.jar
 	export CLASSPATH=$CLASSPATH:$DIR/server/middleware/HotelManagerInterface.jar
-	echo ${CLASSPATH}
 	javac $DIR/server/middleware/middleware/Middleware.java
-	echo ${CLASSPATH}
 	javac $DIR/server/middleware/middleware/impl/*.java
 	jar cvf MiddlewareInterface.jar middleware/*.class
 	mv MiddlewareInterface.jar $DIR/client/
