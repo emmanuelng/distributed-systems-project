@@ -44,4 +44,34 @@ public class HotelManagerImpl implements HotelManager {
 		}
 	}
 
+	@Override
+	public boolean addRooms(int id, String location, int numRooms, int price) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean deleteRooms(int id, String location) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int queryRooms(int id, String location) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int queryRoomsPrice(int id, String location) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean reserveRoom(int id, int customer, String locationd) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

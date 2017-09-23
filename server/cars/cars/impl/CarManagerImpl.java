@@ -41,4 +41,34 @@ public class CarManagerImpl implements CarManager {
 			System.setSecurityManager(new RMISecurityManager());
 		}
 	}
+
+	@Override
+	public boolean addCars(int id, String location, int numCars, int price) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean deleteCars(int id, String location) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int queryCars(int id, String location) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int queryCarsPrice(int id, String location) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean reserveCar(int id, int customer, String location) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

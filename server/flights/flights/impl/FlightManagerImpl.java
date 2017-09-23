@@ -44,4 +44,34 @@ public class FlightManagerImpl implements FlightManager {
 		}
 	}
 
+	@Override
+	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean deleteFlight(int id, int flightNum) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int queryFlight(int id, int flightNumber) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int queryFlightPrice(int id, int flightNumber) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean reserveFlight(int id, int customer, int flightNumber) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

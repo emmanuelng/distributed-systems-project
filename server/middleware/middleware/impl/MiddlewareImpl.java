@@ -108,20 +108,17 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		return flightManager.addFlight(id, flightNum, flightSeats, flightPrice);
 	}
 
 	@Override
 	public boolean addCars(int id, String location, int numCars, int price) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		return carManager.addCars(id, location, numCars, price);
 	}
 
 	@Override
 	public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		return hotelManager.addRooms(id, location, numRooms, price);
 	}
 
 	@Override
@@ -138,20 +135,17 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean deleteFlight(int id, int flightNum) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		return flightManager.deleteFlight(id, flightNum);
 	}
 
 	@Override
 	public boolean deleteCars(int id, String location) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		return carManager.deleteCars(id, location);
 	}
 
 	@Override
 	public boolean deleteRooms(int id, String location) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		return hotelManager.deleteRooms(id, location);
 	}
 
 	@Override
@@ -162,20 +156,17 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public int queryFlight(int id, int flightNumber) throws RemoteException {
-		// TODO Auto-generated method stub
-		return 0;
+		return flightManager.queryFlight(id, flightNumber);
 	}
 
 	@Override
 	public int queryCars(int id, String location) throws RemoteException {
-		// TODO Auto-generated method stub
-		return 0;
+		return carManager.queryCars(id, location);
 	}
 
 	@Override
 	public int queryRooms(int id, String location) throws RemoteException {
-		// TODO Auto-generated method stub
-		return 0;
+		return hotelManager.queryRooms(id, location);
 	}
 
 	@Override
@@ -186,38 +177,32 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public int queryFlightPrice(int id, int flightNumber) throws RemoteException {
-		// TODO Auto-generated method stub
-		return 0;
+		return flightManager.queryFlightPrice(id, flightNumber);
 	}
 
 	@Override
 	public int queryCarsPrice(int id, String location) throws RemoteException {
-		// TODO Auto-generated method stub
-		return 0;
+		return carManager.queryCarsPrice(id, location);
 	}
 
 	@Override
 	public int queryRoomsPrice(int id, String location) throws RemoteException {
-		// TODO Auto-generated method stub
-		return 0;
+		return hotelManager.queryRoomsPrice(id, location);
 	}
 
 	@Override
 	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		return flightManager.reserveFlight(id, customer, flightNumber);
 	}
 
 	@Override
 	public boolean reserveCar(int id, int customer, String location) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		return carManager.reserveCar(id, customer, location);
 	}
 
 	@Override
 	public boolean reserveRoom(int id, int customer, String locationd) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		return hotelManager.reserveRoom(id, customer, locationd);
 	}
 
 	@Override
