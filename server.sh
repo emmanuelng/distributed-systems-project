@@ -24,9 +24,13 @@ function launch {
 if [ $# -gt 0 ]; then
 	if [ $1 == "middleware" ]; then
 		echo "Launching middleware..."
+		export CLASSPATH=$DIR/server/middleware/
+		export CLASSPATH=$CLASSPATH:$DIR/server/middleware/CarManagerInterface.jar
+		export CLASSPATH=$CLASSPATH:$DIR/server/middleware/FlightManagerInterface.jar
+		export CLASSPATH=$CLASSPATH:$DIR/server/middleware/HotelManagerInterface.jar
 		cd $DIR/server/middleware/
-        grant_access server/middleware/
-        java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/middleware/ middleware.impl.MiddlewareImpl ${@:2}
+		grant_access server/middleware/
+		java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/middleware/ middleware.impl.MiddlewareImpl ${@:2}
 	elif [ $1 == "cars" ]; then
 		echo "Launching car manager..."
 		cd $DIR/server/cars/
@@ -35,13 +39,13 @@ if [ $# -gt 0 ]; then
 	elif [ $1 == "flights" ]; then
 		echo "Launching flight manager..."
 		cd $DIR/server/flights/
-        grant_access server/flights/
-        java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/flights/ flights.impl.FlightManagerImpl ${@:2}
+		grant_access server/flights/
+		java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/flights/ flights.impl.FlightManagerImpl ${@:2}
 	elif [ $1 == "hotels" ]; then
 		echo "Launching hotel manager..."
 		cd $DIR/server/hotels/
-        grant_access server/hotels/
-        java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/hotels/ hotels.impl.HotelManagerImpl ${@:2}
+		grant_access server/hotels/
+		java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/hotels/ hotels.impl.HotelManagerImpl ${@:2}
 	else
 		error_msg
 	fi
