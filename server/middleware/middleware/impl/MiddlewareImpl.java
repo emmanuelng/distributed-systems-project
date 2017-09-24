@@ -78,6 +78,15 @@ public class MiddlewareImpl implements Middleware {
 		}
 	}
 
+	/**
+	 * Finds the remote object registered with the given name on the given server.
+	 * If the object does not exist, stops the program.
+	 * 
+	 * @param server the server
+	 * @param port the registry port number
+	 * @param name the logical name of the remote object
+	 * @return the object
+	 */
 	private static Remote lookup(String server, int port, String name) {
 		Remote remoteObj = null;
 
