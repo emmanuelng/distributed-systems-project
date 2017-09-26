@@ -41,7 +41,7 @@ public abstract class ReservableItem {
 	public String getLocation() {
 		return m_strLocation;
 	}
-	
+
 	@Override
 	public abstract String toString();
 

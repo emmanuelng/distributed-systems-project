@@ -1,10 +1,10 @@
 package common.reservations;
 
 import common.data.RMHashtable;
+import middleware.Middleware;
 
 public abstract class ReservationManager<R extends ReservableItem> {
 
-	private String resourceName;
 	private RMHashtable<String, R> reservableItems;
 
 	/**
@@ -13,14 +13,15 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * @param resourceName
 	 *            the name of the managed resource. Must be unique.
 	 */
-	public ReservationManager(String resourceName) {
-		this.resourceName = resourceName;
+	public ReservationManager() {
 		this.reservableItems = new RMHashtable<>();
 	}
 
 	/**
-	 * Adds an item to the list of items.
+	 * Adds an item to the list of items. The key must be unique in the manager and
+	 * should not contain slashes "/".
 	 * 
+	 * @see Middleware#deleteCustomer(int, int)
 	 * @return success
 	 */
 	protected boolean addItem(int id, String key, R instance) {
@@ -137,8 +138,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * Reserves an item by decreasing the amount of available resources.
 	 * 
 	 * @see ReservationManager#queryNum(int, String)
-	 * @return the reserved item identifier (<code>"ResourceName/internalId"</code>)
-	 *         or <code>null</code> on failure.
+	 * @return a unique identifier (on this server, not globally) or
+	 *         <code>null</code> on failure.
 	 */
 	protected String reserveItem(int id, String key) {
 		log("reserveItem(" + id + ", " + key + ") called");
@@ -153,7 +154,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		} else {
 			item.setCount(item.getCount() - 1);
 			item.setReserved(item.getReserved() + 1);
-			itemId = resourceName + "/" + key;
+			itemId = key;
 			log("reserveItem(" + id + ", " + key + ") succeeded");
 		}
 
@@ -164,14 +165,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * Writes a message to the log.
 	 */
 	private void log(String message) {
-		System.out.println("[" + resourceName + "Manager] " + message);
-	}
-
-	/**
-	 * Returns the resource name.
-	 */
-	public String resourceName() {
-		return resourceName;
+		System.out.println("[ReservationManager] " + message);
 	}
 
 }

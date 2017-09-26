@@ -42,12 +42,12 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 			System.setSecurityManager(new RMISecurityManager());
 		}
 	}
-	
+
 	/**
 	 * Builds a new {@link CarManagerImpl}.
 	 */
 	public CarManagerImpl() {
-		super("Car");
+		super();
 	}
 
 	@Override
@@ -77,7 +77,13 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 	}
 
 	@Override
-	public String reserveCar(int id, String location) {				
+	public String reserveCar(int id, String location) {
 		return reserveItem(id, location);
 	}
+
+	@Override
+	public boolean releaseCars(int id, String location, int amount) {
+		return increaseItemCount(id, location, amount, 0);
+	}
+
 }

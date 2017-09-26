@@ -82,9 +82,12 @@ public class MiddlewareImpl implements Middleware {
 	 * Finds the remote object registered with the given name on the given server.
 	 * If the object does not exist, stops the program.
 	 * 
-	 * @param server the server
-	 * @param port the registry port number
-	 * @param name the logical name of the remote object
+	 * @param server
+	 *            the server
+	 * @param port
+	 *            the registry port number
+	 * @param name
+	 *            the logical name of the remote object
 	 * @return the object
 	 */
 	private static Remote lookup(String server, int port, String name) {
@@ -163,7 +166,38 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean deleteCustomer(int id, int customer) throws RemoteException {
-		return customerManager.deleteCustomer(id, customer);
+		boolean success = true;
+
+		// Release the items reserved by the customer, then remove the customer
+		String[] reservationsToRemove = customerManager.queryReservations(id, customer);
+
+		if (reservationsToRemove != null) {
+			for (String reservationStr : reservationsToRemove) {
+				// Split the reservation string
+				String[] reservation = reservationStr.split("/");
+
+				// A reservation string is formatted as "manager/itemId/amount"
+				String managerName = reservation[0];
+				String itemId = reservation[1];
+				int amount = Integer.parseInt(reservation[2]);
+
+				// Call the right manager
+				if (managerName.equals("cars")) {
+					carManager.releaseCars(id, itemId, amount);
+				} else if (managerName.equals("flights")) {
+					// TODO: release flights
+				} else if (managerName.equals("hotels")) {
+					// TODO: release rooms
+				}
+			}
+
+			// Now that all reservations are cleared, delete the customer
+			customerManager.deleteCustomer(id, customer);
+		} else {
+			success = false;
+		}
+
+		return success;
 	}
 
 	@Override
@@ -208,7 +242,16 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean reserveCar(int id, int customer, String location) throws RemoteException {
-		return carManager.reserveCar(id, customer, location);
+		boolean success = false;
+
+		String rid = carManager.reserveCar(id, location);
+		int price = carManager.queryCarsPrice(id, location);
+
+		if (rid != null) {
+			success = customerManager.reserve(id, customer, "cars/" + rid, price);
+		}
+
+		return success;
 	}
 
 	@Override
