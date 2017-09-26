@@ -12,3 +12,4 @@
 
 * `./compile.sh`: compiles all the java files and updates the .jar files
 * `./server.sh [middleware|cars|flights|hotels] [parameters]`: launches the servers
+* `./client [middleware machine] [port]`: launches a client instance. The port is 1099 by default
