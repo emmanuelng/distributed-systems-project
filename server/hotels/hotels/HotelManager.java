@@ -39,6 +39,6 @@ public interface HotelManager extends Remote {
 	 * 
 	 * @return success
 	 */
-	public boolean releaseRoom(int id, String location, int amount);
+	public boolean releaseRoom(int id, String location, int amount) throws RemoteException;
 
 }
