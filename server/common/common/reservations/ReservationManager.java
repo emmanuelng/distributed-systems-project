@@ -1,6 +1,7 @@
 package common.reservations;
 
 import common.data.RMHashtable;
+import middleware.Middleware;
 
 public abstract class ReservationManager<R extends ReservableItem> {
 
@@ -137,27 +138,26 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * Reserves an item by decreasing the amount of available resources.
 	 * 
 	 * @see ReservationManager#queryNum(int, String)
-	 * @return a unique identifier (on this server, not globally) or
-	 *         <code>null</code> on failure.
+	 * @return success
 	 */
-	protected String reserveItem(int id, String key) {
+	protected boolean reserveItem(int id, String key) {
 		log("reserveItem(" + id + ", " + key + ") called");
 
-		String itemId = null;
+		boolean success = true;
 		R item = reservableItems.get(id, key);
 
 		if (item == null) {
+			success = false;
 			log("reserveItem(" + id + ", " + key + ") failed: the requested item does not exist");
 		} else if (item.getCount() == 0) {
 			log("reserveItem(" + id + ", " + key + ") failed: no more items");
 		} else {
 			item.setCount(item.getCount() - 1);
 			item.setReserved(item.getReserved() + 1);
-			itemId = key;
 			log("reserveItem(" + id + ", " + key + ") succeeded");
 		}
 
-		return itemId;
+		return success;
 	}
 
 	/**

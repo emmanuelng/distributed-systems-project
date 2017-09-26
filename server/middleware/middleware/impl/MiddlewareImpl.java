@@ -185,7 +185,7 @@ public class MiddlewareImpl implements Middleware {
 				if (managerName.equals("cars")) {
 					carManager.releaseCars(id, itemId, amount);
 				} else if (managerName.equals("flights")) {
-					// TODO: release flights
+					flightManager.releaseSeats(id, Integer.parseInt(itemId), amount);
 				} else if (managerName.equals("hotels")) {
 					// TODO: release rooms
 				}
@@ -237,21 +237,22 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException {
-		return flightManager.reserveFlight(id, customer, flightNumber);
+		if (flightManager.reserveFlight(id, flightNumber)) {
+			int price = flightManager.queryFlightPrice(id, flightNumber);
+			return customerManager.reserve(id, customer, "flights/" + flightNumber, price);
+		}
+
+		return false;
 	}
 
 	@Override
 	public boolean reserveCar(int id, int customer, String location) throws RemoteException {
-		boolean success = false;
-
-		String rid = carManager.reserveCar(id, location);
-		int price = carManager.queryCarsPrice(id, location);
-
-		if (rid != null) {
-			success = customerManager.reserve(id, customer, "cars/" + rid, price);
+		if (carManager.reserveCar(id, location)) {
+			int price = carManager.queryCarsPrice(id, location);
+			return customerManager.reserve(id, customer, "cars/" + location, price);
 		}
 
-		return success;
+		return false;
 	}
 
 	@Override

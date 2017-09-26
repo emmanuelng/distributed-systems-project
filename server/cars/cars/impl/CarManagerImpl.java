@@ -77,7 +77,7 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 	}
 
 	@Override
-	public String reserveCar(int id, String location) {
+	public boolean reserveCar(int id, String location) {
 		return reserveItem(id, location);
 	}
 
