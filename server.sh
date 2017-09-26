@@ -17,10 +17,6 @@ function grant_access {
 	fi
 }
 
-function launch {
-	java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/$1/ $1.impl.CarManagerImpl 1099
-}
-
 if [ $# -gt 0 ]; then
 	if [ $1 == "middleware" ]; then
 		echo "Launching middleware..."
@@ -38,16 +34,22 @@ if [ $# -gt 0 ]; then
 		echo "Launching car manager..."
 		cd $DIR/server/cars/
 		grant_access server/cars/
+		export CLASSPATH=$DIR/server/cars/
+		export CLASSPATH=$CLASSPATH:$DIR/server/common/
 		java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/cars/ cars.impl.CarManagerImpl ${@:2}
 	elif [ $1 == "flights" ]; then
 		echo "Launching flight manager..."
 		cd $DIR/server/flights/
 		grant_access server/flights/
+		export CLASSPATH=$DIR/server/flights/
+                export CLASSPATH=$CLASSPATH:$DIR/server/common/
 		java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/flights/ flights.impl.FlightManagerImpl ${@:2}
 	elif [ $1 == "hotels" ]; then
 		echo "Launching hotel manager..."
 		cd $DIR/server/hotels/
 		grant_access server/hotels/
+		export CLASSPATH=$DIR/server/hotels/
+                export CLASSPATH=$CLASSPATH:$DIR/server/common/
 		java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/hotels/ hotels.impl.HotelManagerImpl ${@:2}
 	else
 		error_msg
