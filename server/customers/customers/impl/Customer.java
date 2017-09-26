@@ -74,4 +74,11 @@ public class Customer {
 		return bill;
 	}
 
+	/**
+	 * Deletes all reservations associated to the given item.
+	 */
+	public void clearReservationsForItem(int id, String itemId) {
+		reservations.remove(itemId);
+	}
+
 }

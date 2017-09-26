@@ -1,5 +1,6 @@
 package common.data;
 
+import java.util.Collection;
 import java.util.Hashtable;
 
 public class RMHashtable<K, V> {
@@ -32,6 +33,10 @@ public class RMHashtable<K, V> {
 
 	public synchronized boolean isEmpty(int id) {
 		return data.isEmpty();
+	}
+
+	public Collection<V> values() {
+		return data.values();
 	}
 
 }

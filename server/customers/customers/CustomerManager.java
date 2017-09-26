@@ -41,5 +41,10 @@ public interface CustomerManager extends Remote {
 	 * @return the array or <code>null</code> if the customer does not exist
 	 */
 	public String[] queryReservations(int id, int cid) throws RemoteException;
+	
+	/**
+	 * Removes all the reservations associated with the given item.
+	 */
+	public void clearReservationsForItem(int id, String itemId) throws RemoteException;
 
 }
