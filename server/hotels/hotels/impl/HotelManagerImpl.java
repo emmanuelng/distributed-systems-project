@@ -5,10 +5,11 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import common.reservations.ReservationManager;
 import hotels.HotelManager;
 
 @SuppressWarnings("deprecation")
-public class HotelManagerImpl implements HotelManager {
+public class HotelManagerImpl extends ReservationManager<Hotel> implements HotelManager {
 
 	public static void main(String[] args) {
 		// Figure out where server is running
@@ -46,32 +47,38 @@ public class HotelManagerImpl implements HotelManager {
 
 	@Override
 	public boolean addRooms(int id, String location, int numRooms, int price) {
-		// TODO Auto-generated method stub
-		return false;
+		if (getItem(id, location) == null) {
+			addItem(id, location, new Hotel(location, numRooms, price));
+		} else {
+			increaseItemCount(id, location, numRooms, price);
+		}
+
+		return true;
 	}
 
 	@Override
 	public boolean deleteRooms(int id, String location) {
-		// TODO Auto-generated method stub
-		return false;
+		return deleteItem(id, location);
 	}
 
 	@Override
 	public int queryRooms(int id, String location) {
-		// TODO Auto-generated method stub
-		return 0;
+		return queryNum(id, location);
 	}
 
 	@Override
 	public int queryRoomsPrice(int id, String location) {
-		// TODO Auto-generated method stub
-		return 0;
+		return queryPrice(id, location);
 	}
 
 	@Override
-	public boolean reserveRoom(int id, int customer, String locationd) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean reserveRoom(int id, String location) {
+		return reserveItem(id, location);
+	}
+
+	@Override
+	public boolean releaseRoom(int id, String location, int amount) {
+		return increaseItemCount(id, location, amount, 0);
 	}
 
 }

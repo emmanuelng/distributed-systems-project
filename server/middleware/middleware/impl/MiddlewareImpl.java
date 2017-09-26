@@ -120,7 +120,7 @@ public class MiddlewareImpl implements Middleware {
 		this.flightManager = flightManager;
 		this.hotelManager = hotelManager;
 
-		// The customers are handled in the middleware server
+		// The customers are handled in the middle ware server
 		this.customerManager = new CustomerManagerImpl();
 	}
 
@@ -187,7 +187,7 @@ public class MiddlewareImpl implements Middleware {
 				} else if (managerName.equals("flights")) {
 					flightManager.releaseSeats(id, Integer.parseInt(itemId), amount);
 				} else if (managerName.equals("hotels")) {
-					// TODO: release rooms
+					hotelManager.releaseRoom(id, itemId, amount);
 				}
 			}
 
@@ -256,13 +256,18 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean reserveRoom(int id, int customer, String locationd) throws RemoteException {
-		return hotelManager.reserveRoom(id, customer, locationd);
+	public boolean reserveRoom(int id, int customer, String location) throws RemoteException {
+		if (hotelManager.reserveRoom(id, location)) {
+			int price = hotelManager.queryRoomsPrice(id, location);
+			return customerManager.reserve(id, customer, "hotels/" + location, price);
+		}
+
+		return false;
 	}
 
 	@Override
-	public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room)
-			throws RemoteException {
+	public boolean itinerary(int id, int customer, Vector<Integer> flightNumbers, String location, boolean Car,
+			boolean Room) throws RemoteException {
 		// TODO Auto-generated method stub
 		return false;
 	}
