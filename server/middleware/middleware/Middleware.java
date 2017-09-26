@@ -130,12 +130,12 @@ public interface Middleware extends Remote {
 	/**
 	 * Reserves a room certain at this location.
 	 */
-	public boolean reserveRoom(int id, int customer, String locationd) throws RemoteException;
+	public boolean reserveRoom(int id, int customer, String location) throws RemoteException;
 
 	/**
 	 * Reserves an itinerary.
 	 */
-	public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room)
-			throws RemoteException;
+	public boolean itinerary(int id, int customer, Vector<Object> flightNumbers, String location, boolean Car,
+			boolean Room) throws RemoteException;
 
 }

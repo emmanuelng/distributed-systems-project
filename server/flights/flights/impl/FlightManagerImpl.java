@@ -1,14 +1,16 @@
 package flights.impl;
 
 import java.rmi.RMISecurityManager;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import common.reservations.ReservationManager;
 import flights.FlightManager;
 
 @SuppressWarnings("deprecation")
-public class FlightManagerImpl implements FlightManager {
+public class FlightManagerImpl extends ReservationManager<Flight> implements FlightManager {
 
 	public static void main(String[] args) {
 		// Figure out where server is running
@@ -46,32 +48,38 @@ public class FlightManagerImpl implements FlightManager {
 
 	@Override
 	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) {
-		// TODO Auto-generated method stub
-		return false;
+		if (getItem(id, Integer.toString(flightNum)) == null) {
+			addItem(id, Integer.toString(flightNum), new Flight(flightNum, flightSeats, flightPrice));
+		} else {
+			increaseItemCount(id, Integer.toString(flightNum), flightSeats, flightPrice);
+		}
+
+		return true;
 	}
 
 	@Override
 	public boolean deleteFlight(int id, int flightNum) {
-		// TODO Auto-generated method stub
-		return false;
+		return deleteItem(id, Integer.toString(flightNum));
 	}
 
 	@Override
-	public int queryFlight(int id, int flightNumber) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int queryFlight(int id, int flightNum) {
+		return queryNum(id, Integer.toString(flightNum));
 	}
 
 	@Override
-	public int queryFlightPrice(int id, int flightNumber) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int queryFlightPrice(int id, int flightNum) {
+		return queryPrice(id, Integer.toString(flightNum));
 	}
 
 	@Override
-	public boolean reserveFlight(int id, int customer, int flightNumber) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean reserveFlight(int id, int flightNum) {
+		return reserveItem(id, Integer.toString(flightNum));
+	}
+
+	@Override
+	public boolean releaseSeats(int id, int flightNumber, int amount) throws RemoteException {
+		return increaseItemCount(id, Integer.toString(flightNumber), amount, 0);
 	}
 
 }

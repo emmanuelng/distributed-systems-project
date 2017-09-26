@@ -17,12 +17,34 @@ public interface CustomerManager extends Remote {
 
 	/**
 	 * Removes the customer and associated reservations.
+	 * 
+	 * @return success
 	 */
-	public boolean deleteCustomer(int id, int customer) throws RemoteException;
+	public boolean deleteCustomer(int id, int cid) throws RemoteException;
 
 	/**
-	 * Returns a bill
+	 * Returns a bill.
 	 */
-	public String queryCustomerInfo(int id, int customer) throws RemoteException;
+	public String queryCustomerInfo(int id, int cid) throws RemoteException;
+
+	/**
+	 * Adds a reservation to a customer.
+	 * 
+	 * @return success
+	 */
+	public boolean reserve(int id, int cid, String itemId, int price) throws RemoteException;
+
+	/**
+	 * Returns an array containing all the customer's reservation in the form of
+	 * strings formatted as "manager/itemId/amount".
+	 * 
+	 * @return the array or <code>null</code> if the customer does not exist
+	 */
+	public String[] queryReservations(int id, int cid) throws RemoteException;
+	
+	/**
+	 * Removes all the reservations associated with the given item.
+	 */
+	public void clearReservationsForItem(int id, String itemId) throws RemoteException;
 
 }

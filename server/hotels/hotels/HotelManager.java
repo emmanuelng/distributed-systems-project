@@ -32,6 +32,13 @@ public interface HotelManager extends Remote {
 	/**
 	 * Reserves a room certain at this location.
 	 */
-	public boolean reserveRoom(int id, int customer, String locationd) throws RemoteException;
+	public boolean reserveRoom(int id, String location) throws RemoteException;
+
+	/**
+	 * Releases a reserved room.
+	 * 
+	 * @return success
+	 */
+	public boolean releaseRoom(int id, String location, int amount) throws RemoteException;
 
 }

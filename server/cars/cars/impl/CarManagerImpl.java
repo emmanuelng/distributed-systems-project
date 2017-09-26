@@ -6,10 +6,11 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import cars.CarManager;
+import common.reservations.ReservationManager;
 
 @SuppressWarnings("deprecation")
-public class CarManagerImpl implements CarManager {
-	
+public class CarManagerImpl extends ReservationManager<Car> implements CarManager {
+
 	public static void main(String[] args) {
 		// Figure out where server is running
 		int port = 1099;
@@ -42,33 +43,47 @@ public class CarManagerImpl implements CarManager {
 		}
 	}
 
+	/**
+	 * Builds a new {@link CarManagerImpl}.
+	 */
+	public CarManagerImpl() {
+		super();
+	}
+
 	@Override
 	public boolean addCars(int id, String location, int numCars, int price) {
-		// TODO Auto-generated method stub
-		return false;
+		if (getItem(id, location) == null) {
+			addItem(id, location, new Car(location, numCars, price));
+		} else {
+			increaseItemCount(id, location, numCars, price);
+		}
+
+		return true;
 	}
 
 	@Override
 	public boolean deleteCars(int id, String location) {
-		// TODO Auto-generated method stub
-		return false;
+		return deleteItem(id, location);
 	}
 
 	@Override
 	public int queryCars(int id, String location) {
-		// TODO Auto-generated method stub
-		return 0;
+		return queryNum(id, location);
 	}
 
 	@Override
 	public int queryCarsPrice(int id, String location) {
-		// TODO Auto-generated method stub
-		return 0;
+		return queryPrice(id, location);
 	}
 
 	@Override
-	public boolean reserveCar(int id, int customer, String location) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean reserveCar(int id, String location) {
+		return reserveItem(id, location);
 	}
+
+	@Override
+	public boolean releaseCars(int id, String location, int amount) {
+		return increaseItemCount(id, location, amount, 0);
+	}
+
 }

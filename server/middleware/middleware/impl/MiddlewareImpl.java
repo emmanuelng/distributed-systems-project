@@ -7,6 +7,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import cars.CarManager;
@@ -82,9 +84,12 @@ public class MiddlewareImpl implements Middleware {
 	 * Finds the remote object registered with the given name on the given server.
 	 * If the object does not exist, stops the program.
 	 * 
-	 * @param server the server
-	 * @param port the registry port number
-	 * @param name the logical name of the remote object
+	 * @param server
+	 *            the server
+	 * @param port
+	 *            the registry port number
+	 * @param name
+	 *            the logical name of the remote object
 	 * @return the object
 	 */
 	private static Remote lookup(String server, int port, String name) {
@@ -117,7 +122,7 @@ public class MiddlewareImpl implements Middleware {
 		this.flightManager = flightManager;
 		this.hotelManager = hotelManager;
 
-		// The customers are handled in the middleware server
+		// The customers are handled in the middle ware server
 		this.customerManager = new CustomerManagerImpl();
 	}
 
@@ -163,7 +168,38 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean deleteCustomer(int id, int customer) throws RemoteException {
-		return customerManager.deleteCustomer(id, customer);
+		boolean success = true;
+
+		// Release the items reserved by the customer, then remove the customer
+		String[] reservationsToRemove = customerManager.queryReservations(id, customer);
+
+		if (reservationsToRemove != null) {
+			for (String reservationStr : reservationsToRemove) {
+				// Split the reservation string
+				String[] reservation = reservationStr.split("/");
+
+				// A reservation string is formatted as "manager/itemId/amount"
+				String managerName = reservation[0];
+				String itemId = reservation[1];
+				int amount = Integer.parseInt(reservation[2]);
+
+				// Call the right manager
+				if (managerName.equals("cars")) {
+					carManager.releaseCars(id, itemId, amount);
+				} else if (managerName.equals("flights")) {
+					flightManager.releaseSeats(id, Integer.parseInt(itemId), amount);
+				} else if (managerName.equals("hotels")) {
+					hotelManager.releaseRoom(id, itemId, amount);
+				}
+			}
+
+			// Now that all reservations are cleared, delete the customer
+			customerManager.deleteCustomer(id, customer);
+		} else {
+			success = false;
+		}
+
+		return success;
 	}
 
 	@Override
@@ -203,24 +239,77 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException {
-		return flightManager.reserveFlight(id, customer, flightNumber);
+		if (flightManager.reserveFlight(id, flightNumber)) {
+			int price = flightManager.queryFlightPrice(id, flightNumber);
+			return customerManager.reserve(id, customer, "flights/" + flightNumber, price);
+		}
+
+		return false;
 	}
 
 	@Override
 	public boolean reserveCar(int id, int customer, String location) throws RemoteException {
-		return carManager.reserveCar(id, customer, location);
-	}
+		if (carManager.reserveCar(id, location)) {
+			int price = carManager.queryCarsPrice(id, location);
+			return customerManager.reserve(id, customer, "cars/" + location, price);
+		}
 
-	@Override
-	public boolean reserveRoom(int id, int customer, String locationd) throws RemoteException {
-		return hotelManager.reserveRoom(id, customer, locationd);
-	}
-
-	@Override
-	public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room)
-			throws RemoteException {
-		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public boolean reserveRoom(int id, int customer, String location) throws RemoteException {
+		if (hotelManager.reserveRoom(id, location)) {
+			int price = hotelManager.queryRoomsPrice(id, location);
+			return customerManager.reserve(id, customer, "hotels/" + location, price);
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean itinerary(int id, int customer, Vector<Object> flightNumbers, String location, boolean car,
+			boolean room) throws RemoteException {
+		boolean available = true;
+
+		// Check if the itinerary is available
+		Map<Integer, Integer> requestedSeats = new HashMap<>();
+		for (Object flightNumberObj : flightNumbers) {
+			if (!available) {
+				break;
+			}
+
+			int flightNumber = (Integer) flightNumberObj;
+
+			// If there are duplicate flight numbers, check for the right amount of seats
+			int numSeatsRequested = 1;
+			if (requestedSeats.containsKey(flightNumber)) {
+				numSeatsRequested = requestedSeats.get(flightNumber) + 1;
+				requestedSeats.put(flightNumber, numSeatsRequested);
+			}
+
+			available &= flightManager.queryFlight(id, flightNumber) <= numSeatsRequested;
+		}
+
+		available &= available && car && carManager.queryCars(id, location) >= 1;
+		available &= available && room && hotelManager.queryRooms(id, location) >= 1;
+
+		// If the itinerary is available, proceed to the reservations
+		if (available) {
+			for (Object flightNumberObj : flightNumbers) {
+				reserveFlight(id, customer, (Integer) flightNumberObj);
+			}
+
+			if (car) {
+				reserveCar(id, customer, location);
+			}
+
+			if (room) {
+				reserveRoom(id, customer, location);
+			}
+		}
+
+		return true;
 	}
 
 }

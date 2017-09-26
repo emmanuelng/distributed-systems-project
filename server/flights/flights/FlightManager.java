@@ -35,7 +35,16 @@ public interface FlightManager extends Remote {
 
 	/**
 	 * Reserves a seat on this flight.
+	 * 
+	 * @return success
 	 */
-	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException;
+	public boolean reserveFlight(int id, int flightNumber) throws RemoteException;
+
+	/**
+	 * Releases reserved seats in the given flight.
+	 * 
+	 * @return success
+	 */
+	public boolean releaseSeats(int id, int flightNumber, int amount) throws RemoteException;
 
 }

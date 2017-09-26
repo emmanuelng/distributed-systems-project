@@ -31,7 +31,16 @@ public interface CarManager extends Remote {
 
 	/**
 	 * Reserves a car at this location.
+	 * 
+	 * @return success
 	 */
-	public boolean reserveCar(int id, int customer, String location) throws RemoteException;
+	public boolean reserveCar(int id, String location) throws RemoteException;
+
+	/**
+	 * Releases previously reserved cars.
+	 * 
+	 * @return success
+	 */
+	public boolean releaseCars(int id, String location, int amount) throws RemoteException;
 
 }
