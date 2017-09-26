@@ -268,16 +268,18 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean itinerary(int id, int customer, Vector<Integer> flightNumbers, String location, boolean car,
+	public boolean itinerary(int id, int customer, Vector<Object> flightNumbers, String location, boolean car,
 			boolean room) throws RemoteException {
 		boolean available = true;
 
 		// Check if the itinerary is available
 		Map<Integer, Integer> requestedSeats = new HashMap<>();
-		for (Integer flightNumber : flightNumbers) {
+		for (Object flightNumberObj : flightNumbers) {
 			if (!available) {
 				break;
 			}
+
+			int flightNumber = (Integer) flightNumberObj;
 
 			// If there are duplicate flight numbers, check for the right amount of seats
 			int numSeatsRequested = 1;
@@ -294,8 +296,8 @@ public class MiddlewareImpl implements Middleware {
 
 		// If the itinerary is available, proceed to the reservations
 		if (available) {
-			for (Integer flightNumber : flightNumbers) {
-				reserveFlight(id, customer, flightNumber);
+			for (Object flightNumberObj : flightNumbers) {
+				reserveFlight(id, customer, (Integer) flightNumberObj);
 			}
 
 			if (car) {
