@@ -59,6 +59,9 @@ public class Customer {
 		return array;
 	}
 
+	/**
+	 * Print the current bill of the customer.
+	 */
 	public String printBill() {
 		String bill = "Bill for customer " + cid + "\n";
 

@@ -7,6 +7,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import cars.CarManager;
@@ -266,10 +268,46 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean itinerary(int id, int customer, Vector<Integer> flightNumbers, String location, boolean Car,
-			boolean Room) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean itinerary(int id, int customer, Vector<Integer> flightNumbers, String location, boolean car,
+			boolean room) throws RemoteException {
+		boolean available = true;
+
+		// Check if the itinerary is available
+		Map<Integer, Integer> requestedSeats = new HashMap<>();
+		for (Integer flightNumber : flightNumbers) {
+			if (!available) {
+				break;
+			}
+
+			// If there are duplicate flight numbers, check for the right amount of seats
+			int numSeatsRequested = 1;
+			if (requestedSeats.containsKey(flightNumber)) {
+				numSeatsRequested = requestedSeats.get(flightNumber) + 1;
+				requestedSeats.put(flightNumber, numSeatsRequested);
+			}
+
+			available &= flightManager.queryFlight(id, flightNumber) <= numSeatsRequested;
+		}
+
+		available &= available && car && carManager.queryCars(id, location) >= 1;
+		available &= available && room && hotelManager.queryRooms(id, location) >= 1;
+
+		// If the itinerary is available, proceed to the reservations
+		if (available) {
+			for (Integer flightNumber : flightNumbers) {
+				reserveFlight(id, customer, flightNumber);
+			}
+
+			if (car) {
+				reserveCar(id, customer, location);
+			}
+
+			if (room) {
+				reserveRoom(id, customer, location);
+			}
+		}
+
+		return true;
 	}
 
 }
