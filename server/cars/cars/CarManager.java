@@ -41,6 +41,6 @@ public interface CarManager extends Remote {
 	 * 
 	 * @return success
 	 */
-	public boolean releaseCars(int id, String location, int amount);
+	public boolean releaseCars(int id, String location, int amount) throws RemoteException;
 
 }

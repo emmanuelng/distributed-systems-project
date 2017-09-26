@@ -25,14 +25,14 @@ public interface CustomerManager extends Remote {
 	/**
 	 * Returns a bill.
 	 */
-	public String queryCustomerInfo(int id, int cid);
+	public String queryCustomerInfo(int id, int cid) throws RemoteException;
 
 	/**
 	 * Adds a reservation to a customer.
 	 * 
 	 * @return success
 	 */
-	public boolean reserve(int id, int cid, String itemId, int price);
+	public boolean reserve(int id, int cid, String itemId, int price) throws RemoteException;
 
 	/**
 	 * Returns an array containing all the customer's reservation in the form of
@@ -40,6 +40,6 @@ public interface CustomerManager extends Remote {
 	 * 
 	 * @return the array or <code>null</code> if the customer does not exist
 	 */
-	public String[] queryReservations(int id, int cid);
+	public String[] queryReservations(int id, int cid) throws RemoteException;
 
 }
