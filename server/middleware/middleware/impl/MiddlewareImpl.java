@@ -171,14 +171,11 @@ public class MiddlewareImpl implements Middleware {
 		boolean success = true;
 
 		// Release the items reserved by the customer, then remove the customer
-		String[] reservationsToRemove = customerManager.queryReservations(id, customer);
+		String[][] reservationsToRemove = customerManager.queryReservations(id, customer);
 
 		if (reservationsToRemove != null) {
-			for (String reservationStr : reservationsToRemove) {
-				// Split the reservation string
-				String[] reservation = reservationStr.split("/");
-
-				// A reservation string is formatted as "manager/itemId/amount"
+			for (String[] reservation : reservationsToRemove) {
+				// A reservation array has the format [manager, itemId, amount]
 				String managerName = reservation[0];
 				String itemId = reservation[1];
 				int amount = Integer.parseInt(reservation[2]);
@@ -241,7 +238,7 @@ public class MiddlewareImpl implements Middleware {
 	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException {
 		if (flightManager.reserveFlight(id, flightNumber)) {
 			int price = flightManager.queryFlightPrice(id, flightNumber);
-			return customerManager.reserve(id, customer, "flights/" + flightNumber, price);
+			return customerManager.reserve(id, customer, "flights", flightNumber + "", price);
 		}
 
 		return false;
@@ -251,7 +248,7 @@ public class MiddlewareImpl implements Middleware {
 	public boolean reserveCar(int id, int customer, String location) throws RemoteException {
 		if (carManager.reserveCar(id, location)) {
 			int price = carManager.queryCarsPrice(id, location);
-			return customerManager.reserve(id, customer, "cars/" + location, price);
+			return customerManager.reserve(id, customer, "cars", location, price);
 		}
 
 		return false;
@@ -261,7 +258,7 @@ public class MiddlewareImpl implements Middleware {
 	public boolean reserveRoom(int id, int customer, String location) throws RemoteException {
 		if (hotelManager.reserveRoom(id, location)) {
 			int price = hotelManager.queryRoomsPrice(id, location);
-			return customerManager.reserve(id, customer, "hotels/" + location, price);
+			return customerManager.reserve(id, customer, "hotels", location, price);
 		}
 
 		return false;

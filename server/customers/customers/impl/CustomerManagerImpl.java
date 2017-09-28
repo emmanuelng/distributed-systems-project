@@ -68,7 +68,7 @@ public class CustomerManagerImpl implements CustomerManager {
 	}
 
 	@Override
-	public boolean reserve(int id, int cid, String itemId, int price) {
+	public boolean reserve(int id, int cid, String manager, String itemId, int price) {
 		log("reserve(" + id + ", " + cid + ", " + itemId + ") called");
 
 		boolean success = true;
@@ -78,7 +78,7 @@ public class CustomerManagerImpl implements CustomerManager {
 			success = false;
 			log("reserve(" + id + ", " + cid + ", " + itemId + ") failed: customer does not exist");
 		} else {
-			customer.reserve(id, itemId, price);
+			customer.reserve(id, manager, itemId, price);
 			log("reserve(" + id + ", " + cid + ", " + itemId + ") succeeded");
 		}
 
@@ -86,10 +86,10 @@ public class CustomerManagerImpl implements CustomerManager {
 	}
 
 	@Override
-	public String[] queryReservations(int id, int cid) {
+	public String[][] queryReservations(int id, int cid) {
 		log("queryReservations(" + id + ", " + cid + ") called");
 
-		String[] reservations = null;
+		String[][] reservations = null;
 		Customer customer = customers.get(id, cid);
 
 		if (customer != null) {

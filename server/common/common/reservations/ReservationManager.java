@@ -17,8 +17,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	}
 
 	/**
-	 * Adds an item to the list of items. The key must be unique in the manager and
-	 * should not contain slashes "/".
+	 * Adds an item to the list of items. The key must be unique in the manager.
 	 * 
 	 * @see Middleware#deleteCustomer(int, int)
 	 * @return success

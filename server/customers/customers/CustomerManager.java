@@ -32,15 +32,15 @@ public interface CustomerManager extends Remote {
 	 * 
 	 * @return success
 	 */
-	public boolean reserve(int id, int cid, String itemId, int price) throws RemoteException;
+	public boolean reserve(int id, int cid, String manager, String itemId, int price) throws RemoteException;
 
 	/**
-	 * Returns an array containing all the customer's reservation in the form of
-	 * strings formatted as "manager/itemId/amount".
+	 * Returns an array containing all the customer's reservation in their array form.
+	 * A reservation array has the following format: [manager, itemId, amount].
 	 * 
 	 * @return the array or <code>null</code> if the customer does not exist
 	 */
-	public String[] queryReservations(int id, int cid) throws RemoteException;
+	public String[][] queryReservations(int id, int cid) throws RemoteException;
 	
 	/**
 	 * Removes all the reservations associated with the given item.
