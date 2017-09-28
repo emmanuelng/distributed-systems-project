@@ -69,17 +69,36 @@ public class CustomerManagerImpl implements CustomerManager {
 
 	@Override
 	public boolean reserve(int id, int cid, String manager, String itemId, int price) {
-		log("reserve(" + id + ", " + cid + ", " + itemId + ") called");
+		log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") called");
 
 		boolean success = true;
 		Customer customer = customers.get(id, cid);
 
 		if (customer == null) {
 			success = false;
-			log("reserve(" + id + ", " + cid + ", " + itemId + ") failed: customer does not exist");
+			log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") failed: customer does not exist");
 		} else {
 			customer.reserve(id, manager, itemId, price);
-			log("reserve(" + id + ", " + cid + ", " + itemId + ") succeeded");
+			log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") succeeded");
+		}
+
+		return success;
+	}
+
+	@Override
+	public boolean cancelReservation(int id, int cid, String manager, String itemId) {
+		log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId + ") called");
+
+		boolean success = true;
+		Customer customer = customers.get(id, cid);
+
+		if (customer == null) {
+			success = false;
+			log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId
+					+ ") failed: customer does not exist");
+		} else {
+			customer.cancelReservation(id, manager, itemId);
+			log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId + ") succeeded");
 		}
 
 		return success;
@@ -101,7 +120,7 @@ public class CustomerManagerImpl implements CustomerManager {
 
 	@Override
 	public void clearReservationsForItem(int id, String itemId) throws RemoteException {
-		for(Customer customer: customers.values()) {
+		for (Customer customer : customers.values()) {
 			customer.clearReservationsForItem(id, itemId);
 		}
 	}

@@ -17,13 +17,13 @@ public class Customer {
 			this.amount = 1;
 			this.price = price;
 		}
-		
+
 		/**
-		 * Returns the reservation as an array of String. The format is
-		 * [manager, itemId, amount].
+		 * Returns the reservation as an array of String. The format is [manager,
+		 * itemId, amount].
 		 */
 		public String[] toArray() {
-			String[] array = {manager, itemId, amount + ""};
+			String[] array = { manager, itemId, amount + "" };
 			return array;
 		}
 
@@ -44,14 +44,26 @@ public class Customer {
 	 * Reserves one instance of the given item.
 	 */
 	public synchronized void reserve(int id, String manager, String itemId, int price) {
-		Reservation reservation = reservations.get(itemId);
+		String itemKey = manager + "/" + itemId;
+		Reservation reservation = reservations.get(itemKey);
 
 		if (reservation == null) {
 			// Create a unique key to access the item quickly in the hash table
-			String uniqueKey = manager + "/" + itemId;
-			reservations.put(uniqueKey, new Reservation(manager, itemId, price));
+			reservations.put(itemKey, new Reservation(manager, itemId, price));
 		} else {
 			reservation.amount++;
+		}
+
+	}
+
+	public synchronized void cancelReservation(int id, String manager, String itemId) {
+		String itemKey = manager + "/" + itemId;
+		Reservation reservation = reservations.get(itemKey);
+
+		if (reservation != null) {
+			if (reservation.amount-- == 0) {
+				reservations.remove(itemKey);
+			}
 		}
 
 	}

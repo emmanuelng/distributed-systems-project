@@ -7,8 +7,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 
 import cars.CarManager;
@@ -267,46 +265,53 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean itinerary(int id, int customer, Vector<Object> flightNumbers, String location, boolean car,
 			boolean room) throws RemoteException {
-		boolean available = true;
+		boolean success = true;
 
-		// Check if the itinerary is available
-		Map<Integer, Integer> requestedSeats = new HashMap<>();
-		for (Object flightNumberObj : flightNumbers) {
-			if (!available) {
-				break;
-			}
+		Vector<Object> reservedFlights = new Vector<>();
+		boolean carReserved = false, roomReserved = false;
 
-			int flightNumber = (Integer) flightNumberObj;
-
-			// If there are duplicate flight numbers, check for the right amount of seats
-			int numSeatsRequested = 1;
-			if (requestedSeats.containsKey(flightNumber)) {
-				numSeatsRequested = requestedSeats.get(flightNumber) + 1;
-				requestedSeats.put(flightNumber, numSeatsRequested);
-			}
-
-			available &= flightManager.queryFlight(id, flightNumber) <= numSeatsRequested;
-		}
-
-		available &= available && car && carManager.queryCars(id, location) >= 1;
-		available &= available && room && hotelManager.queryRooms(id, location) >= 1;
-
-		// If the itinerary is available, proceed to the reservations
-		if (available) {
-			for (Object flightNumberObj : flightNumbers) {
-				reserveFlight(id, customer, (Integer) flightNumberObj);
-			}
-
-			if (car) {
-				reserveCar(id, customer, location);
-			}
-
-			if (room) {
-				reserveRoom(id, customer, location);
+		for (Object flightNumber : flightNumbers) {
+			if (!reserveFlight(id, customer, (int) flightNumber)) {
+				success = false;
+			} else {
+				reservedFlights.add(flightNumber);
 			}
 		}
 
-		return true;
+		if (success && car) {
+			if (reserveCar(id, customer, location)) {
+				carReserved = true;
+			} else {
+				success = false;
+			}
+		}
+
+		if (success && room) {
+			if (reserveRoom(id, customer, location)) {
+				roomReserved = true;
+			} else {
+				success = false;
+			}
+		}
+
+		if (!success) {
+			for (Object flightNumber : reservedFlights) {
+				flightManager.releaseSeats(id, (int) flightNumber, 1);
+				customerManager.cancelReservation(id, customer, "flights", flightNumber.toString());
+			}
+
+			if (carReserved) {
+				carManager.releaseCars(id, location, 1);
+				customerManager.cancelReservation(id, customer, "cars", location);
+			}
+
+			if (roomReserved) {
+				hotelManager.releaseRoom(id, location, 1);
+				customerManager.cancelReservation(id, customer, "hotels", location);
+			}
+		}
+
+		return success;
 	}
 
 }
