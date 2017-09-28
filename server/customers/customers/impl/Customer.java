@@ -8,12 +8,23 @@ public class Customer {
 
 	private class Reservation {
 
+		private String manager;
+		private String itemId;
 		private int amount;
 		private int price;
 
-		Reservation(int price) {
+		Reservation(String manager, String itemId, int price) {
 			this.amount = 1;
 			this.price = price;
+		}
+
+		/**
+		 * Returns the reservation as an array of String. The format is [manager,
+		 * itemId, amount].
+		 */
+		public String[] toArray() {
+			String[] array = { manager, itemId, amount + "" };
+			return array;
 		}
 
 	};
@@ -32,27 +43,42 @@ public class Customer {
 	/**
 	 * Reserves one instance of the given item.
 	 */
-	public synchronized void reserve(int id, String itemId, int price) {
-		Reservation reservation = reservations.get(itemId);
+	public synchronized void reserve(int id, String manager, String itemId, int price) {
+		String itemKey = manager + "/" + itemId;
+		Reservation reservation = reservations.get(itemKey);
 
 		if (reservation == null) {
-			reservations.put(itemId, new Reservation(price));
+			// Create a unique key to access the item quickly in the hash table
+			reservations.put(itemKey, new Reservation(manager, itemId, price));
 		} else {
 			reservation.amount++;
 		}
 
 	}
 
+	public synchronized void cancelReservation(int id, String manager, String itemId) {
+		String itemKey = manager + "/" + itemId;
+		Reservation reservation = reservations.get(itemKey);
+
+		if (reservation != null) {
+			if (reservation.amount-- == 0) {
+				reservations.remove(itemKey);
+			}
+		}
+
+	}
+
 	/**
-	 * Returns all the reservations of the customer as an array of strings formatted
-	 * in the following way: "manager/itemId/amount".
+	 * Returns an array containing all the reservations in their array form
+	 * 
+	 * @see Reservation#toArray()
 	 */
-	public String[] getReservations() {
-		String[] array = new String[reservations.size()];
+	public String[][] getReservations() {
+		String[][] array = new String[reservations.size()][3];
 		int i = 0;
 
-		for (Entry<String, Reservation> entry : reservations.entrySet()) {
-			array[i] = entry.getKey() + "/" + entry.getValue().amount;
+		for (Reservation r : reservations.values()) {
+			array[i] = r.toArray();
 			i++;
 		}
 

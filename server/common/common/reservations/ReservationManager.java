@@ -17,8 +17,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	}
 
 	/**
-	 * Adds an item to the list of items. The key must be unique in the manager and
-	 * should not contain slashes "/".
+	 * Adds an item to the list of items. The key must be unique in the manager.
 	 * 
 	 * @see Middleware#deleteCustomer(int, int)
 	 * @return success
@@ -150,6 +149,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 			log("reserveItem(" + id + ", " + key + ") failed: the requested item does not exist");
 		} else if (item.getCount() == 0) {
 			log("reserveItem(" + id + ", " + key + ") failed: no more items");
+			success = false;
 		} else {
 			item.setCount(item.getCount() - 1);
 			item.setReserved(item.getReserved() + 1);

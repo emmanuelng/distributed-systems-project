@@ -7,8 +7,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 
 import cars.CarManager;
@@ -171,14 +169,11 @@ public class MiddlewareImpl implements Middleware {
 		boolean success = true;
 
 		// Release the items reserved by the customer, then remove the customer
-		String[] reservationsToRemove = customerManager.queryReservations(id, customer);
+		String[][] reservationsToRemove = customerManager.queryReservations(id, customer);
 
 		if (reservationsToRemove != null) {
-			for (String reservationStr : reservationsToRemove) {
-				// Split the reservation string
-				String[] reservation = reservationStr.split("/");
-
-				// A reservation string is formatted as "manager/itemId/amount"
+			for (String[] reservation : reservationsToRemove) {
+				// A reservation array has the format [manager, itemId, amount]
 				String managerName = reservation[0];
 				String itemId = reservation[1];
 				int amount = Integer.parseInt(reservation[2]);
@@ -241,7 +236,7 @@ public class MiddlewareImpl implements Middleware {
 	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException {
 		if (flightManager.reserveFlight(id, flightNumber)) {
 			int price = flightManager.queryFlightPrice(id, flightNumber);
-			return customerManager.reserve(id, customer, "flights/" + flightNumber, price);
+			return customerManager.reserve(id, customer, "flights", flightNumber + "", price);
 		}
 
 		return false;
@@ -251,7 +246,7 @@ public class MiddlewareImpl implements Middleware {
 	public boolean reserveCar(int id, int customer, String location) throws RemoteException {
 		if (carManager.reserveCar(id, location)) {
 			int price = carManager.queryCarsPrice(id, location);
-			return customerManager.reserve(id, customer, "cars/" + location, price);
+			return customerManager.reserve(id, customer, "cars", location, price);
 		}
 
 		return false;
@@ -261,7 +256,7 @@ public class MiddlewareImpl implements Middleware {
 	public boolean reserveRoom(int id, int customer, String location) throws RemoteException {
 		if (hotelManager.reserveRoom(id, location)) {
 			int price = hotelManager.queryRoomsPrice(id, location);
-			return customerManager.reserve(id, customer, "hotels/" + location, price);
+			return customerManager.reserve(id, customer, "hotels", location, price);
 		}
 
 		return false;
@@ -270,46 +265,53 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean itinerary(int id, int customer, Vector<Object> flightNumbers, String location, boolean car,
 			boolean room) throws RemoteException {
-		boolean available = true;
+		boolean success = true;
 
-		// Check if the itinerary is available
-		Map<Integer, Integer> requestedSeats = new HashMap<>();
-		for (Object flightNumberObj : flightNumbers) {
-			if (!available) {
-				break;
-			}
+		Vector<Object> reservedFlights = new Vector<>();
+		boolean carReserved = false, roomReserved = false;
 
-			int flightNumber = (Integer) flightNumberObj;
-
-			// If there are duplicate flight numbers, check for the right amount of seats
-			int numSeatsRequested = 1;
-			if (requestedSeats.containsKey(flightNumber)) {
-				numSeatsRequested = requestedSeats.get(flightNumber) + 1;
-				requestedSeats.put(flightNumber, numSeatsRequested);
-			}
-
-			available &= flightManager.queryFlight(id, flightNumber) <= numSeatsRequested;
-		}
-
-		available &= available && car && carManager.queryCars(id, location) >= 1;
-		available &= available && room && hotelManager.queryRooms(id, location) >= 1;
-
-		// If the itinerary is available, proceed to the reservations
-		if (available) {
-			for (Object flightNumberObj : flightNumbers) {
-				reserveFlight(id, customer, (Integer) flightNumberObj);
-			}
-
-			if (car) {
-				reserveCar(id, customer, location);
-			}
-
-			if (room) {
-				reserveRoom(id, customer, location);
+		for (Object flightNumber : flightNumbers) {
+			if (!reserveFlight(id, customer, Integer.parseInt((String) flightNumber))) {
+				success = false;
+			} else {
+				reservedFlights.add(flightNumber);
 			}
 		}
 
-		return true;
+		if (success && car) {
+			if (reserveCar(id, customer, location)) {
+				carReserved = true;
+			} else {
+				success = false;
+			}
+		}
+
+		if (success && room) {
+			if (reserveRoom(id, customer, location)) {
+				roomReserved = true;
+			} else {
+				success = false;
+			}
+		}
+
+		if (!success) {
+			for (Object flightNumber : reservedFlights) {
+				flightManager.releaseSeats(id, (int) flightNumber, 1);
+				customerManager.cancelReservation(id, customer, "flights", (String) flightNumber);
+			}
+
+			if (carReserved) {
+				carManager.releaseCars(id, location, 1);
+				customerManager.cancelReservation(id, customer, "cars", location);
+			}
+
+			if (roomReserved) {
+				hotelManager.releaseRoom(id, location, 1);
+				customerManager.cancelReservation(id, customer, "hotels", location);
+			}
+		}
+
+		return success;
 	}
 
 }
