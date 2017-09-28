@@ -271,7 +271,7 @@ public class MiddlewareImpl implements Middleware {
 		boolean carReserved = false, roomReserved = false;
 
 		for (Object flightNumber : flightNumbers) {
-			if (!reserveFlight(id, customer, (int) flightNumber)) {
+			if (!reserveFlight(id, customer, Integer.parseInt((String) flightNumber))) {
 				success = false;
 			} else {
 				reservedFlights.add(flightNumber);
@@ -297,7 +297,7 @@ public class MiddlewareImpl implements Middleware {
 		if (!success) {
 			for (Object flightNumber : reservedFlights) {
 				flightManager.releaseSeats(id, (int) flightNumber, 1);
-				customerManager.cancelReservation(id, customer, "flights", flightNumber.toString());
+				customerManager.cancelReservation(id, customer, "flights", (String) flightNumber);
 			}
 
 			if (carReserved) {
