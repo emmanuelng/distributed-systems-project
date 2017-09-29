@@ -10,14 +10,18 @@ import java.net.Socket;
 
 import network.common.MethodInvocation;
 
-public abstract class RMIServer {
+public class RMIServer {
+	
+	public static RMIServer newServer(Object object, int port) {
+		return new RMIServer(object, port);
+	}
 
 	private boolean running = false;
 	private ServerSocket registrySocket, rmiSocket;
 	private Object proxyObject;
 	private Object object;
 
-	public RMIServer(int port, Object object) {
+	private RMIServer(Object object, int port) {
 		try {
 			this.registrySocket = new ServerSocket(port);
 			this.rmiSocket = new ServerSocket(0); // Use any free port

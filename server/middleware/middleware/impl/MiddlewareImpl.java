@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 import java.util.Vector;
 
 import cars.CarManager;
+import cars.impl.CarManagerImpl;
 import customers.CustomerManager;
 import customers.impl.CustomerManagerImpl;
 import flights.FlightManager;
@@ -54,9 +55,8 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 		FlightManager flightManager = (FlightManager) getResourceManagerProxy(servers[1], ports[1]);
 		HotelManager hotelManager = (HotelManager) getResourceManagerProxy(servers[2], ports[2]);
 
-		// Create a new server object and dynamically generate the stub (client proxy)
-		MiddlewareImpl mi = new MiddlewareImpl(carManager, flightManager, hotelManager, port);
-		mi.start();
+		RMIServer server = RMIServer.newServer(new MiddlewareImpl(carManager, flightManager, hotelManager), port);
+		server.start();
 	}
 
 	private static Object getResourceManagerProxy(String host, int port) {
@@ -84,8 +84,8 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 	private HotelManager hotelManager;
 	private CustomerManager customerManager;
 
-	public MiddlewareImpl(CarManager carManager, FlightManager flightManager, HotelManager hotelManager, int port) {
-		super(port);
+	public MiddlewareImpl(CarManager carManager, FlightManager flightManager, HotelManager hotelManager) {
+		super();
 
 		this.carManager = carManager;
 		this.flightManager = flightManager;

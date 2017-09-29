@@ -1,7 +1,9 @@
 package flights.impl;
 
+import cars.impl.CarManagerImpl;
 import common.reservations.ReservationManager;
 import flights.FlightManager;
+import network.server.RMIServer;
 
 public class FlightManagerImpl extends ReservationManager<Flight> implements FlightManager {
 
@@ -15,12 +17,12 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 			System.exit(1);
 		}
 
-		FlightManagerImpl fm = new FlightManagerImpl(port);
-		fm.start();
+		RMIServer server = RMIServer.newServer(new FlightManagerImpl(), port);
+		server.start();
 	}
 
-	private FlightManagerImpl(int port) {
-		super(port);
+	private FlightManagerImpl() {
+		super();
 	}
 
 	@Override

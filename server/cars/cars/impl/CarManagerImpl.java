@@ -2,6 +2,7 @@ package cars.impl;
 
 import cars.CarManager;
 import common.reservations.ReservationManager;
+import network.server.RMIServer;
 
 public class CarManagerImpl extends ReservationManager<Car> implements CarManager {
 
@@ -15,15 +16,15 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 			System.exit(1);
 		}
 
-		CarManagerImpl cm = new CarManagerImpl(port);
-		cm.start();
+		RMIServer server = RMIServer.newServer(new CarManagerImpl(), port);
+		server.start();
 	}
 
 	/**
 	 * Builds a new {@link CarManagerImpl}.
 	 */
-	public CarManagerImpl(int port) {
-		super(port);
+	public CarManagerImpl() {
+		super();
 	}
 
 	@Override
