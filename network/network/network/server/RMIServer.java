@@ -34,7 +34,7 @@ public class RMIServer {
 		// Initialize the proxy object
 		String rmiHost = rmiSocket.getInetAddress().getHostAddress();
 		int rmiPort = rmiSocket.getLocalPort();
-		this.proxyObject = ProxyObjectHandler.generateProxyObj(rmiHost, rmiPort, this);
+		this.proxyObject = ProxyObjectHandler.generateProxyObj(rmiHost, rmiPort, object);
 	}
 
 	public void start() {
