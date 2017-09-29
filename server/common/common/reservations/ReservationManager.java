@@ -1,7 +1,6 @@
 package common.reservations;
 
 import common.data.RMHashtable;
-import middleware.Middleware;
 
 public abstract class ReservationManager<R extends ReservableItem> {
 
