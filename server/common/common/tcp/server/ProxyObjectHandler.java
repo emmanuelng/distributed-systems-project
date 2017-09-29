@@ -2,6 +2,7 @@ package common.tcp.server;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -9,7 +10,9 @@ import java.net.Socket;
 
 import common.tcp.client.MethodInvocation;
 
-public class ProxyObjectHandler implements InvocationHandler {
+public class ProxyObjectHandler implements InvocationHandler, Serializable {
+
+	private static final long serialVersionUID = 8693829967258722091L;
 
 	public static Object generateProxyObj(String rmiServerHost, int rmiServerPort, Object object) {
 		ClassLoader cl = object.getClass().getClassLoader();
