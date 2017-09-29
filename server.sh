@@ -25,6 +25,7 @@ if [ $# -gt 0 ]; then
 		# Comment the following line if the customers are handled in a separate server.
 		export CLASSPATH=$CLASSPATH:$DIR/server/customers/
 		export CLASSPATH=$CLASSPATH:$DIR/server/common/
+		export CLASSPATH=$CLASSPATH:$DIR/server/Network.jar
 		export CLASSPATH=$CLASSPATH:$DIR/server/middleware/CarManagerInterface.jar
 		export CLASSPATH=$CLASSPATH:$DIR/server/middleware/FlightManagerInterface.jar
 		export CLASSPATH=$CLASSPATH:$DIR/server/middleware/HotelManagerInterface.jar
@@ -37,6 +38,7 @@ if [ $# -gt 0 ]; then
 		grant_access server/cars/
 		export CLASSPATH=$DIR/server/cars/
 		export CLASSPATH=$CLASSPATH:$DIR/server/common/
+		export CLASSPATH=$CLASSPATH:$DIR/server/Network.jar
 		java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/cars/ cars.impl.CarManagerImpl ${@:2}
 	elif [ $1 == "flights" ]; then
 		echo "Launching flight manager..."
@@ -44,6 +46,7 @@ if [ $# -gt 0 ]; then
 		grant_access server/flights/
 		export CLASSPATH=$DIR/server/flights/
                 export CLASSPATH=$CLASSPATH:$DIR/server/common/
+		export CLASSPATH=$CLASSPATH:$DIR/server/Network.jar
 		java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/flights/ flights.impl.FlightManagerImpl ${@:2}
 	elif [ $1 == "hotels" ]; then
 		echo "Launching hotel manager..."
@@ -51,6 +54,7 @@ if [ $# -gt 0 ]; then
 		grant_access server/hotels/
 		export CLASSPATH=$DIR/server/hotels/
                 export CLASSPATH=$CLASSPATH:$DIR/server/common/
+		export CLASSPATH=$CLASSPATH:$DIR/server/Network.jar
 		java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/server/hotels/ hotels.impl.HotelManagerImpl ${@:2}
 	else
 		error_msg
