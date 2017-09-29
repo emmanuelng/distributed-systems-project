@@ -105,11 +105,12 @@ public abstract class RMIServer {
 
 					while (running) {
 						MethodInvocation mi = (MethodInvocation) in.readObject();
-						Method method = Class.forName(className).getMethod(mi.methodName(), mi.parameterTypes());
 						System.out.println("[RMI]" + className + "::" + mi.methodName() + " called");
 
+						Method method = Class.forName(className).getMethod(mi.methodName(), mi.parameterTypes());
 						Object result = method.invoke(this, mi.args());
 						System.out.println("[RMI] Returning " + result);
+
 						out.writeObject(result);
 					}
 
