@@ -16,6 +16,7 @@ function grant_access {
 
 export CLASSPATH=$CLASSPATH:$DIR/client/
 export CLASSPATH=$CLASSPATH:$DIR/client/MiddlewareInterface.jar
+export CLASSPATH=$CLASSPATH:$DIR/client/Network.jar
 
 if [ $# -eq 2 ]; then
 	cd $DIR/client/src/
