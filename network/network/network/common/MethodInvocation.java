@@ -1,4 +1,4 @@
-package common.tcp.client;
+package network.common;
 
 import java.io.NotSerializableException;
 import java.io.Serializable;

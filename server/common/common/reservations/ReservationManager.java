@@ -1,7 +1,7 @@
 package common.reservations;
 
 import common.data.RMHashtable;
-import common.tcp.server.RMIServer;
+import network.server.RMIServer;
 
 public abstract class ReservationManager<R extends ReservableItem> extends RMIServer {
 

@@ -1,4 +1,4 @@
-package common.tcp.server;
+package network.server;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.Socket;
 
-import common.tcp.client.MethodInvocation;
+import network.common.MethodInvocation;
 
 public class ProxyObjectHandler implements InvocationHandler, Serializable {
 

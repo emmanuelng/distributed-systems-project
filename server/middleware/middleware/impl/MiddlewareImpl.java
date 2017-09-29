@@ -7,12 +7,12 @@ import java.rmi.RemoteException;
 import java.util.Vector;
 
 import cars.CarManager;
-import common.tcp.server.RMIServer;
 import customers.CustomerManager;
 import customers.impl.CustomerManagerImpl;
 import flights.FlightManager;
 import hotels.HotelManager;
 import middleware.Middleware;
+import network.server.RMIServer;
 
 /**
  * Implementation of the {@link Middleware} interface.

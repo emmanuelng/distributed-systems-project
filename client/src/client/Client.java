@@ -7,6 +7,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import middleware.Middleware;
+import network.client.RMIClient;
 
 public class Client extends RMIClient {
 

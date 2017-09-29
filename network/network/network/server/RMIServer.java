@@ -1,4 +1,4 @@
-package common.tcp.server;
+package network.server;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import common.tcp.client.MethodInvocation;
+import network.common.MethodInvocation;
 
 public abstract class RMIServer {
 
