@@ -15,11 +15,13 @@ public abstract class RMIServer {
 	private boolean running = false;
 	private ServerSocket registrySocket, rmiSocket;
 	private Object proxyObject;
+	private Object object;
 
-	public RMIServer(int port) {
+	public RMIServer(int port, Object object) {
 		try {
 			this.registrySocket = new ServerSocket(port);
 			this.rmiSocket = new ServerSocket(0); // Use any free port
+			this.object = object;
 		} catch (IOException e) {
 			System.err.println("Unable to initialize the server: Port " + port + " is used.");
 			System.exit(1);
@@ -101,14 +103,14 @@ public abstract class RMIServer {
 				try {
 					ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 					ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-					String className = this.getClass().getName();
+					String className = object.getClass().getName();
 
 					while (running) {
 						MethodInvocation mi = (MethodInvocation) in.readObject();
 						System.out.println("[RMI]" + className + "::" + mi.methodName() + " called");
 
 						Method method = Class.forName(className).getMethod(mi.methodName(), mi.parameterTypes());
-						Object result = method.invoke(this, mi.args());
+						Object result = method.invoke(object, mi.args());
 						System.out.println("[RMI] Returning " + result);
 
 						out.writeObject(result);
