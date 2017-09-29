@@ -96,17 +96,17 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 	}
 
 	@Override
-	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException {
+	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) {
 		return flightManager.addFlight(id, flightNum, flightSeats, flightPrice);
 	}
 
 	@Override
-	public boolean addCars(int id, String location, int numCars, int price) throws RemoteException {
+	public boolean addCars(int id, String location, int numCars, int price) {
 		return carManager.addCars(id, location, numCars, price);
 	}
 
 	@Override
-	public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException {
+	public boolean addRooms(int id, String location, int numRooms, int price) {
 		return hotelManager.addRooms(id, location, numRooms, price);
 	}
 
@@ -116,27 +116,27 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 	}
 
 	@Override
-	public boolean newCustomer(int id, int cid) throws RemoteException {
+	public boolean newCustomer(int id, int cid) {
 		return customerManager.newCustomer(id, cid);
 	}
 
 	@Override
-	public boolean deleteFlight(int id, int flightNum) throws RemoteException {
+	public boolean deleteFlight(int id, int flightNum) {
 		return flightManager.deleteFlight(id, flightNum);
 	}
 
 	@Override
-	public boolean deleteCars(int id, String location) throws RemoteException {
+	public boolean deleteCars(int id, String location) {
 		return carManager.deleteCars(id, location);
 	}
 
 	@Override
-	public boolean deleteRooms(int id, String location) throws RemoteException {
+	public boolean deleteRooms(int id, String location) {
 		return hotelManager.deleteRooms(id, location);
 	}
 
 	@Override
-	public boolean deleteCustomer(int id, int customer) throws RemoteException {
+	public boolean deleteCustomer(int id, int customer) {
 		boolean success = true;
 
 		// Release the items reserved by the customer, then remove the customer
@@ -169,42 +169,42 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 	}
 
 	@Override
-	public int queryFlight(int id, int flightNumber) throws RemoteException {
+	public int queryFlight(int id, int flightNumber) {
 		return flightManager.queryFlight(id, flightNumber);
 	}
 
 	@Override
-	public int queryCars(int id, String location) throws RemoteException {
+	public int queryCars(int id, String location) {
 		return carManager.queryCars(id, location);
 	}
 
 	@Override
-	public int queryRooms(int id, String location) throws RemoteException {
+	public int queryRooms(int id, String location) {
 		return hotelManager.queryRooms(id, location);
 	}
 
 	@Override
-	public String queryCustomerInfo(int id, int customer) throws RemoteException {
+	public String queryCustomerInfo(int id, int customer) {
 		return customerManager.queryCustomerInfo(id, customer);
 	}
 
 	@Override
-	public int queryFlightPrice(int id, int flightNumber) throws RemoteException {
+	public int queryFlightPrice(int id, int flightNumber) {
 		return flightManager.queryFlightPrice(id, flightNumber);
 	}
 
 	@Override
-	public int queryCarsPrice(int id, String location) throws RemoteException {
+	public int queryCarsPrice(int id, String location) {
 		return carManager.queryCarsPrice(id, location);
 	}
 
 	@Override
-	public int queryRoomsPrice(int id, String location) throws RemoteException {
+	public int queryRoomsPrice(int id, String location) {
 		return hotelManager.queryRoomsPrice(id, location);
 	}
 
 	@Override
-	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException {
+	public boolean reserveFlight(int id, int customer, int flightNumber) {
 		if (flightManager.reserveFlight(id, flightNumber)) {
 			int price = flightManager.queryFlightPrice(id, flightNumber);
 			return customerManager.reserve(id, customer, "flights", flightNumber + "", price);
@@ -214,7 +214,7 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 	}
 
 	@Override
-	public boolean reserveCar(int id, int customer, String location) throws RemoteException {
+	public boolean reserveCar(int id, int customer, String location) {
 		if (carManager.reserveCar(id, location)) {
 			int price = carManager.queryCarsPrice(id, location);
 			return customerManager.reserve(id, customer, "cars", location, price);
@@ -224,7 +224,7 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 	}
 
 	@Override
-	public boolean reserveRoom(int id, int customer, String location) throws RemoteException {
+	public boolean reserveRoom(int id, int customer, String location) {
 		if (hotelManager.reserveRoom(id, location)) {
 			int price = hotelManager.queryRoomsPrice(id, location);
 			return customerManager.reserve(id, customer, "hotels", location, price);
@@ -235,7 +235,7 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 
 	@Override
 	public boolean itinerary(int id, int customer, Vector<Object> flightNumbers, String location, boolean car,
-			boolean room) throws RemoteException {
+			boolean room) {
 		boolean success = true;
 
 		Vector<Object> reservedFlights = new Vector<>();

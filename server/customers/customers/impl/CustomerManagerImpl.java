@@ -1,6 +1,5 @@
 package customers.impl;
 
-import java.rmi.RemoteException;
 import java.util.Calendar;
 
 import common.data.RMHashtable;
@@ -119,7 +118,7 @@ public class CustomerManagerImpl implements CustomerManager {
 	}
 
 	@Override
-	public void clearReservationsForItem(int id, String itemId) throws RemoteException {
+	public void clearReservationsForItem(int id, String itemId) {
 		for (Customer customer : customers.values()) {
 			customer.clearReservationsForItem(id, itemId);
 		}

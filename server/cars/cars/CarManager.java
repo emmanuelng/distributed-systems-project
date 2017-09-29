@@ -1,7 +1,6 @@
 package cars;
 
 import java.rmi.Remote;
-import java.rmi.RemoteException;
 
 public interface CarManager extends Remote {
 
@@ -9,7 +8,7 @@ public interface CarManager extends Remote {
 	 * Add cars to a location. This should look a lot like addFlight, only keyed on
 	 * a string location instead of a flight number.
 	 */
-	public boolean addCars(int id, String location, int numCars, int price) throws RemoteException;
+	public boolean addCars(int id, String location, int numCars, int price);
 
 	/**
 	 * Deletes all Cars from a location. It may not succeed if there are
@@ -17,30 +16,30 @@ public interface CarManager extends Remote {
 	 *
 	 * @return success
 	 */
-	public boolean deleteCars(int id, String location) throws RemoteException;
+	public boolean deleteCars(int id, String location);
 
 	/**
 	 * Return the number of cars available at a location.
 	 */
-	public int queryCars(int id, String location) throws RemoteException;
+	public int queryCars(int id, String location);
 
 	/**
 	 * Returns the price of a car at a location.
 	 */
-	public int queryCarsPrice(int id, String location) throws RemoteException;
+	public int queryCarsPrice(int id, String location);
 
 	/**
 	 * Reserves a car at this location.
 	 * 
 	 * @return success
 	 */
-	public boolean reserveCar(int id, String location) throws RemoteException;
+	public boolean reserveCar(int id, String location);
 
 	/**
 	 * Releases previously reserved cars.
 	 * 
 	 * @return success
 	 */
-	public boolean releaseCars(int id, String location, int amount) throws RemoteException;
+	public boolean releaseCars(int id, String location, int amount);
 
 }

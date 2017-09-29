@@ -1,38 +1,37 @@
 package customers;
 
 import java.rmi.Remote;
-import java.rmi.RemoteException;
 
 public interface CustomerManager extends Remote {
 
 	/**
 	 * Returns a unique customer identifier.
 	 */
-	public int newCustomer(int id) throws RemoteException;
+	public int newCustomer(int id);
 
 	/**
 	 * New customer with providing id.
 	 */
-	public boolean newCustomer(int id, int cid) throws RemoteException;
+	public boolean newCustomer(int id, int cid);
 
 	/**
 	 * Removes the customer and associated reservations.
 	 * 
 	 * @return success
 	 */
-	public boolean deleteCustomer(int id, int cid) throws RemoteException;
+	public boolean deleteCustomer(int id, int cid);
 
 	/**
 	 * Returns a bill.
 	 */
-	public String queryCustomerInfo(int id, int cid) throws RemoteException;
+	public String queryCustomerInfo(int id, int cid);
 
 	/**
 	 * Adds a reservation to a customer.
 	 * 
 	 * @return success
 	 */
-	public boolean reserve(int id, int cid, String manager, String itemId, int price) throws RemoteException;
+	public boolean reserve(int id, int cid, String manager, String itemId, int price);
 
 	/**
 	 * Cancels a reservation.
@@ -48,11 +47,11 @@ public interface CustomerManager extends Remote {
 	 * 
 	 * @return the array or <code>null</code> if the customer does not exist
 	 */
-	public String[][] queryReservations(int id, int cid) throws RemoteException;
+	public String[][] queryReservations(int id, int cid);
 
 	/**
 	 * Removes all the reservations associated with the given item.
 	 */
-	public void clearReservationsForItem(int id, String itemId) throws RemoteException;
+	public void clearReservationsForItem(int id, String itemId);
 
 }

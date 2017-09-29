@@ -1,7 +1,5 @@
 package flights.impl;
 
-import java.rmi.RemoteException;
-
 import common.reservations.ReservationManager;
 import flights.FlightManager;
 
@@ -57,7 +55,7 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 	}
 
 	@Override
-	public boolean releaseSeats(int id, int flightNumber, int amount) throws RemoteException {
+	public boolean releaseSeats(int id, int flightNumber, int amount) {
 		return increaseItemCount(id, Integer.toString(flightNumber), amount, 0);
 	}
 
