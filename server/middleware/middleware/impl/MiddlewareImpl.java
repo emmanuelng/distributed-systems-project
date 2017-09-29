@@ -7,7 +7,6 @@ import java.rmi.RemoteException;
 import java.util.Vector;
 
 import cars.CarManager;
-import cars.impl.CarManagerImpl;
 import customers.CustomerManager;
 import customers.impl.CustomerManagerImpl;
 import flights.FlightManager;
@@ -18,7 +17,7 @@ import network.server.RMIServer;
 /**
  * Implementation of the {@link Middleware} interface.
  */
-public class MiddlewareImpl extends RMIServer implements Middleware {
+public class MiddlewareImpl implements Middleware {
 
 	public static void main(String[] args) {
 		// Figure out where server is running
@@ -85,8 +84,6 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 	private CustomerManager customerManager;
 
 	public MiddlewareImpl(CarManager carManager, FlightManager flightManager, HotelManager hotelManager) {
-		super();
-
 		this.carManager = carManager;
 		this.flightManager = flightManager;
 		this.hotelManager = hotelManager;

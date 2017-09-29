@@ -2,6 +2,7 @@ package hotels.impl;
 
 import common.reservations.ReservationManager;
 import hotels.HotelManager;
+import network.server.RMIServer;
 
 public class HotelManagerImpl extends ReservationManager<Hotel> implements HotelManager {
 
@@ -15,12 +16,12 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 			System.exit(1);
 		}
 
-		HotelManagerImpl hm = new HotelManagerImpl(port);
-		hm.start();
+		RMIServer server = RMIServer.newServer(new HotelManagerImpl(), port);
+		server.start();
 	}
 
-	public HotelManagerImpl(int port) {
-		super(port);
+	public HotelManagerImpl() {
+		super();
 	}
 
 	@Override
