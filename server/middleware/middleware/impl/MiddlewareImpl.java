@@ -38,7 +38,7 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 			servers[1] = args[1];
 			servers[2] = args[2];
 
-			if (args.length <= 6) {
+			if (args.length >= 6) {
 				ports[0] = Integer.parseInt(args[3]);
 				ports[1] = Integer.parseInt(args[4]);
 				ports[2] = Integer.parseInt(args[5]);
@@ -61,6 +61,7 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 
 	private static Object getResourceManagerProxy(String host, int port) {
 		Object proxyObj = null;
+		System.out.println("[Middleware] Connecting to " + host + ":" + port + "...");		
 
 		try {
 			Socket socket = new Socket(host, port);
