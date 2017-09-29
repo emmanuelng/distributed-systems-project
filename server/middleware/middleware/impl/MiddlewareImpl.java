@@ -6,10 +6,10 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.Vector;
 
 import cars.CarManager;
+import common.tcp.server.RMIServer;
 import customers.CustomerManager;
 import customers.impl.CustomerManagerImpl;
 import flights.FlightManager;
@@ -20,7 +20,7 @@ import middleware.Middleware;
  * Implementation of the {@link Middleware} interface.
  */
 @SuppressWarnings("deprecation")
-public class MiddlewareImpl implements Middleware {
+public class MiddlewareImpl extends RMIServer implements Middleware {
 
 	public static void main(String[] args) {
 		// Figure out where server is running
@@ -59,12 +59,8 @@ public class MiddlewareImpl implements Middleware {
 			HotelManager hotelManager = (HotelManager) lookup(servers[2], ports[2], "hotels.group20");
 
 			// Create a new server object and dynamically generate the stub (client proxy)
-			MiddlewareImpl obj = new MiddlewareImpl(carManager, flightManager, hotelManager);
-			Middleware proxyObj = (Middleware) UnicastRemoteObject.exportObject(obj, 0);
-
-			// Bind the remote object's stub in the registry
-			Registry registry = LocateRegistry.getRegistry(port);
-			registry.rebind("middleware.group20", proxyObj);
+			MiddlewareImpl mi = new MiddlewareImpl(carManager, flightManager, hotelManager, port);
+			mi.start();
 
 			System.out.println("Server ready");
 		} catch (Exception e) {
@@ -115,7 +111,9 @@ public class MiddlewareImpl implements Middleware {
 	private HotelManager hotelManager;
 	private CustomerManager customerManager;
 
-	public MiddlewareImpl(CarManager carManager, FlightManager flightManager, HotelManager hotelManager) {
+	public MiddlewareImpl(CarManager carManager, FlightManager flightManager, HotelManager hotelManager, int port) {
+		super(port);
+
 		this.carManager = carManager;
 		this.flightManager = flightManager;
 		this.hotelManager = hotelManager;

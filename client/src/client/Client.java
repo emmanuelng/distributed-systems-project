@@ -3,14 +3,12 @@ package client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 import middleware.Middleware;
 
-public class Client {
+public class Client extends RMIClient {
 
 	static String message = "blank";
 	static Middleware m = null;
@@ -45,10 +43,7 @@ public class Client {
 		}
 
 		try {
-			// get a reference to the rmiregistry
-			Registry registry = LocateRegistry.getRegistry(server, port);
-			// get the proxy and the remote reference by rmiregistry lookup
-			m = (Middleware) registry.lookup("middleware.group20");
+			m = (Middleware) RMIClient.getProxyObjectFrom(server, port);
 			if (m != null) {
 				System.out.println("Successful");
 				System.out.println("Connected to RM");
