@@ -7,7 +7,7 @@ echo "Compiling the common classes..."
 {
 	cd $DIR/server/common/
 	javac ./*/*/*.java
-} &> /dev/null
+} #&> /dev/null
 
 # Compile the car manager
 echo "Compiling the car manager..."
@@ -18,7 +18,7 @@ echo "Compiling the car manager..."
 	javac $DIR/server/cars/cars/impl/*.java
 	jar cvf CarManagerInterface.jar cars/*.class
 	mv CarManagerInterface.jar $DIR/server/middleware/
-} &> /dev/null
+} #&> /dev/null
 
 # Compile the hotel manager
 echo "Compiling the hotel manager..."
@@ -29,7 +29,7 @@ echo "Compiling the hotel manager..."
 	javac $DIR/server/hotels/hotels/impl/*.java
 	jar cvf HotelManagerInterface.jar hotels/*.class
 	mv HotelManagerInterface.jar $DIR/server/middleware/
-} &> /dev/null
+} #&> /dev/null
 
 # Compile the flight manager
 echo "Compiling the flight manager..."
@@ -40,7 +40,7 @@ echo "Compiling the flight manager..."
 	javac $DIR/server/flights/flights/impl/*.java
 	jar cvf FlightManagerInterface.jar flights/*.class
 	mv FlightManagerInterface.jar $DIR/server/middleware/
-} &> /dev/null
+} #&> /dev/null
 
 # Compile the customer manager
 echo "Compiling the customer manager..."
@@ -53,7 +53,7 @@ echo "Compiling the customer manager..."
 	# Uncomment the two following lines if the customers are handled in a separate server.
 	# jar cvf CustomerManagerInterface.jar customers/*.class
 	# mv CustomerManagerInterface.jar $DIR/server/middleware/
-} &> /dev/null
+} #&> /dev/null
 
 # Compile the middleware
 echo "Compiling the middleware..."	
@@ -69,7 +69,7 @@ echo "Compiling the middleware..."
 	javac $DIR/server/middleware/middleware/impl/*.java
 	jar cvf MiddlewareInterface.jar middleware/*.class
 	mv MiddlewareInterface.jar $DIR/client/
-} &> /dev/null
+} #&> /dev/null
 
 # Compile the client
 echo "Compiling the client..."
