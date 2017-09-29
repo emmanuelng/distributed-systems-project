@@ -1,18 +1,11 @@
 package cars.impl;
 
-import java.rmi.RMISecurityManager;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-
 import cars.CarManager;
 import common.reservations.ReservationManager;
 
-@SuppressWarnings("deprecation")
 public class CarManagerImpl extends ReservationManager<Car> implements CarManager {
 
 	public static void main(String[] args) {
-		// Figure out where server is running
 		int port = 1099;
 
 		if (args.length == 1) {
@@ -22,32 +15,15 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 			System.exit(1);
 		}
 
-		try {
-			// Create a new server object and dynamically generate the stub (client proxy)
-			CarManagerImpl obj = new CarManagerImpl();
-			CarManager proxyObj = (CarManager) UnicastRemoteObject.exportObject(obj, 0);
-
-			// Bind the remote object's stub in the registry
-			Registry registry = LocateRegistry.getRegistry(port);
-			registry.rebind("cars.group20", proxyObj);
-
-			System.out.println("Car server ready");
-		} catch (Exception e) {
-			System.err.println("Server exception: " + e.toString());
-			e.printStackTrace();
-		}
-
-		// Create and install a security manager
-		if (System.getSecurityManager() == null) {
-			System.setSecurityManager(new RMISecurityManager());
-		}
+		CarManagerImpl cm = new CarManagerImpl(port);
+		cm.start();
 	}
 
 	/**
 	 * Builds a new {@link CarManagerImpl}.
 	 */
-	public CarManagerImpl() {
-		super();
+	public CarManagerImpl(int port) {
+		super(port);
 	}
 
 	@Override

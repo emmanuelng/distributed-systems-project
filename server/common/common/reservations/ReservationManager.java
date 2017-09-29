@@ -1,8 +1,9 @@
 package common.reservations;
 
 import common.data.RMHashtable;
+import common.tcp.server.RMIServer;
 
-public abstract class ReservationManager<R extends ReservableItem> {
+public abstract class ReservationManager<R extends ReservableItem> extends RMIServer {
 
 	private RMHashtable<String, R> reservableItems;
 
@@ -12,7 +13,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * @param resourceName
 	 *            the name of the managed resource. Must be unique.
 	 */
-	public ReservationManager() {
+	public ReservationManager(int port) {
+		super(port);
 		this.reservableItems = new RMHashtable<>();
 	}
 

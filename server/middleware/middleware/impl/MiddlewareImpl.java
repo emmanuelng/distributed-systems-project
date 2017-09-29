@@ -1,11 +1,9 @@
 package middleware.impl;
 
-import java.rmi.NotBoundException;
-import java.rmi.RMISecurityManager;
-import java.rmi.Remote;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.Socket;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.Vector;
 
 import cars.CarManager;
@@ -19,7 +17,6 @@ import middleware.Middleware;
 /**
  * Implementation of the {@link Middleware} interface.
  */
-@SuppressWarnings("deprecation")
 public class MiddlewareImpl extends RMIServer implements Middleware {
 
 	public static void main(String[] args) {
@@ -52,58 +49,33 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 			}
 		}
 
-		try {
-			// Find the managers
-			CarManager carManager = (CarManager) lookup(servers[0], ports[0], "cars.group20");
-			FlightManager flightManager = (FlightManager) lookup(servers[1], ports[1], "flights.group20");
-			HotelManager hotelManager = (HotelManager) lookup(servers[2], ports[2], "hotels.group20");
+		// Find the managers
+		CarManager carManager = (CarManager) getResourceManagerProxy(servers[0], ports[0]);
+		FlightManager flightManager = (FlightManager) getResourceManagerProxy(servers[1], ports[1]);
+		HotelManager hotelManager = (HotelManager) getResourceManagerProxy(servers[2], ports[2]);
 
-			// Create a new server object and dynamically generate the stub (client proxy)
-			MiddlewareImpl mi = new MiddlewareImpl(carManager, flightManager, hotelManager, port);
-			mi.start();
-
-			System.out.println("Server ready");
-		} catch (Exception e) {
-			System.err.println("Server exception: " + e.toString());
-			e.printStackTrace();
-		}
-
-		// Create and install a security manager
-		if (System.getSecurityManager() == null) {
-			System.setSecurityManager(new RMISecurityManager());
-		}
+		// Create a new server object and dynamically generate the stub (client proxy)
+		MiddlewareImpl mi = new MiddlewareImpl(carManager, flightManager, hotelManager, port);
+		mi.start();
 	}
 
-	/**
-	 * Finds the remote object registered with the given name on the given server.
-	 * If the object does not exist, stops the program.
-	 * 
-	 * @param server
-	 *            the server
-	 * @param port
-	 *            the registry port number
-	 * @param name
-	 *            the logical name of the remote object
-	 * @return the object
-	 */
-	private static Remote lookup(String server, int port, String name) {
-		Remote remoteObj = null;
+	private static Object getResourceManagerProxy(String host, int port) {
+		Object proxyObj = null;
 
 		try {
-			Registry registry = LocateRegistry.getRegistry(server, port);
-			remoteObj = registry.lookup(name);
-
-			if (remoteObj == null) {
-				System.err.println("Error: Unsuccessful connection to " + name);
-				System.exit(1);
-			}
-
-		} catch (RemoteException | NotBoundException e) {
-			System.err.println("Error: Unable to locate " + name + " on " + server);
+			Socket socket = new Socket(host, port);
+			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+			proxyObj = in.readObject();
+			socket.close();
+		} catch (IOException e) {
+			System.err.println("[Middleware] Failed to connect to the registry at " + host + ":" + port);
+			System.exit(1);
+		} catch (ClassNotFoundException e) {
+			System.err.println("[Middleware] Invalid proxy object received from " + host + ":" + port);
 			System.exit(1);
 		}
 
-		return remoteObj;
+		return proxyObj;
 	}
 
 	private CarManager carManager;
