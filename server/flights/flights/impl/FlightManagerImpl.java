@@ -1,6 +1,5 @@
 package flights.impl;
 
-import cars.impl.CarManagerImpl;
 import common.reservations.ReservationManager;
 import flights.FlightManager;
 import network.server.RMIServer;
