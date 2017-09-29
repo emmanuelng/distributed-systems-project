@@ -2,6 +2,7 @@ package middleware.impl;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
 import java.util.Vector;
@@ -64,6 +65,7 @@ public class MiddlewareImpl extends RMIServer implements Middleware {
 
 		try {
 			Socket socket = new Socket(host, port);
+			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 			proxyObj = in.readObject();
 			socket.close();
