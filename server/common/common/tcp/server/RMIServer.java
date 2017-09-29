@@ -57,6 +57,8 @@ public abstract class RMIServer {
 						System.out.println("[Registry] sending proxy object to " + clientAddress + "...");
 
 						ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+						ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+
 						out.writeObject(proxyObject);
 
 						socket.close();
