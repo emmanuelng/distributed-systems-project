@@ -60,7 +60,7 @@ public class MiddlewareImpl implements Middleware {
 
 	private static Object getResourceManagerProxy(String host, int port) {
 		Object proxyObj = null;
-		System.out.println("[Middleware] Connecting to " + host + ":" + port + "...");		
+		System.out.println("[Middleware] Connecting to " + host + ":" + port + "...");
 
 		try {
 			Socket socket = new Socket(host, port);

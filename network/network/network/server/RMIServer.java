@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,7 +14,7 @@ import java.net.UnknownHostException;
 import network.common.MethodInvocation;
 
 public class RMIServer {
-	
+
 	public static RMIServer newServer(Object object, int port) {
 		return new RMIServer(object, port);
 	}
@@ -24,24 +25,32 @@ public class RMIServer {
 	private Object object;
 
 	private RMIServer(Object object, int port) {
+		this.object = object;
+
 		try {
+			// Initialize the sockets
 			this.registrySocket = new ServerSocket(port);
 			this.rmiSocket = new ServerSocket(0); // Use any free port
-			this.object = object;
+
+			// Initialize the proxy object
+			String rmiHost = InetAddress.getLocalHost().getHostAddress();
+			this.proxyObject = generateProxy(object, rmiHost, rmiSocket.getLocalPort());
+
+			System.out.println("[Server] Server initialized!");
+		} catch (UnknownHostException e) {
+			System.err.println("[Server] Error: Unable to resolve the host address");
+			System.exit(1);
 		} catch (IOException e) {
 			System.err.println("[Server] Unable to initialize the server: Port " + port + " is used.");
 			System.exit(1);
 		}
+	}
 
-		// Initialize the proxy object
-		try {
-			String rmiHost = InetAddress.getLocalHost().getHostAddress();
-			int rmiPort = rmiSocket.getLocalPort();
-			this.proxyObject = ProxyObjectHandler.generateProxyObj(rmiHost, rmiPort, object);
-		} catch (UnknownHostException e) {
-			System.err.println("[Server] Error: Unable to resolve the host address");
-			System.exit(1);
-		}
+	public static Object generateProxy(Object object, String rmiServerHost, int rmiServerPort) {
+		ClassLoader cl = object.getClass().getClassLoader();
+		Class<?>[] interfaces = object.getClass().getInterfaces();
+		ProxyObjectHandler invocationHandler = new ProxyObjectHandler(rmiServerHost, rmiServerPort);
+		return Proxy.newProxyInstance(cl, interfaces, invocationHandler);
 	}
 
 	public void start() {
@@ -49,6 +58,7 @@ public class RMIServer {
 		Thread rmiThread = new Thread(rmiRunnable());
 		running = true;
 
+		// Start the two servers
 		registryThread.start();
 		rmiThread.start();
 	}
