@@ -5,8 +5,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 import network.common.MethodInvocation;
 
@@ -27,14 +29,19 @@ public class RMIServer {
 			this.rmiSocket = new ServerSocket(0); // Use any free port
 			this.object = object;
 		} catch (IOException e) {
-			System.err.println("Unable to initialize the server: Port " + port + " is used.");
+			System.err.println("[Server] Unable to initialize the server: Port " + port + " is used.");
 			System.exit(1);
 		}
 
 		// Initialize the proxy object
-		String rmiHost = rmiSocket.getInetAddress().getHostAddress();
-		int rmiPort = rmiSocket.getLocalPort();
-		this.proxyObject = ProxyObjectHandler.generateProxyObj(rmiHost, rmiPort, object);
+		try {
+			String rmiHost = InetAddress.getLocalHost().getHostAddress();
+			int rmiPort = rmiSocket.getLocalPort();
+			this.proxyObject = ProxyObjectHandler.generateProxyObj(rmiHost, rmiPort, object);
+		} catch (UnknownHostException e) {
+			System.err.println("[Server] Error: Unable to resolve the host address");
+			System.exit(1);
+		}
 	}
 
 	public void start() {
