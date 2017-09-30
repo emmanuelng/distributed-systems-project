@@ -10,9 +10,11 @@ public class RMIClient {
 		Object proxyObj = null;
 
 		try {
+			System.out.println("[Client] Connecting to " + host + ":" + port + "...");
 			Socket socket = new Socket(host, port);
 			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 			proxyObj = in.readObject();
+			System.out.println("[Client] Received proxy object");
 			socket.close();
 		} catch (IOException e) {
 			System.err.println("[Client] Failed to connect to the registry at " + host + ":" + port);

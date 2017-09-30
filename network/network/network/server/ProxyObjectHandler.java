@@ -42,6 +42,8 @@ public class ProxyObjectHandler implements InvocationHandler, Serializable {
 
 	private void connect() throws Throwable {
 		if (socket == null || out == null || in == null) {
+			System.out.println("[Client] Connecting to " + rmiServerHost +":" + rmiServerPort + "...");
+			
 			socket = new Socket(rmiServerHost, rmiServerPort);
 			out = new ObjectOutputStream(socket.getOutputStream());
 			in = new ObjectInputStream(socket.getInputStream());
