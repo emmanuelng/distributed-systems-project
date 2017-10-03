@@ -115,6 +115,7 @@ public class CustomerManagerImpl implements CustomerManager {
 			reservations = customer.getReservations();
 		}
 
+		log("queryReservations(" + id + ", " + cid + ") returning " + reservations);
 		return reservations;
 	}
 
