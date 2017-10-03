@@ -49,6 +49,7 @@ public class Customer {
 
 		if (reservation == null) {
 			// Create a unique key to access the item quickly in the hash table
+			System.out.println("[Customer] Added reservation " + manager + ", " + itemId + ", " + price);
 			reservations.put(itemKey, new Reservation(manager, itemId, price));
 		} else {
 			reservation.amount++;
