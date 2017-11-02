@@ -32,3 +32,6 @@ dependencies {
 
 // Define the main class for the application
 mainClassName = 'cars.impl.CarManagerImpl'
+
+// JVM arguments
+applicationDefaultJvmArgs = ['-Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:../server-cars/']

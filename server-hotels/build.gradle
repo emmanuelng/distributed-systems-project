@@ -33,3 +33,6 @@ dependencies {
 // Define the main class for the application
 mainClassName = 'hotels.impl.HotelManagerImpl'
 
+// JVM arguments
+applicationDefaultJvmArgs = ['-Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:../server-hotels/']
+
