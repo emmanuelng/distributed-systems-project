@@ -31,7 +31,7 @@ dependencies {
 }
 
 // Define the main class for the application
-mainClassName = 'flights.impl.FlightManager'
+mainClassName = 'flights.impl.FlightManagerImpl'
 
 // JVM arguments
 applicationDefaultJvmArgs = ['-Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:../server-flights/']
