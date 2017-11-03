@@ -4,12 +4,10 @@
 ## Setup in Eclipse
 
 * Clone the repository
-* In Eclipse, go to `File > Import...` and select `General > Project from folder or archive`
-* Select the `comp512-project/client/` folder
-* Repeat for the `comp512-project/server/` folder
+* In Eclipse, go to `File > Import...` and select `Gradle > Existing gradle project`
+* Select the `comp512-project/` folder
 
-## Available scripts
+## Launch a program
 
-* `./compile.sh`: compiles all the java files and updates the .jar files
-* `./server.sh [middleware|cars|flights|hotels] [parameters]`: launches the servers
-* `./client [middleware machine] [port]`: launches a client instance. The port is 1099 by default
+Use `./run.sh` to compile and run a specific program.
+Usage: `./run.sh client client [args]` or  `./run.sh server [cars|flights|hotels|middleware|customers] [args]`.
