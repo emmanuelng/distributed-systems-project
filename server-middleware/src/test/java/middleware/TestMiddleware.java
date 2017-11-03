@@ -1,8 +1,8 @@
-package customers;
+package middleware;
 
 import org.junit.Test;
 
-public class TestCustomerManager {
+public class TestMiddleware {
 
 	@Test
 	public void test() {
