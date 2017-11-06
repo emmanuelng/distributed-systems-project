@@ -169,9 +169,18 @@ public class MiddlewareImpl implements Middleware {
 		boolean success = true;
 
 		// Release the items reserved by the customer, then remove the customer
-		String[][] reservationsToRemove = customerManager.queryReservations(id, customer);
+		String reservationsStr = customerManager.queryReservations(id, customer);
+		if (reservationsStr != null) {
 
-		if (reservationsToRemove != null) {
+			String[] reservationStrArray = reservationsStr.split(";");
+			String[][] reservationsToRemove = new String[reservationStrArray.length][3];
+			int i = 0;
+
+			for (String reservation : reservationsStr.split(";")) {
+				reservationsToRemove[i] = reservation.split("/");
+				i++;
+			}
+
 			for (String[] reservation : reservationsToRemove) {
 				// A reservation array has the format [manager, itemId, amount]
 				String managerName = reservation[0];

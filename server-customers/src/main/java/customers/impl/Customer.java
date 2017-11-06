@@ -22,9 +22,8 @@ public class Customer {
 		 * Returns the reservation as an array of String. The format is [manager,
 		 * itemId, amount].
 		 */
-		public String[] toArray() {
-			String[] array = { manager, itemId, amount + "" };
-			return array;
+		public String toString() {
+			return manager + "/" + itemId + "/" + amount;
 		}
 
 	};
@@ -72,18 +71,16 @@ public class Customer {
 	/**
 	 * Returns an array containing all the reservations in their array form
 	 * 
-	 * @see Reservation#toArray()
+	 * @see Reservation#toString()
 	 */
-	public String[][] getReservations() {
-		String[][] array = new String[reservations.size()][3];
-		int i = 0;
+	public String getReservations() {
+		String result = "";
 
 		for (Reservation r : reservations.values()) {
-			array[i] = r.toArray();
-			i++;
+			result += r.toString() + ";";
 		}
 
-		return array;
+		return result;
 	}
 
 	/**

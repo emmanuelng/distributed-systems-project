@@ -144,10 +144,10 @@ public class CustomerManagerImpl implements CustomerManager {
 	}
 
 	@Override
-	public String[][] queryReservations(int id, int cid) {
+	public String queryReservations(int id, int cid) {
 		log("queryReservations(" + id + ", " + cid + ") called");
 
-		String[][] reservations = null;
+		String reservations = null;
 		Customer customer = customers.get(id, cid);
 
 		if (customer != null) {

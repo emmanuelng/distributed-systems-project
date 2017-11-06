@@ -42,13 +42,12 @@ public interface CustomerManager extends Remote {
 	public boolean cancelReservation(int id, int cid, String manager, String itemId);
 
 	/**
-	 * Returns an array containing all the customer's reservation in their array
-	 * form. A reservation array has the following format: [manager, itemId,
-	 * amount].
+	 * Returns a string containing the customer's reservation. A reservation array
+	 * has the following format: manager/itemId/amount
 	 * 
-	 * @return the array or <code>null</code> if the customer does not exist
+	 * @return the string
 	 */
-	public String[][] queryReservations(int id, int cid) throws RemoteException;
+	public String queryReservations(int id, int cid) throws RemoteException;
 
 	/**
 	 * Removes all the reservations associated with the given item.
