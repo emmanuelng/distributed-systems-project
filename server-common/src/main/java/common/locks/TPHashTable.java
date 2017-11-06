@@ -5,8 +5,8 @@ import java.util.Vector;
 /**
  * HashTable class for the Lock Manager.
  */
-
 public class TPHashTable {
+
 	private static final int HASH_DEPTH = 8;
 
 	private Vector<Vector<XObj>> vect;
@@ -35,10 +35,17 @@ public class TPHashTable {
 		if (hashSlot < 0) {
 			hashSlot = -hashSlot;
 		}
+
 		vectSlot = vect.elementAt(hashSlot);
 		vectSlot.addElement(xobj);
 	}
 
+	/**
+	 * Returns all the elements in the table that have the same key as the given
+	 * XObj.
+	 * 
+	 * @see XObj#key()
+	 */
 	public synchronized Vector<XObj> elements(XObj xobj) {
 		if (xobj == null)
 			return (new Vector<XObj>());
@@ -53,14 +60,15 @@ public class TPHashTable {
 
 		vectSlot = vect.elementAt(hashSlot);
 
-		XObj xobj2;
 		int size = vectSlot.size();
+		XObj tmpXobj;
 		for (int i = (size - 1); i >= 0; i--) {
-			xobj2 = vectSlot.elementAt(i);
-			if (xobj.key() == xobj2.key()) {
-				elemVect.addElement(xobj2);
+			tmpXobj = vectSlot.elementAt(i);
+			if (xobj.key() == tmpXobj.key()) {
+				elemVect.addElement(tmpXobj);
 			}
 		}
+
 		return elemVect;
 	}
 
@@ -116,10 +124,6 @@ public class TPHashTable {
 			}
 		}
 		return null;
-	}
-
-	private void printStatus(String msg, int hashSlot, XObj xobj) {
-		System.out.println(this.getClass() + "::" + msg + "(slot" + hashSlot + ")::" + xobj.toString());
 	}
 
 	public Vector<XObj> allElements() {

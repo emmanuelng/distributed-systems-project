@@ -1,5 +1,8 @@
 package common.locks;
 
+/**
+ * Represents a data object, i.e. an object that can be locked.
+ */
 public class DataObj extends TrxnObj {
 
 	// The data members inherited are

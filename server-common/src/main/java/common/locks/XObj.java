@@ -47,19 +47,22 @@ public class XObj {
 	public Object clone() {
 		try {
 			XObj xobj = (XObj) super.clone();
-			xobj.SetXId(this.xid);
+			xobj.setXId(this.xid);
 			return xobj;
 		} catch (CloneNotSupportedException clonenotsupported) {
 			return null;
 		}
 	}
 
+	/**
+	 * Returns the transaction id of the object.
+	 */
 	public int key() {
 		return this.xid;
 	}
 
 	// Used by clone.
-	public void SetXId(int xid) {
+	public void setXId(int xid) {
 		if (xid > 0) {
 			this.xid = xid;
 		}

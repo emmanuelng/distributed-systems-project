@@ -1,6 +1,12 @@
 package common.locks;
 
+/**
+ * Object that represents a lock request that was is still waiting. The transaction
+ * associated with such an object is currently in waiting state.
+ * Once the lock is granted to the transaction, the corresponding WaitObj is destroyed.
+ */
 public class WaitObj extends DataObj {
+
 	protected Thread thread = null;
 
 	// The data members inherited are
