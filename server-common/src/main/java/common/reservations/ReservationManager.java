@@ -240,7 +240,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	
 	protected void abortTransaction(int id) {
 		lockManager.unlockAll(id);
-		// TODO Undo all actions related to this transaction
+		reservableItems.cancel(id);
 	}
 
 	/**
