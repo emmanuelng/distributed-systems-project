@@ -226,21 +226,24 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * Starts a new transaction.
 	 * @param id the transaction id
 	 */
-	protected void startTransaction(int id) {
+	protected boolean startTransaction(int id) {
 		// TODO
+		return true;
 	}
 	
 	/**
 	 * Confirms that the given transaction is done.
 	 * @param id the transaction id
 	 */
-	protected void commitTransaction(int id) {
+	protected boolean commitTransaction(int id) {
 		lockManager.unlockAll(id);
+		return true;
 	}
 	
-	protected void abortTransaction(int id) {
+	protected boolean abortTransaction(int id) {
 		lockManager.unlockAll(id);
 		reservableItems.cancel(id);
+		return true;
 	}
 
 	/**

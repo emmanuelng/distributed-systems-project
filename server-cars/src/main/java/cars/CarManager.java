@@ -43,4 +43,25 @@ public interface CarManager extends Remote {
 	 */
 	public boolean releaseCars(int id, String location, int amount) throws RemoteException;
 
+	/**
+	 * Starts a new transaction
+	 * 
+	 * @return success
+	 */
+	public boolean start(int id);
+
+	/**
+	 * Commits a transaction.
+	 * 
+	 * @return success
+	 */
+	public boolean commit(int id);
+
+	/**
+	 * Aborts a transaction.
+	 * 
+	 * @return success
+	 */
+	public boolean abort(int id);
+
 }

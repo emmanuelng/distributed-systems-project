@@ -81,4 +81,19 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 		return increaseItemCount(id, location, amount, 0);
 	}
 
+	@Override
+	public boolean start(int id) {
+		return startTransaction(id);
+	}
+
+	@Override
+	public boolean commit(int id) {
+		return commitTransaction(id);
+	}
+
+	@Override
+	public boolean abort(int id) {
+		return abortTransaction(id);
+	}
+
 }

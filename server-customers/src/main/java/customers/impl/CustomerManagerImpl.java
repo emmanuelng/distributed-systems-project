@@ -165,8 +165,25 @@ public class CustomerManagerImpl implements CustomerManager {
 		}
 	}
 
+	@Override
+	public boolean start(int id) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean commit(int id) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean abort(int id) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	private void log(String message) {
 		System.out.println("[CustomerManager] " + message);
 	}
-
 }
