@@ -1,5 +1,8 @@
 package common.reservations;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import common.data.RMHashtable;
 import common.locks.DeadlockException;
 import common.locks.LockManager;
@@ -9,6 +12,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 
 	private RMHashtable<String, R> reservableItems;
 	private LockManager lockManager;
+	private Set<Integer> activeTransactions;
 
 	/**
 	 * Builds a new {@link ReservationManager}
@@ -19,6 +23,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	public ReservationManager() {
 		this.reservableItems = new RMHashtable<>();
 		this.lockManager = new LockManager();
+		this.activeTransactions = new HashSet<>();
 	}
 
 	/**
@@ -43,7 +48,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 			return true;
 
 		} catch (DeadlockException e) {
-			log("The operation failed. Please try again.");
+			abortTransaction(id);
 			return false;
 		}
 	}
@@ -81,7 +86,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 			return true;
 
 		} catch (DeadlockException e) {
-			log("The operation failed. Please try again.");
+			abortTransaction(id);
 			return false;
 		}
 	}
@@ -97,7 +102,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 			return reservableItems.get(id, key);
 
 		} catch (DeadlockException e) {
-			log("The operation failed. Please try again.");
+			abortTransaction(id);
 			return null;
 		}
 	}
@@ -131,7 +136,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 			return success;
 
 		} catch (DeadlockException e) {
-			log("The operation failed. Please try again.");
+			abortTransaction(id);
 			return false;
 		}
 	}
@@ -157,7 +162,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 			return num;
 
 		} catch (DeadlockException e) {
-			log("The operation failed. Please try again.");
+			abortTransaction(id);
 			return -1;
 		}
 	}
@@ -183,7 +188,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 			return price;
 
 		} catch (DeadlockException e) {
-			log("The operation failed. Please try again.");
+			abortTransaction(id);
 			return -1;
 		}
 	}
@@ -217,33 +222,46 @@ public abstract class ReservationManager<R extends ReservableItem> {
 			return success;
 
 		} catch (DeadlockException e) {
-			log("The operation failed. Please try again.");
+			abortTransaction(id);
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Starts a new transaction.
-	 * @param id the transaction id
+	 * 
+	 * @param id
+	 *            the transaction id
 	 */
 	protected boolean startTransaction(int id) {
-		// TODO
-		return true;
+		return activeTransactions.add(id);
 	}
-	
+
 	/**
 	 * Confirms that the given transaction is done.
-	 * @param id the transaction id
+	 * 
+	 * @param id
+	 *            the transaction id
 	 */
 	protected boolean commitTransaction(int id) {
-		lockManager.unlockAll(id);
-		return true;
+		if (activeTransactions.contains(id)) {
+			lockManager.unlockAll(id);
+			activeTransactions.remove(id);
+			return true;
+		}
+
+		return false;
 	}
-	
+
 	protected boolean abortTransaction(int id) {
-		lockManager.unlockAll(id);
-		reservableItems.cancel(id);
-		return true;
+		if (activeTransactions.contains(id)) {
+			log("Aborting transaction " + id);
+			lockManager.unlockAll(id);
+			reservableItems.cancel(id);
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
