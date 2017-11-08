@@ -138,4 +138,21 @@ public interface Middleware extends Remote {
 	public boolean itinerary(int id, int customer, Vector<Object> flightNumbers, String location, boolean Car,
 			boolean Room) throws RemoteException;
 
+	/**
+	 * Starts a new transaction.
+	 * 
+	 * @return the transaction id
+	 */
+	public int start();
+	
+	/**
+	 * Commits a transaction.
+	 */
+	public boolean commit(int id);
+	
+	/**
+	 * Aborts a transaction.
+	 */
+	public boolean abort(int id);
+
 }

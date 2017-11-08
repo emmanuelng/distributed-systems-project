@@ -115,11 +115,13 @@ public class MiddlewareImpl implements Middleware {
 	private FlightManager flightManager;
 	private HotelManager hotelManager;
 	private CustomerManager customerManager;
+	private int transactionId;
 
 	public MiddlewareImpl(CarManager carManager, FlightManager flightManager, HotelManager hotelManager) {
 		this.carManager = carManager;
 		this.flightManager = flightManager;
 		this.hotelManager = hotelManager;
+		this.transactionId = 0;
 
 		// The customers are handled in the middle ware server
 		this.customerManager = new CustomerManagerImpl();
@@ -130,6 +132,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return flightManager.addFlight(id, flightNum, flightSeats, flightPrice);
 		} catch (DeadlockException e) {
+			abort(id);
 			return false;
 		}
 	}
@@ -139,6 +142,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return carManager.addCars(id, location, numCars, price);
 		} catch (DeadlockException e) {
+			abort(id);
 			return false;
 		}
 	}
@@ -148,6 +152,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return hotelManager.addRooms(id, location, numRooms, price);
 		} catch (DeadlockException e) {
+			abort(id);
 			return false;
 		}
 	}
@@ -157,6 +162,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return customerManager.newCustomer(id);
 		} catch (DeadlockException e) {
+			abort(id);
 			return 0;
 		}
 	}
@@ -166,6 +172,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return customerManager.newCustomer(id, cid);
 		} catch (DeadlockException e) {
+			abort(cid);
 			return false;
 		}
 	}
@@ -175,6 +182,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return flightManager.deleteFlight(id, flightNum);
 		} catch (DeadlockException e) {
+			abort(id);
 			return false;
 		}
 	}
@@ -184,6 +192,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return carManager.deleteCars(id, location);
 		} catch (DeadlockException e) {
+			abort(id);
 			return false;
 		}
 	}
@@ -193,6 +202,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return hotelManager.deleteRooms(id, location);
 		} catch (DeadlockException e) {
+			abort(id);
 			return false;
 		}
 	}
@@ -239,6 +249,7 @@ public class MiddlewareImpl implements Middleware {
 
 			return success;
 		} catch (DeadlockException e) {
+			abort(id);
 			return false;
 		}
 	}
@@ -248,6 +259,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return flightManager.queryFlight(id, flightNumber);
 		} catch (DeadlockException e) {
+			abort(id);
 			return 0;
 		}
 	}
@@ -257,6 +269,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return carManager.queryCars(id, location);
 		} catch (DeadlockException e) {
+			abort(id);
 			return 0;
 		}
 	}
@@ -266,6 +279,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return hotelManager.queryRooms(id, location);
 		} catch (DeadlockException e) {
+			abort(id);
 			return 0;
 		}
 	}
@@ -275,6 +289,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return customerManager.queryCustomerInfo(id, customer);
 		} catch (DeadlockException e) {
+			abort(id);
 			return null;
 		}
 	}
@@ -284,6 +299,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return flightManager.queryFlightPrice(id, flightNumber);
 		} catch (DeadlockException e) {
+			abort(id);
 			return 0;
 		}
 	}
@@ -293,6 +309,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return carManager.queryCarsPrice(id, location);
 		} catch (DeadlockException e) {
+			abort(id);
 			return 0;
 		}
 	}
@@ -302,6 +319,7 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			return hotelManager.queryRoomsPrice(id, location);
 		} catch (DeadlockException e) {
+			abort(id);
 			return 0;
 		}
 	}
@@ -316,6 +334,7 @@ public class MiddlewareImpl implements Middleware {
 
 			return false;
 		} catch (DeadlockException e) {
+			abort(id);
 			return false;
 		}
 	}
@@ -330,6 +349,7 @@ public class MiddlewareImpl implements Middleware {
 
 			return false;
 		} catch (DeadlockException e) {
+			abort(id);
 			return false;
 		}
 	}
@@ -344,6 +364,7 @@ public class MiddlewareImpl implements Middleware {
 
 			return false;
 		} catch (DeadlockException e) {
+			abort(id);
 			return false;
 		}
 	}
@@ -400,8 +421,32 @@ public class MiddlewareImpl implements Middleware {
 
 			return success;
 		} catch (DeadlockException e) {
+			abort(id);
 			return false;
 		}
+	}
+
+	@Override
+	public int start() {
+		return transactionId++;
+	}
+
+	@Override
+	public boolean commit(int id) {
+		carManager.commit(id);
+		hotelManager.commit(id);
+		flightManager.commit(id);
+		customerManager.commit(id);
+		return true;
+	}
+
+	@Override
+	public boolean abort(int id) {
+		carManager.abort(id);
+		hotelManager.abort(id);
+		flightManager.abort(id);
+		customerManager.abort(id);
+		return false;
 	}
 
 }
