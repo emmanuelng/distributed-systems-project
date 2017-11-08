@@ -6,8 +6,14 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import common.data.RMHashtable;
+import common.locks.DeadlockException;
+import common.locks.LockManager;
+import common.locks.TrxnObj;
 import customers.CustomerManager;
 
 @SuppressWarnings("deprecation")
@@ -48,138 +54,213 @@ public class CustomerManagerImpl implements CustomerManager {
 	}
 
 	private RMHashtable<Integer, Customer> customers;
+	private LockManager lockManager;
+	private Set<Integer> activeTransactions;
 
 	public CustomerManagerImpl() {
 		this.customers = new RMHashtable<>();
+		this.lockManager = new LockManager();
+		this.activeTransactions = new HashSet<>();
 	}
 
 	@Override
 	public int newCustomer(int id) {
 		log("newCustomer(" + id + ") called");
-
 		int cid = Integer.parseInt(String.valueOf(id) + String.valueOf(Calendar.getInstance().get(Calendar.MILLISECOND))
 				+ String.valueOf(Math.round(Math.random() * 100 + 1)));
-		customers.put(id, cid, new Customer(cid));
 
-		log("newCustomer(" + id + ") returns ID=" + cid);
-		return cid;
+		try {
+			lockManager.lock(id, "customers", TrxnObj.WRITE);
+			customers.put(id, cid, new Customer(cid));
+			log("newCustomer(" + id + ") returns ID=" + cid);
+			return cid;
+
+		} catch (DeadlockException e) {
+			abort(id);
+			return -1;
+		}
 	}
 
 	@Override
 	public boolean newCustomer(int id, int cid) {
 		log("newCustomer(" + id + ", " + cid + ") called");
 
-		boolean success = true;
-		Customer customer = customers.get(id, cid);
+		try {
+			lockManager.lock(id, "customers", TrxnObj.WRITE);
+			boolean success = true;
+			Customer customer = customers.get(id, cid);
 
-		if (customer == null) {
-			customers.put(id, cid, new Customer(cid));
-			log("newCustomer(" + id + ", " + cid + ") created a new customer");
-		} else {
-			log("newCustomer(" + id + ", " + cid + ") failed: customer already exist");
-			success = false;
+			if (customer == null) {
+				customers.put(id, cid, new Customer(cid));
+				log("newCustomer(" + id + ", " + cid + ") created a new customer");
+			} else {
+				log("newCustomer(" + id + ", " + cid + ") failed: customer already exist");
+				success = false;
+			}
+
+			return success;
+
+		} catch (DeadlockException e) {
+			abort(id);
+			return false;
 		}
-
-		return success;
 	}
 
 	@Override
 	public boolean deleteCustomer(int id, int cid) {
 		log("deleteCustomer(" + id + ", " + cid + ") called");
-		return customers.remove(id, cid) != null;
+
+		try {
+			lockManager.lock(id, "customers", TrxnObj.WRITE);
+			return customers.remove(id, cid) != null;
+		} catch (DeadlockException e) {
+			abort(id);
+			return false;
+		}
 	}
 
 	@Override
 	public String queryCustomerInfo(int id, int cid) {
 		log("queryCustomerInfo(" + id + ", " + cid + ") called");
 
-		String bill = "";
-		Customer customer = customers.get(id, cid);
+		try {
+			lockManager.lock(id, "customers", TrxnObj.READ);
+			String bill = "";
+			Customer customer = customers.get(id, cid);
 
-		if (customer == null) {
-			log("queryCustomerInfo(" + id + ", " + cid + ") failed: customer does not exist");
-		} else {
-			bill = customer.printBill();
-			log("queryCustomerInfo(" + id + ", " + cid + ") succeeded, bills follows:\n" + bill);
+			if (customer == null) {
+				log("queryCustomerInfo(" + id + ", " + cid + ") failed: customer does not exist");
+			} else {
+				bill = customer.printBill();
+				log("queryCustomerInfo(" + id + ", " + cid + ") succeeded, bills follows:\n" + bill);
+			}
+
+			return bill;
+
+		} catch (DeadlockException e) {
+			abort(id);
+			return null;
 		}
 
-		return bill;
 	}
 
 	@Override
 	public boolean reserve(int id, int cid, String manager, String itemId, int price) {
 		log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") called");
 
-		boolean success = true;
-		Customer customer = customers.get(id, cid);
+		try {
+			lockManager.lock(id, "customer-" + cid, TrxnObj.WRITE);
+			boolean success = true;
+			Customer customer = customers.get(id, cid);
 
-		if (customer == null) {
-			success = false;
-			log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") failed: customer does not exist");
-		} else {
-			customer.reserve(id, manager, itemId, price);
-			log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") succeeded");
+			if (customer == null) {
+				success = false;
+				log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId
+						+ ") failed: customer does not exist");
+			} else {
+				customer.reserve(id, manager, itemId, price);
+				log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") succeeded");
+			}
+
+			return success;
+
+		} catch (DeadlockException e) {
+			abort(id);
+			return false;
 		}
-
-		return success;
 	}
 
 	@Override
 	public boolean cancelReservation(int id, int cid, String manager, String itemId) {
 		log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId + ") called");
 
-		boolean success = true;
-		Customer customer = customers.get(id, cid);
+		try {
+			lockManager.lock(id, "customer-" + cid, TrxnObj.WRITE);
+			boolean success = true;
+			Customer customer = customers.get(id, cid);
 
-		if (customer == null) {
-			success = false;
-			log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId
-					+ ") failed: customer does not exist");
-		} else {
-			customer.cancelReservation(id, manager, itemId);
-			log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId + ") succeeded");
+			if (customer == null) {
+				success = false;
+				log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId
+						+ ") failed: customer does not exist");
+			} else {
+				customer.cancelReservation(id, manager, itemId);
+				log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId + ") succeeded");
+			}
+
+			return success;
+
+		} catch (DeadlockException e) {
+			abort(id);
+			return false;
 		}
-
-		return success;
 	}
 
 	@Override
 	public String queryReservations(int id, int cid) {
 		log("queryReservations(" + id + ", " + cid + ") called");
 
-		String reservations = null;
-		Customer customer = customers.get(id, cid);
+		try {
+			lockManager.lock(id, "customer-" + cid, TrxnObj.READ);
+			String reservations = null;
+			Customer customer = customers.get(id, cid);
 
-		if (customer != null) {
-			reservations = customer.getReservations();
+			if (customer != null) {
+				reservations = customer.getReservations();
+			}
+
+			log("queryReservations(" + id + ", " + cid + ") returning " + reservations);
+			return reservations;
+
+		} catch (DeadlockException e) {
+			abort(id);
+			return null;
 		}
-
-		log("queryReservations(" + id + ", " + cid + ") returning " + reservations);
-		return reservations;
 	}
 
 	@Override
 	public void clearReservationsForItem(int id, String itemId) throws RemoteException {
-		for (Customer customer : customers.values()) {
-			customer.clearReservationsForItem(id, itemId);
+		for (Entry<Integer, Customer> entry : customers.entrySet()) {
+			try {
+				lockManager.lock(id, "customer-" + entry.getKey(), TrxnObj.WRITE);
+				entry.getValue().clearReservationsForItem(id, itemId);
+			} catch (DeadlockException e) {
+				abort(id);
+				return;
+			}
 		}
 	}
 
 	@Override
 	public boolean start(int id) {
-		// TODO Auto-generated method stub
-		return false;
+		log("Starting transaction " + id);
+		return activeTransactions.add(id);
 	}
 
 	@Override
 	public boolean commit(int id) {
-		// TODO Auto-generated method stub
+		if (activeTransactions.contains(id)) {
+			log("Committing transaction " + id);
+			lockManager.unlockAll(id);
+			activeTransactions.remove(id);
+			return true;
+		}
+
 		return false;
 	}
 
 	@Override
 	public boolean abort(int id) {
-		// TODO Auto-generated method stub
+		if (activeTransactions.contains(id)) {
+			log("Aborting transaction " + id);
+			
+			customers.cancel(id);
+			for (Customer customer: customers.values()) {
+				customer.cancel(id);
+			}
+			
+			return true;
+		}
 		return false;
 	}
 

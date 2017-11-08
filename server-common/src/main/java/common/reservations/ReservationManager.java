@@ -234,6 +234,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 *            the transaction id
 	 */
 	protected boolean startTransaction(int id) {
+		log("Starting transaction " + id);
 		return activeTransactions.add(id);
 	}
 
@@ -245,6 +246,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 */
 	protected boolean commitTransaction(int id) {
 		if (activeTransactions.contains(id)) {
+			log("Committing transaction " + id);
 			lockManager.unlockAll(id);
 			activeTransactions.remove(id);
 			return true;

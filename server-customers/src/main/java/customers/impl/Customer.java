@@ -1,8 +1,8 @@
 package customers.impl;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
+
+import common.data.RMHashtable;
 
 public class Customer {
 
@@ -29,14 +29,14 @@ public class Customer {
 	};
 
 	private int cid;
-	private Map<String, Reservation> reservations;
+	private RMHashtable<String, Reservation> reservations;
 
 	/**
 	 * Builds a new {@link Customer} with the given id.
 	 */
 	public Customer(int cid) {
 		this.cid = cid;
-		this.reservations = new HashMap<>();
+		this.reservations = new RMHashtable<>();
 	}
 
 	/**
@@ -44,12 +44,12 @@ public class Customer {
 	 */
 	public synchronized void reserve(int id, String manager, String itemId, int price) {
 		String itemKey = manager + "/" + itemId;
-		Reservation reservation = reservations.get(itemKey);
+		Reservation reservation = reservations.get(id, itemKey);
 
 		if (reservation == null) {
 			// Create a unique key to access the item quickly in the hash table
 			System.out.println("[Customer] Added reservation " + manager + ", " + itemId + ", " + price);
-			reservations.put(itemKey, new Reservation(manager, itemId, price));
+			reservations.put(id, itemKey, new Reservation(manager, itemId, price));
 		} else {
 			reservation.amount++;
 		}
@@ -58,11 +58,11 @@ public class Customer {
 
 	public synchronized void cancelReservation(int id, String manager, String itemId) {
 		String itemKey = manager + "/" + itemId;
-		Reservation reservation = reservations.get(itemKey);
+		Reservation reservation = reservations.get(id, itemKey);
 
 		if (reservation != null) {
 			if (reservation.amount-- == 0) {
-				reservations.remove(itemKey);
+				reservations.remove(id, itemKey);
 			}
 		}
 
@@ -102,7 +102,14 @@ public class Customer {
 	 * Deletes all reservations associated to the given item.
 	 */
 	public void clearReservationsForItem(int id, String itemId) {
-		reservations.remove(itemId);
+		reservations.remove(id, itemId);
+	}
+
+	/**
+	 * Cancels all actions that were performed in the given transaction.
+	 */
+	public void cancel(int id) {
+		reservations.cancel(id);
 	}
 
 }

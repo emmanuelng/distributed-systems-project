@@ -2,6 +2,8 @@ package common.data;
 
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import common.data.actions.CompositeAction;
 import common.data.actions.PutAction;
@@ -14,6 +16,7 @@ public class RMHashtable<K, V> {
 
 	public RMHashtable() {
 		this.data = new Hashtable<>();
+		this.actions = new Hashtable<>();
 	}
 
 	public synchronized V put(int id, K key, V value) {
@@ -47,6 +50,10 @@ public class RMHashtable<K, V> {
 
 	public Collection<V> values() {
 		return data.values();
+	}
+
+	public Set<Entry<K, V>> entrySet() {
+		return data.entrySet();
 	}
 
 	/**
