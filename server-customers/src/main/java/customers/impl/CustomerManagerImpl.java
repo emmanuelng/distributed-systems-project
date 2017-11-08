@@ -64,170 +64,122 @@ public class CustomerManagerImpl implements CustomerManager {
 	}
 
 	@Override
-	public int newCustomer(int id) {
+	public int newCustomer(int id) throws DeadlockException {
 		log("newCustomer(" + id + ") called");
+
+		lockManager.lock(id, "customers", TrxnObj.WRITE);
 		int cid = Integer.parseInt(String.valueOf(id) + String.valueOf(Calendar.getInstance().get(Calendar.MILLISECOND))
 				+ String.valueOf(Math.round(Math.random() * 100 + 1)));
-
-		try {
-			lockManager.lock(id, "customers", TrxnObj.WRITE);
-			customers.put(id, cid, new Customer(cid));
-			log("newCustomer(" + id + ") returns ID=" + cid);
-			return cid;
-
-		} catch (DeadlockException e) {
-			abort(id);
-			return -1;
-		}
+		customers.put(id, cid, new Customer(cid));
+		log("newCustomer(" + id + ") returns ID=" + cid);
+		return cid;
 	}
 
 	@Override
-	public boolean newCustomer(int id, int cid) {
+	public boolean newCustomer(int id, int cid) throws DeadlockException {
 		log("newCustomer(" + id + ", " + cid + ") called");
 
-		try {
-			lockManager.lock(id, "customers", TrxnObj.WRITE);
-			boolean success = true;
-			Customer customer = customers.get(id, cid);
+		lockManager.lock(id, "customers", TrxnObj.WRITE);
+		boolean success = true;
+		Customer customer = customers.get(id, cid);
 
-			if (customer == null) {
-				customers.put(id, cid, new Customer(cid));
-				log("newCustomer(" + id + ", " + cid + ") created a new customer");
-			} else {
-				log("newCustomer(" + id + ", " + cid + ") failed: customer already exist");
-				success = false;
-			}
-
-			return success;
-
-		} catch (DeadlockException e) {
-			abort(id);
-			return false;
+		if (customer == null) {
+			customers.put(id, cid, new Customer(cid));
+			log("newCustomer(" + id + ", " + cid + ") created a new customer");
+		} else {
+			log("newCustomer(" + id + ", " + cid + ") failed: customer already exist");
+			success = false;
 		}
+
+		return success;
 	}
 
 	@Override
-	public boolean deleteCustomer(int id, int cid) {
+	public boolean deleteCustomer(int id, int cid) throws DeadlockException {
 		log("deleteCustomer(" + id + ", " + cid + ") called");
 
-		try {
-			lockManager.lock(id, "customers", TrxnObj.WRITE);
-			return customers.remove(id, cid) != null;
-		} catch (DeadlockException e) {
-			abort(id);
-			return false;
-		}
+		lockManager.lock(id, "customers", TrxnObj.WRITE);
+		return customers.remove(id, cid) != null;
 	}
 
 	@Override
-	public String queryCustomerInfo(int id, int cid) {
+	public String queryCustomerInfo(int id, int cid) throws DeadlockException {
 		log("queryCustomerInfo(" + id + ", " + cid + ") called");
 
-		try {
-			lockManager.lock(id, "customers", TrxnObj.READ);
-			String bill = "";
-			Customer customer = customers.get(id, cid);
+		lockManager.lock(id, "customers", TrxnObj.READ);
+		String bill = "";
+		Customer customer = customers.get(id, cid);
 
-			if (customer == null) {
-				log("queryCustomerInfo(" + id + ", " + cid + ") failed: customer does not exist");
-			} else {
-				bill = customer.printBill();
-				log("queryCustomerInfo(" + id + ", " + cid + ") succeeded, bills follows:\n" + bill);
-			}
-
-			return bill;
-
-		} catch (DeadlockException e) {
-			abort(id);
-			return null;
+		if (customer == null) {
+			log("queryCustomerInfo(" + id + ", " + cid + ") failed: customer does not exist");
+		} else {
+			bill = customer.printBill();
+			log("queryCustomerInfo(" + id + ", " + cid + ") succeeded, bills follows:\n" + bill);
 		}
 
+		return bill;
 	}
 
 	@Override
-	public boolean reserve(int id, int cid, String manager, String itemId, int price) {
+	public boolean reserve(int id, int cid, String manager, String itemId, int price) throws DeadlockException {
 		log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") called");
 
-		try {
-			lockManager.lock(id, "customer-" + cid, TrxnObj.WRITE);
-			boolean success = true;
-			Customer customer = customers.get(id, cid);
+		lockManager.lock(id, "customer-" + cid, TrxnObj.WRITE);
+		boolean success = true;
+		Customer customer = customers.get(id, cid);
 
-			if (customer == null) {
-				success = false;
-				log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId
-						+ ") failed: customer does not exist");
-			} else {
-				customer.reserve(id, manager, itemId, price);
-				log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") succeeded");
-			}
-
-			return success;
-
-		} catch (DeadlockException e) {
-			abort(id);
-			return false;
+		if (customer == null) {
+			success = false;
+			log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") failed: customer does not exist");
+		} else {
+			customer.reserve(id, manager, itemId, price);
+			log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") succeeded");
 		}
+
+		return success;
 	}
 
 	@Override
-	public boolean cancelReservation(int id, int cid, String manager, String itemId) {
+	public boolean cancelReservation(int id, int cid, String manager, String itemId) throws DeadlockException {
 		log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId + ") called");
 
-		try {
-			lockManager.lock(id, "customer-" + cid, TrxnObj.WRITE);
-			boolean success = true;
-			Customer customer = customers.get(id, cid);
+		lockManager.lock(id, "customer-" + cid, TrxnObj.WRITE);
+		boolean success = true;
+		Customer customer = customers.get(id, cid);
 
-			if (customer == null) {
-				success = false;
-				log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId
-						+ ") failed: customer does not exist");
-			} else {
-				customer.cancelReservation(id, manager, itemId);
-				log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId + ") succeeded");
-			}
-
-			return success;
-
-		} catch (DeadlockException e) {
-			abort(id);
-			return false;
+		if (customer == null) {
+			success = false;
+			log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId
+					+ ") failed: customer does not exist");
+		} else {
+			customer.cancelReservation(id, manager, itemId);
+			log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId + ") succeeded");
 		}
+
+		return success;
 	}
 
 	@Override
-	public String queryReservations(int id, int cid) {
+	public String queryReservations(int id, int cid) throws DeadlockException {
 		log("queryReservations(" + id + ", " + cid + ") called");
 
-		try {
-			lockManager.lock(id, "customer-" + cid, TrxnObj.READ);
-			String reservations = null;
-			Customer customer = customers.get(id, cid);
+		lockManager.lock(id, "customer-" + cid, TrxnObj.READ);
+		String reservations = null;
+		Customer customer = customers.get(id, cid);
 
-			if (customer != null) {
-				reservations = customer.getReservations();
-			}
-
-			log("queryReservations(" + id + ", " + cid + ") returning " + reservations);
-			return reservations;
-
-		} catch (DeadlockException e) {
-			abort(id);
-			return null;
+		if (customer != null) {
+			reservations = customer.getReservations();
 		}
+
+		log("queryReservations(" + id + ", " + cid + ") returning " + reservations);
+		return reservations;
 	}
 
 	@Override
-	public void clearReservationsForItem(int id, String itemId) throws RemoteException {
+	public void clearReservationsForItem(int id, String itemId) throws RemoteException, DeadlockException {
 		for (Entry<Integer, Customer> entry : customers.entrySet()) {
-			try {
-				lockManager.lock(id, "customer-" + entry.getKey(), TrxnObj.WRITE);
-				entry.getValue().clearReservationsForItem(id, itemId);
-			} catch (DeadlockException e) {
-				abort(id);
-				return;
-			}
+			lockManager.lock(id, "customer-" + entry.getKey(), TrxnObj.WRITE);
+			entry.getValue().clearReservationsForItem(id, itemId);
 		}
 	}
 
@@ -253,12 +205,12 @@ public class CustomerManagerImpl implements CustomerManager {
 	public boolean abort(int id) {
 		if (activeTransactions.contains(id)) {
 			log("Aborting transaction " + id);
-			
+
 			customers.cancel(id);
-			for (Customer customer: customers.values()) {
+			for (Customer customer : customers.values()) {
 				customer.cancel(id);
 			}
-			
+
 			return true;
 		}
 		return false;

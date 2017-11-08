@@ -6,6 +6,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import cars.CarManager;
+import common.locks.DeadlockException;
 import common.reservations.ReservationManager;
 
 @SuppressWarnings("deprecation")
@@ -51,7 +52,7 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 	}
 
 	@Override
-	public boolean addCars(int id, String location, int numCars, int price) {
+	public boolean addCars(int id, String location, int numCars, int price) throws DeadlockException {
 		if (getItem(id, location) == null) {
 			addItem(id, location, new Car(location, numCars, price));
 		} else {
@@ -62,27 +63,27 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 	}
 
 	@Override
-	public boolean deleteCars(int id, String location) {
+	public boolean deleteCars(int id, String location) throws DeadlockException {
 		return deleteItem(id, location);
 	}
 
 	@Override
-	public int queryCars(int id, String location) {
+	public int queryCars(int id, String location) throws DeadlockException {
 		return queryNum(id, location);
 	}
 
 	@Override
-	public int queryCarsPrice(int id, String location) {
+	public int queryCarsPrice(int id, String location) throws DeadlockException {
 		return queryPrice(id, location);
 	}
 
 	@Override
-	public boolean reserveCar(int id, String location) {
+	public boolean reserveCar(int id, String location) throws DeadlockException {
 		return reserveItem(id, location);
 	}
 
 	@Override
-	public boolean releaseCars(int id, String location, int amount) {
+	public boolean releaseCars(int id, String location, int amount) throws DeadlockException {
 		return increaseItemCount(id, location, amount, 0);
 	}
 

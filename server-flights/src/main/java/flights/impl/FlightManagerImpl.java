@@ -6,6 +6,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import common.locks.DeadlockException;
 import common.reservations.ReservationManager;
 import flights.FlightManager;
 
@@ -47,7 +48,7 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 	}
 
 	@Override
-	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) {
+	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws DeadlockException {
 		if (getItem(id, Integer.toString(flightNum)) == null) {
 			addItem(id, Integer.toString(flightNum), new Flight(flightNum, flightSeats, flightPrice));
 		} else {
@@ -58,27 +59,27 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 	}
 
 	@Override
-	public boolean deleteFlight(int id, int flightNum) {
+	public boolean deleteFlight(int id, int flightNum) throws DeadlockException {
 		return deleteItem(id, Integer.toString(flightNum));
 	}
 
 	@Override
-	public int queryFlight(int id, int flightNum) {
+	public int queryFlight(int id, int flightNum) throws DeadlockException {
 		return queryNum(id, Integer.toString(flightNum));
 	}
 
 	@Override
-	public int queryFlightPrice(int id, int flightNum) {
+	public int queryFlightPrice(int id, int flightNum) throws DeadlockException {
 		return queryPrice(id, Integer.toString(flightNum));
 	}
 
 	@Override
-	public boolean reserveFlight(int id, int flightNum) {
+	public boolean reserveFlight(int id, int flightNum) throws DeadlockException {
 		return reserveItem(id, Integer.toString(flightNum));
 	}
 
 	@Override
-	public boolean releaseSeats(int id, int flightNumber, int amount) throws RemoteException {
+	public boolean releaseSeats(int id, int flightNumber, int amount) throws RemoteException, DeadlockException {
 		return increaseItemCount(id, Integer.toString(flightNumber), amount, 0);
 	}
 

@@ -10,6 +10,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Vector;
 
 import cars.CarManager;
+import common.locks.DeadlockException;
 import customers.CustomerManager;
 import customers.impl.CustomerManagerImpl;
 import flights.FlightManager;
@@ -126,201 +127,281 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException {
-		return flightManager.addFlight(id, flightNum, flightSeats, flightPrice);
+		try {
+			return flightManager.addFlight(id, flightNum, flightSeats, flightPrice);
+		} catch (DeadlockException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean addCars(int id, String location, int numCars, int price) throws RemoteException {
-		return carManager.addCars(id, location, numCars, price);
+		try {
+			return carManager.addCars(id, location, numCars, price);
+		} catch (DeadlockException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException {
-		return hotelManager.addRooms(id, location, numRooms, price);
+		try {
+			return hotelManager.addRooms(id, location, numRooms, price);
+		} catch (DeadlockException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public int newCustomer(int id) throws RemoteException {
-		return customerManager.newCustomer(id);
+		try {
+			return customerManager.newCustomer(id);
+		} catch (DeadlockException e) {
+			return 0;
+		}
 	}
 
 	@Override
 	public boolean newCustomer(int id, int cid) throws RemoteException {
-		return customerManager.newCustomer(id, cid);
+		try {
+			return customerManager.newCustomer(id, cid);
+		} catch (DeadlockException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean deleteFlight(int id, int flightNum) throws RemoteException {
-		return flightManager.deleteFlight(id, flightNum);
+		try {
+			return flightManager.deleteFlight(id, flightNum);
+		} catch (DeadlockException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean deleteCars(int id, String location) throws RemoteException {
-		return carManager.deleteCars(id, location);
+		try {
+			return carManager.deleteCars(id, location);
+		} catch (DeadlockException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean deleteRooms(int id, String location) throws RemoteException {
-		return hotelManager.deleteRooms(id, location);
+		try {
+			return hotelManager.deleteRooms(id, location);
+		} catch (DeadlockException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean deleteCustomer(int id, int customer) throws RemoteException {
 		boolean success = true;
 
-		// Release the items reserved by the customer, then remove the customer
-		String reservationsStr = customerManager.queryReservations(id, customer);
-		if (reservationsStr != null) {
+		try {
+			// Release the items reserved by the customer, then remove the customer
+			String reservationsStr = customerManager.queryReservations(id, customer);
+			if (reservationsStr != null) {
 
-			String[] reservationStrArray = reservationsStr.split(";");
-			String[][] reservationsToRemove = new String[reservationStrArray.length][3];
-			int i = 0;
+				String[] reservationStrArray = reservationsStr.split(";");
+				String[][] reservationsToRemove = new String[reservationStrArray.length][3];
+				int i = 0;
 
-			for (String reservation : reservationsStr.split(";")) {
-				reservationsToRemove[i] = reservation.split("/");
-				i++;
-			}
-
-			for (String[] reservation : reservationsToRemove) {
-				// A reservation array has the format [manager, itemId, amount]
-				String managerName = reservation[0];
-				String itemId = reservation[1];
-				int amount = Integer.parseInt(reservation[2]);
-
-				// Call the right manager
-				if (managerName.equals("cars")) {
-					carManager.releaseCars(id, itemId, amount);
-				} else if (managerName.equals("flights")) {
-					flightManager.releaseSeats(id, Integer.parseInt(itemId), amount);
-				} else if (managerName.equals("hotels")) {
-					hotelManager.releaseRoom(id, itemId, amount);
+				for (String reservation : reservationsStr.split(";")) {
+					reservationsToRemove[i] = reservation.split("/");
+					i++;
 				}
+
+				for (String[] reservation : reservationsToRemove) {
+					// A reservation array has the format [manager, itemId, amount]
+					String managerName = reservation[0];
+					String itemId = reservation[1];
+					int amount = Integer.parseInt(reservation[2]);
+
+					// Call the right manager
+					if (managerName.equals("cars")) {
+						carManager.releaseCars(id, itemId, amount);
+					} else if (managerName.equals("flights")) {
+						flightManager.releaseSeats(id, Integer.parseInt(itemId), amount);
+					} else if (managerName.equals("hotels")) {
+						hotelManager.releaseRoom(id, itemId, amount);
+					}
+				}
+
+				// Now that all reservations are cleared, delete the customer
+				customerManager.deleteCustomer(id, customer);
+			} else {
+				success = false;
 			}
 
-			// Now that all reservations are cleared, delete the customer
-			customerManager.deleteCustomer(id, customer);
-		} else {
-			success = false;
+			return success;
+		} catch (DeadlockException e) {
+			return false;
 		}
-
-		return success;
 	}
 
 	@Override
 	public int queryFlight(int id, int flightNumber) throws RemoteException {
-		return flightManager.queryFlight(id, flightNumber);
+		try {
+			return flightManager.queryFlight(id, flightNumber);
+		} catch (DeadlockException e) {
+			return 0;
+		}
 	}
 
 	@Override
 	public int queryCars(int id, String location) throws RemoteException {
-		return carManager.queryCars(id, location);
+		try {
+			return carManager.queryCars(id, location);
+		} catch (DeadlockException e) {
+			return 0;
+		}
 	}
 
 	@Override
 	public int queryRooms(int id, String location) throws RemoteException {
-		return hotelManager.queryRooms(id, location);
+		try {
+			return hotelManager.queryRooms(id, location);
+		} catch (DeadlockException e) {
+			return 0;
+		}
 	}
 
 	@Override
 	public String queryCustomerInfo(int id, int customer) throws RemoteException {
-		return customerManager.queryCustomerInfo(id, customer);
+		try {
+			return customerManager.queryCustomerInfo(id, customer);
+		} catch (DeadlockException e) {
+			return null;
+		}
 	}
 
 	@Override
 	public int queryFlightPrice(int id, int flightNumber) throws RemoteException {
-		return flightManager.queryFlightPrice(id, flightNumber);
+		try {
+			return flightManager.queryFlightPrice(id, flightNumber);
+		} catch (DeadlockException e) {
+			return 0;
+		}
 	}
 
 	@Override
 	public int queryCarsPrice(int id, String location) throws RemoteException {
-		return carManager.queryCarsPrice(id, location);
+		try {
+			return carManager.queryCarsPrice(id, location);
+		} catch (DeadlockException e) {
+			return 0;
+		}
 	}
 
 	@Override
 	public int queryRoomsPrice(int id, String location) throws RemoteException {
-		return hotelManager.queryRoomsPrice(id, location);
+		try {
+			return hotelManager.queryRoomsPrice(id, location);
+		} catch (DeadlockException e) {
+			return 0;
+		}
 	}
 
 	@Override
 	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException {
-		if (flightManager.reserveFlight(id, flightNumber)) {
-			int price = flightManager.queryFlightPrice(id, flightNumber);
-			return customerManager.reserve(id, customer, "flights", flightNumber + "", price);
-		}
+		try {
+			if (flightManager.reserveFlight(id, flightNumber)) {
+				int price = flightManager.queryFlightPrice(id, flightNumber);
+				return customerManager.reserve(id, customer, "flights", flightNumber + "", price);
+			}
 
-		return false;
+			return false;
+		} catch (DeadlockException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean reserveCar(int id, int customer, String location) throws RemoteException {
-		if (carManager.reserveCar(id, location)) {
-			int price = carManager.queryCarsPrice(id, location);
-			return customerManager.reserve(id, customer, "cars", location, price);
-		}
+		try {
+			if (carManager.reserveCar(id, location)) {
+				int price = carManager.queryCarsPrice(id, location);
+				return customerManager.reserve(id, customer, "cars", location, price);
+			}
 
-		return false;
+			return false;
+		} catch (DeadlockException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean reserveRoom(int id, int customer, String location) throws RemoteException {
-		if (hotelManager.reserveRoom(id, location)) {
-			int price = hotelManager.queryRoomsPrice(id, location);
-			return customerManager.reserve(id, customer, "hotels", location, price);
-		}
+		try {
+			if (hotelManager.reserveRoom(id, location)) {
+				int price = hotelManager.queryRoomsPrice(id, location);
+				return customerManager.reserve(id, customer, "hotels", location, price);
+			}
 
-		return false;
+			return false;
+		} catch (DeadlockException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean itinerary(int id, int customer, Vector<Object> flightNumbers, String location, boolean car,
 			boolean room) throws RemoteException {
-		boolean success = true;
+		try {
+			boolean success = true;
 
-		Vector<Object> reservedFlights = new Vector<>();
-		boolean carReserved = false, roomReserved = false;
+			Vector<Object> reservedFlights = new Vector<>();
+			boolean carReserved = false, roomReserved = false;
 
-		for (Object flightNumber : flightNumbers) {
-			if (!reserveFlight(id, customer, Integer.parseInt((String) flightNumber))) {
-				success = false;
-			} else {
-				reservedFlights.add(flightNumber);
+			for (Object flightNumber : flightNumbers) {
+				if (!reserveFlight(id, customer, Integer.parseInt((String) flightNumber))) {
+					success = false;
+				} else {
+					reservedFlights.add(flightNumber);
+				}
 			}
+
+			if (success && car) {
+				if (reserveCar(id, customer, location)) {
+					carReserved = true;
+				} else {
+					success = false;
+				}
+			}
+
+			if (success && room) {
+				if (reserveRoom(id, customer, location)) {
+					roomReserved = true;
+				} else {
+					success = false;
+				}
+			}
+
+			if (!success) {
+				for (Object flightNumber : reservedFlights) {
+					flightManager.releaseSeats(id, (int) flightNumber, 1);
+					customerManager.cancelReservation(id, customer, "flights", (String) flightNumber);
+				}
+
+				if (carReserved) {
+					carManager.releaseCars(id, location, 1);
+					customerManager.cancelReservation(id, customer, "cars", location);
+				}
+
+				if (roomReserved) {
+					hotelManager.releaseRoom(id, location, 1);
+					customerManager.cancelReservation(id, customer, "hotels", location);
+				}
+			}
+
+			return success;
+		} catch (DeadlockException e) {
+			return false;
 		}
-
-		if (success && car) {
-			if (reserveCar(id, customer, location)) {
-				carReserved = true;
-			} else {
-				success = false;
-			}
-		}
-
-		if (success && room) {
-			if (reserveRoom(id, customer, location)) {
-				roomReserved = true;
-			} else {
-				success = false;
-			}
-		}
-
-		if (!success) {
-			for (Object flightNumber : reservedFlights) {
-				flightManager.releaseSeats(id, (int) flightNumber, 1);
-				customerManager.cancelReservation(id, customer, "flights", (String) flightNumber);
-			}
-
-			if (carReserved) {
-				carManager.releaseCars(id, location, 1);
-				customerManager.cancelReservation(id, customer, "cars", location);
-			}
-
-			if (roomReserved) {
-				hotelManager.releaseRoom(id, location, 1);
-				customerManager.cancelReservation(id, customer, "hotels", location);
-			}
-		}
-
-		return success;
 	}
 
 }

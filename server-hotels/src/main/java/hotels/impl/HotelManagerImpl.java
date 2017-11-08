@@ -5,6 +5,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import common.locks.DeadlockException;
 import common.reservations.ReservationManager;
 import hotels.HotelManager;
 
@@ -46,7 +47,7 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 	}
 
 	@Override
-	public boolean addRooms(int id, String location, int numRooms, int price) {
+	public boolean addRooms(int id, String location, int numRooms, int price) throws DeadlockException {
 		if (getItem(id, location) == null) {
 			addItem(id, location, new Hotel(location, numRooms, price));
 		} else {
@@ -57,27 +58,27 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 	}
 
 	@Override
-	public boolean deleteRooms(int id, String location) {
+	public boolean deleteRooms(int id, String location) throws DeadlockException {
 		return deleteItem(id, location);
 	}
 
 	@Override
-	public int queryRooms(int id, String location) {
+	public int queryRooms(int id, String location) throws DeadlockException {
 		return queryNum(id, location);
 	}
 
 	@Override
-	public int queryRoomsPrice(int id, String location) {
+	public int queryRoomsPrice(int id, String location) throws DeadlockException {
 		return queryPrice(id, location);
 	}
 
 	@Override
-	public boolean reserveRoom(int id, String location) {
+	public boolean reserveRoom(int id, String location) throws DeadlockException {
 		return reserveItem(id, location);
 	}
 
 	@Override
-	public boolean releaseRoom(int id, String location, int amount) {
+	public boolean releaseRoom(int id, String location, int amount) throws DeadlockException {
 		return increaseItemCount(id, location, amount, 0);
 	}
 

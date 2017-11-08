@@ -31,26 +31,21 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * 
 	 * @see Middleware#deleteCustomer(int, int)
 	 * @return success
+	 * @throws DeadlockException
 	 */
-	protected boolean addItem(int id, String key, R instance) {
+	protected boolean addItem(int id, String key, R instance) throws DeadlockException {
 		log("addItem(" + id + ", " + key + ") called");
 
-		try {
-			lockManager.lock(id, "reservableItems", TrxnObj.WRITE);
+		lockManager.lock(id, "reservableItems", TrxnObj.WRITE);
 
-			if (reservableItems.containsKey(id, key)) {
-				log("addItem(" + id + ", " + key + "): the key already exist. The current value will be overwitten.");
-			}
-
-			log("addItem(" + id + ", " + key + ") created new " + instance);
-			reservableItems.put(id, key, instance);
-
-			return true;
-
-		} catch (DeadlockException e) {
-			abortTransaction(id);
-			return false;
+		if (reservableItems.containsKey(id, key)) {
+			log("addItem(" + id + ", " + key + "): the key already exist. The current value will be overwitten.");
 		}
+
+		log("addItem(" + id + ", " + key + ") created new " + instance);
+		reservableItems.put(id, key, instance);
+
+		return true;
 	}
 
 	/**
@@ -62,49 +57,38 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * @param price
 	 *            the new price or 0 if the price is unchanged
 	 * @return success
+	 * @throws DeadlockException
 	 */
-	protected boolean increaseItemCount(int id, String key, int numItems, int price) {
+	protected boolean increaseItemCount(int id, String key, int numItems, int price) throws DeadlockException {
 		log("increaseItemCount(" + id + ", " + key + ", " + numItems + ") called");
 
-		try {
-			lockManager.lock(id, "reservableItems", TrxnObj.WRITE);
+		lockManager.lock(id, "reservableItems", TrxnObj.WRITE);
+		R item = reservableItems.get(id, key);
 
-			R item = reservableItems.get(id, key);
-
-			if (item == null) {
-				log("increaseItemCount(" + id + ", " + key + ", " + numItems + ") failed: item does not exist");
-				return false;
-			}
-
-			if (price > 0) {
-				item.setPrice(price);
-			}
-
-			item.setCount(item.getCount() + numItems);
-			log("increaseItemCount(" + id + ", " + key + ", " + numItems + ") succeeded");
-
-			return true;
-
-		} catch (DeadlockException e) {
-			abortTransaction(id);
+		if (item == null) {
+			log("increaseItemCount(" + id + ", " + key + ", " + numItems + ") failed: item does not exist");
 			return false;
 		}
+
+		if (price > 0) {
+			item.setPrice(price);
+		}
+
+		item.setCount(item.getCount() + numItems);
+		log("increaseItemCount(" + id + ", " + key + ", " + numItems + ") succeeded");
+
+		return true;
 	}
 
 	/**
 	 * Returns an item given its key.
 	 * 
 	 * @return the item or null if it does not exist
+	 * @throws DeadlockException
 	 */
-	protected R getItem(int id, String key) {
-		try {
-			lockManager.lock(id, "reservableItems", TrxnObj.READ);
-			return reservableItems.get(id, key);
-
-		} catch (DeadlockException e) {
-			abortTransaction(id);
-			return null;
-		}
+	protected R getItem(int id, String key) throws DeadlockException {
+		lockManager.lock(id, "reservableItems", TrxnObj.READ);
+		return reservableItems.get(id, key);
 	}
 
 	/**
@@ -112,85 +96,71 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * it does not exist.
 	 * 
 	 * @return success
+	 * @throws DeadlockException
 	 */
-	protected boolean deleteItem(int id, String key) {
+	protected boolean deleteItem(int id, String key) throws DeadlockException {
 		log("deleteItem(" + id + ", " + key + ") called");
 
-		try {
-			lockManager.lock(id, "reservableItems", TrxnObj.WRITE);
-			boolean success = true;
-			R item = reservableItems.get(id, key);
+		lockManager.lock(id, "reservableItems", TrxnObj.WRITE);
+		boolean success = true;
+		R item = reservableItems.get(id, key);
 
-			if (item == null) {
-				log("deleteItem(" + id + ", " + key + ") failed: item does not exist");
-				success = false;
-			} else if (item.getCount() > 0) {
-				log("deleteItem(" + id + ", " + key
-						+ ") failed: cannot delete item because some customers reserved it");
-				success = false;
-			} else {
-				log("deleteItem(\" + id + \", \" + key + \"): successfully removed item " + item);
-				reservableItems.remove(id, item);
-			}
-
-			return success;
-
-		} catch (DeadlockException e) {
-			abortTransaction(id);
-			return false;
+		if (item == null) {
+			log("deleteItem(" + id + ", " + key + ") failed: item does not exist");
+			success = false;
+		} else if (item.getCount() > 0) {
+			log("deleteItem(" + id + ", " + key + ") failed: cannot delete item because some customers reserved it");
+			success = false;
+		} else {
+			log("deleteItem(\" + id + \", \" + key + \"): successfully removed item " + item);
+			reservableItems.remove(id, item);
 		}
+
+		return success;
 	}
 
 	/**
 	 * Returns the amount of available resources.
+	 * 
+	 * @throws DeadlockException
 	 */
-	protected int queryNum(int id, String key) {
+	protected int queryNum(int id, String key) throws DeadlockException {
 		log("queryNum(" + id + ", " + key + ") called");
 
-		try {
-			lockManager.lock(id, "reservableItems", TrxnObj.READ);
-			int num = 0;
-			ReservableItem item = reservableItems.get(id, key);
+		lockManager.lock(id, "reservableItems", TrxnObj.READ);
+		int num = 0;
+		ReservableItem item = reservableItems.get(id, key);
 
-			if (item != null) {
-				num = item.getCount();
-				log("queryNum(" + id + ", " + key + ") returns count=" + num);
-			} else {
-				log("queryNum(" + id + ", " + key + "): item does not exist. Returns 0 by default.");
-			}
-
-			return num;
-
-		} catch (DeadlockException e) {
-			abortTransaction(id);
-			return -1;
+		if (item != null) {
+			num = item.getCount();
+			log("queryNum(" + id + ", " + key + ") returns count=" + num);
+		} else {
+			log("queryNum(" + id + ", " + key + "): item does not exist. Returns 0 by default.");
 		}
+
+		return num;
 	}
 
 	/**
 	 * Returns the price of an item.
+	 * 
+	 * @throws DeadlockException
 	 */
-	protected int queryPrice(int id, String key) {
+	protected int queryPrice(int id, String key) throws DeadlockException {
 		log("queryPrice(" + id + ", " + key + ") called");
 
-		try {
-			lockManager.lock(id, "reservableItems", TrxnObj.READ);
-			int price = 0;
-			ReservableItem item = reservableItems.get(id, key);
+		lockManager.lock(id, "reservableItems", TrxnObj.READ);
+		int price = 0;
+		ReservableItem item = reservableItems.get(id, key);
 
-			if (item != null) {
-				price = item.getPrice();
-				log("queryPrice(" + id + ", " + key + ") returns cost=$" + price);
-			} else {
-				log("queryPrice(" + id + ", " + key + "): item does not exist. Returns 0 by default.");
-			}
-
-			return price;
-
-		} catch (DeadlockException e) {
-			abortTransaction(id);
-			return -1;
+		if (item != null) {
+			price = item.getPrice();
+			log("queryPrice(" + id + ", " + key + ") returns cost=$" + price);
+		} else {
+			log("queryPrice(" + id + ", " + key + "): item does not exist. Returns 0 by default.");
 		}
+
+		return price;
 	}
 
 	/**
@@ -198,33 +168,28 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * 
 	 * @see ReservationManager#queryNum(int, String)
 	 * @return success
+	 * @throws DeadlockException 
 	 */
-	protected boolean reserveItem(int id, String key) {
+	protected boolean reserveItem(int id, String key) throws DeadlockException {
 		log("reserveItem(" + id + ", " + key + ") called");
 
-		try {
-			lockManager.lock(id, "reservableItems", TrxnObj.READ);
-			boolean success = true;
-			R item = reservableItems.get(id, key);
+		lockManager.lock(id, "reservableItems", TrxnObj.READ);
+		boolean success = true;
+		R item = reservableItems.get(id, key);
 
-			if (item == null) {
-				success = false;
-				log("reserveItem(" + id + ", " + key + ") failed: the requested item does not exist");
-			} else if (item.getCount() == 0) {
-				log("reserveItem(" + id + ", " + key + ") failed: no more items");
-				success = false;
-			} else {
-				item.setCount(item.getCount() - 1);
-				item.setReserved(item.getReserved() + 1);
-				log("reserveItem(" + id + ", " + key + ") succeeded");
-			}
-
-			return success;
-
-		} catch (DeadlockException e) {
-			abortTransaction(id);
-			return false;
+		if (item == null) {
+			success = false;
+			log("reserveItem(" + id + ", " + key + ") failed: the requested item does not exist");
+		} else if (item.getCount() == 0) {
+			log("reserveItem(" + id + ", " + key + ") failed: no more items");
+			success = false;
+		} else {
+			item.setCount(item.getCount() - 1);
+			item.setReserved(item.getReserved() + 1);
+			log("reserveItem(" + id + ", " + key + ") succeeded");
 		}
+
+		return success;
 	}
 
 	/**
