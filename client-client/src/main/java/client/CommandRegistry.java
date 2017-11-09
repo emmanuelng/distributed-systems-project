@@ -24,6 +24,9 @@ import client.commands.query.QueryRoomPriceCommand;
 import client.commands.reserve.ReserveCarCommand;
 import client.commands.reserve.ReserveFlightCommand;
 import client.commands.reserve.ReserveRoomCommand;
+import client.commands.transactions.AbortCommand;
+import client.commands.transactions.CommitCommand;
+import client.commands.transactions.StartCommand;
 
 public class CommandRegistry {
 
@@ -54,6 +57,10 @@ public class CommandRegistry {
 		COMMANDS.put("reserveflight", new ReserveFlightCommand());
 		COMMANDS.put("reservecar", new ReserveCarCommand());
 		COMMANDS.put("reserveroom", new ReserveRoomCommand());
+		
+		COMMANDS.put("start", new StartCommand());
+		COMMANDS.put("commit", new CommitCommand());
+		COMMANDS.put("abort", new AbortCommand());
 	}
 
 }
