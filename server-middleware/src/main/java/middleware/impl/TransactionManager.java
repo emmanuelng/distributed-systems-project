@@ -1,5 +1,6 @@
 package middleware.impl;
 
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -37,7 +38,11 @@ public class TransactionManager {
 			boolean success = true;
 
 			for (TransactionHandler handler : transactions.get(id)) {
-				success &= handler.commit(id);
+				try {
+					success &= handler.commit(id);
+				} catch (RemoteException e) {
+					System.err.println("An error occurred while commiting transaction " + id);
+				}
 			}
 
 			transactions.remove(id);
@@ -51,7 +56,11 @@ public class TransactionManager {
 			boolean success = true;
 
 			for (TransactionHandler handler : transactions.get(id)) {
-				success &= handler.abort(id);
+				try {
+					success &= handler.abort(id);
+				} catch (RemoteException e) {
+					System.err.println("An error occurred while aborting transaction " + id);
+				}
 			}
 
 			transactions.remove(id);
