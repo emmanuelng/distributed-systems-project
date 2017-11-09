@@ -4,6 +4,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Vector;
 
+import middleware.impl.InvalidTransactionException;
+
 /**
  * Simplified version from CSE 593 University of Washington
  *
@@ -27,30 +29,35 @@ public interface Middleware extends Remote {
 	 * existing flight should overwrite the current price of the available seats.
 	 *
 	 * @return success.
+	 * @throws InvalidTransactionException 
 	 */
-	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException;
+	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Add cars to a location. This should look a lot like addFlight, only keyed on
 	 * a string location instead of a flight number.
+	 * @throws InvalidTransactionException 
 	 */
-	public boolean addCars(int id, String location, int numCars, int price) throws RemoteException;
+	public boolean addCars(int id, String location, int numCars, int price) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Add rooms to a location. This should look a lot like addFlight, only keyed on
 	 * a string location instead of a flight number.
+	 * @throws InvalidTransactionException 
 	 */
-	public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException;
+	public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Returns a unique customer identifier.
+	 * @throws InvalidTransactionException 
 	 */
-	public int newCustomer(int id) throws RemoteException;
+	public int newCustomer(int id) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * New customer with providing id.
+	 * @throws InvalidTransactionException 
 	 */
-	public boolean newCustomer(int id, int cid) throws RemoteException;
+	public boolean newCustomer(int id, int cid) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Deletes the entire flight. Implies whole deletion of the flight. all seats,
@@ -58,85 +65,100 @@ public interface Middleware extends Remote {
 	 * cannot be deleted
 	 *
 	 * @return success.
+	 * @throws InvalidTransactionException 
 	 */
-	public boolean deleteFlight(int id, int flightNum) throws RemoteException;
+	public boolean deleteFlight(int id, int flightNum) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Deletes all Cars from a location. It may not succeed if there are
 	 * reservations for this location.
 	 *
 	 * @return success
+	 * @throws InvalidTransactionException 
 	 */
-	public boolean deleteCars(int id, String location) throws RemoteException;
+	public boolean deleteCars(int id, String location) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Deletes all Rooms from a location. It may not succeed if there are
 	 * reservations for this location.
 	 *
 	 * @return success
+	 * @throws InvalidTransactionException 
 	 */
-	public boolean deleteRooms(int id, String location) throws RemoteException;
+	public boolean deleteRooms(int id, String location) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Removes the customer and associated reservations.
+	 * @throws InvalidTransactionException 
 	 */
-	public boolean deleteCustomer(int id, int customer) throws RemoteException;
+	public boolean deleteCustomer(int id, int customer) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Returns the number of empty seats.
+	 * @throws InvalidTransactionException 
 	 */
-	public int queryFlight(int id, int flightNumber) throws RemoteException;
+	public int queryFlight(int id, int flightNumber) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Return the number of cars available at a location.
+	 * @throws InvalidTransactionException 
 	 */
-	public int queryCars(int id, String location) throws RemoteException;
+	public int queryCars(int id, String location) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Returns the number of rooms available at a location
+	 * @throws InvalidTransactionException 
 	 */
-	public int queryRooms(int id, String location) throws RemoteException;
+	public int queryRooms(int id, String location) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Returns a bill
+	 * @throws InvalidTransactionException 
 	 */
-	public String queryCustomerInfo(int id, int customer) throws RemoteException;
+	public String queryCustomerInfo(int id, int customer) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Returns the price of a seat on this flight.
+	 * @throws InvalidTransactionException 
 	 */
-	public int queryFlightPrice(int id, int flightNumber) throws RemoteException;
+	public int queryFlightPrice(int id, int flightNumber) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Returns the price of a car at a location.
+	 * @throws InvalidTransactionException 
 	 */
-	public int queryCarsPrice(int id, String location) throws RemoteException;
+	public int queryCarsPrice(int id, String location) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Returns the price of a room at a location.
+	 * @throws InvalidTransactionException 
 	 */
-	public int queryRoomsPrice(int id, String location) throws RemoteException;
+	public int queryRoomsPrice(int id, String location) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Reserves a seat on this flight.
+	 * @throws InvalidTransactionException 
 	 */
-	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException;
+	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Reserves a car at this location.
+	 * @throws InvalidTransactionException 
 	 */
-	public boolean reserveCar(int id, int customer, String location) throws RemoteException;
+	public boolean reserveCar(int id, int customer, String location) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Reserves a room certain at this location.
+	 * @throws InvalidTransactionException 
 	 */
-	public boolean reserveRoom(int id, int customer, String location) throws RemoteException;
+	public boolean reserveRoom(int id, int customer, String location) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Reserves an itinerary.
+	 * @throws InvalidTransactionException 
 	 */
 	public boolean itinerary(int id, int customer, Vector<Integer> flightNumbers, String location, boolean car,
-			boolean room) throws RemoteException;
+			boolean room) throws RemoteException, InvalidTransactionException;
 
 	/**
 	 * Starts a new transaction.
@@ -147,12 +169,15 @@ public interface Middleware extends Remote {
 	
 	/**
 	 * Commits a transaction.
+	 * @throws InvalidTransactionException 
 	 */
-	public boolean commit(int id);
+	public boolean commit(int id) throws InvalidTransactionException;
 	
 	/**
 	 * Aborts a transaction.
+	 * 
+	 * @throws InvalidTransactionException
 	 */
-	public boolean abort(int id);
+	public boolean abort(int id) throws InvalidTransactionException;
 
 }

@@ -7,6 +7,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 import cars.CarManager;
@@ -116,19 +118,23 @@ public class MiddlewareImpl implements Middleware {
 	private HotelManager hotelManager;
 	private CustomerManager customerManager;
 	private int transactionId;
+	private Set<Integer> activeTransactions;
 
 	public MiddlewareImpl(CarManager carManager, FlightManager flightManager, HotelManager hotelManager) {
 		this.carManager = carManager;
 		this.flightManager = flightManager;
 		this.hotelManager = hotelManager;
 		this.transactionId = 0;
+		this.activeTransactions = new HashSet<>();
 
 		// The customers are handled in the middle ware server
 		this.customerManager = new CustomerManagerImpl();
 	}
 
 	@Override
-	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException {
+	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return flightManager.addFlight(id, flightNum, flightSeats, flightPrice);
 		} catch (DeadlockException e) {
@@ -138,7 +144,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean addCars(int id, String location, int numCars, int price) throws RemoteException {
+	public boolean addCars(int id, String location, int numCars, int price) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return carManager.addCars(id, location, numCars, price);
 		} catch (DeadlockException e) {
@@ -148,7 +156,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException {
+	public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return hotelManager.addRooms(id, location, numRooms, price);
 		} catch (DeadlockException e) {
@@ -158,7 +168,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int newCustomer(int id) throws RemoteException {
+	public int newCustomer(int id) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return customerManager.newCustomer(id);
 		} catch (DeadlockException e) {
@@ -168,7 +180,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean newCustomer(int id, int cid) throws RemoteException {
+	public boolean newCustomer(int id, int cid) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return customerManager.newCustomer(id, cid);
 		} catch (DeadlockException e) {
@@ -178,7 +192,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean deleteFlight(int id, int flightNum) throws RemoteException {
+	public boolean deleteFlight(int id, int flightNum) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return flightManager.deleteFlight(id, flightNum);
 		} catch (DeadlockException e) {
@@ -188,7 +204,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean deleteCars(int id, String location) throws RemoteException {
+	public boolean deleteCars(int id, String location) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return carManager.deleteCars(id, location);
 		} catch (DeadlockException e) {
@@ -198,7 +216,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean deleteRooms(int id, String location) throws RemoteException {
+	public boolean deleteRooms(int id, String location) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return hotelManager.deleteRooms(id, location);
 		} catch (DeadlockException e) {
@@ -208,8 +228,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean deleteCustomer(int id, int customer) throws RemoteException {
+	public boolean deleteCustomer(int id, int customer) throws RemoteException, InvalidTransactionException {
 		boolean success = true;
+		checkTransactionId(id);
 
 		try {
 			// Release the items reserved by the customer, then remove the customer
@@ -255,7 +276,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int queryFlight(int id, int flightNumber) throws RemoteException {
+	public int queryFlight(int id, int flightNumber) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return flightManager.queryFlight(id, flightNumber);
 		} catch (DeadlockException e) {
@@ -265,7 +288,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int queryCars(int id, String location) throws RemoteException {
+	public int queryCars(int id, String location) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return carManager.queryCars(id, location);
 		} catch (DeadlockException e) {
@@ -275,7 +300,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int queryRooms(int id, String location) throws RemoteException {
+	public int queryRooms(int id, String location) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return hotelManager.queryRooms(id, location);
 		} catch (DeadlockException e) {
@@ -285,7 +312,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public String queryCustomerInfo(int id, int customer) throws RemoteException {
+	public String queryCustomerInfo(int id, int customer) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return customerManager.queryCustomerInfo(id, customer);
 		} catch (DeadlockException e) {
@@ -295,7 +324,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int queryFlightPrice(int id, int flightNumber) throws RemoteException {
+	public int queryFlightPrice(int id, int flightNumber) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return flightManager.queryFlightPrice(id, flightNumber);
 		} catch (DeadlockException e) {
@@ -305,7 +336,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int queryCarsPrice(int id, String location) throws RemoteException {
+	public int queryCarsPrice(int id, String location) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return carManager.queryCarsPrice(id, location);
 		} catch (DeadlockException e) {
@@ -315,7 +348,9 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int queryRoomsPrice(int id, String location) throws RemoteException {
+	public int queryRoomsPrice(int id, String location) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			return hotelManager.queryRoomsPrice(id, location);
 		} catch (DeadlockException e) {
@@ -325,7 +360,10 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException {
+	public boolean reserveFlight(int id, int customer, int flightNumber)
+			throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			if (flightManager.reserveFlight(id, flightNumber)) {
 				int price = flightManager.queryFlightPrice(id, flightNumber);
@@ -340,7 +378,10 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean reserveCar(int id, int customer, String location) throws RemoteException {
+	public boolean reserveCar(int id, int customer, String location)
+			throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			if (carManager.reserveCar(id, location)) {
 				int price = carManager.queryCarsPrice(id, location);
@@ -355,7 +396,10 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean reserveRoom(int id, int customer, String location) throws RemoteException {
+	public boolean reserveRoom(int id, int customer, String location)
+			throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			if (hotelManager.reserveRoom(id, location)) {
 				int price = hotelManager.queryRoomsPrice(id, location);
@@ -371,7 +415,9 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean itinerary(int id, int customer, Vector<Integer> flightNumbers, String location, boolean car,
-			boolean room) throws RemoteException {
+			boolean room) throws RemoteException, InvalidTransactionException {
+		checkTransactionId(id);
+
 		try {
 			boolean success = true;
 
@@ -428,25 +474,45 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public int start() {
-		return transactionId++;
+		int id = transactionId++;
+		activeTransactions.add(id);
+		return id;
 	}
 
 	@Override
-	public boolean commit(int id) {
+	public boolean commit(int id) throws InvalidTransactionException {
+		checkTransactionId(id);
+
 		carManager.commit(id);
 		hotelManager.commit(id);
 		flightManager.commit(id);
 		customerManager.commit(id);
+		activeTransactions.remove(id);
 		return true;
 	}
 
 	@Override
-	public boolean abort(int id) {
+	public boolean abort(int id) throws InvalidTransactionException {
+		checkTransactionId(id);
+
 		carManager.abort(id);
 		hotelManager.abort(id);
 		flightManager.abort(id);
 		customerManager.abort(id);
+		activeTransactions.remove(id);
 		return false;
+	}
+
+	/**
+	 * Checks if the given id is a valid transaction id. If it is not valid, throws
+	 * an exception.
+	 * 
+	 * @throws InvalidTransactionException
+	 */
+	private void checkTransactionId(int id) throws InvalidTransactionException {
+		if (!activeTransactions.contains(id)) {
+			throw new InvalidTransactionException();
+		}
 	}
 
 }
