@@ -17,5 +17,6 @@ include 'server-hotels'
 include 'server-middleware'
 include 'server-common'
 include 'client-client'
+include 'client-performance'
 
 rootProject.name = 'comp512-project'

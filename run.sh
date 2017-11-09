@@ -5,6 +5,7 @@ declare -A APPS
 
 # For each app, define the main class
 APPS[client-client]='client.Client'
+APPS[client-performance]='client.performance.PerformanceTest'
 APPS[server-cars]='cars.impl.CarManagerImpl'
 APPS[server-flights]='flights.impl.FlightManagerImpl'
 APPS[server-hotels]='hotels.impl.HotelManagerImpl'
@@ -21,7 +22,7 @@ if [ $# -gt 1 ]; then
 		echo
 
 		# Go to the directory
-		cd $DIR/$dirname		
+		cd $DIR/$dirname
 
 		# Generate the policy file
 		echo "grant codeBase \"file:"$DIR"/"$dirname"\" {" > $DIR/$dirname/java.policy
@@ -31,6 +32,7 @@ if [ $# -gt 1 ]; then
 
 		# Set the classpath
 		classpath="$DIR/client-client/build/libs/client-client-1.0.jar"
+		classpath=$classpath":$DIR/client-performance/build/libs/client-performance-1.0.jar"
 		classpath=$classpath":$DIR/server-common/build/libs/server-common-1.0.0.jar"
 		classpath=$classpath":$DIR/server-cars/build/libs/server-cars-1.0.jar"
 		classpath=$classpath":$DIR/server-flights/build/libs/server-flights-1.0.jar"
