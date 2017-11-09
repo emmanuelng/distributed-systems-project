@@ -18,18 +18,18 @@ public class NewFlightCommand extends Command {
 		System.out.println("Flight number: " + arguments.get(1));
 		System.out.println("Add Flight Seats: " + arguments.get(2));
 		System.out.println("Set Flight Price: " + arguments.get(3) + "\n");
-		
+
 		int id = Integer.parseInt(arguments.get(0));
 		int flightNum = Integer.parseInt(arguments.get(1));
 		int flightSeats = Integer.parseInt(arguments.get(2));
 		int flightPrice = Integer.parseInt(arguments.get(3));
-		
+
 		if (middleware.addFlight(id, flightNum, flightSeats, flightPrice)) {
 			System.out.println("Flight added.");
 		} else {
 			System.out.println("Flight could not be added.");
 		}
-		
+
 	}
 
 	@Override

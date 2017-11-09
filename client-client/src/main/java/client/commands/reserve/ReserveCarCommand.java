@@ -17,11 +17,11 @@ public class ReserveCarCommand extends Command {
 		System.out.println("Reserving a car at a location using id: " + arguments.get(0));
 		System.out.println("Customer id: " + arguments.get(1));
 		System.out.println("Location: " + arguments.get(2) + "\n");
-		
+
 		int id = Integer.parseInt(arguments.get(0));
 		int customer = Integer.parseInt(arguments.get(1));
 		String location = arguments.get(2);
-		
+
 		if (middleware.reserveCar(id, customer, location)) {
 			System.out.println("Car reserved.");
 		} else {

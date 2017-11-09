@@ -57,7 +57,7 @@ public class CommandRegistry {
 		COMMANDS.put("reserveflight", new ReserveFlightCommand());
 		COMMANDS.put("reservecar", new ReserveCarCommand());
 		COMMANDS.put("reserveroom", new ReserveRoomCommand());
-		
+
 		COMMANDS.put("start", new StartCommand());
 		COMMANDS.put("commit", new CommitCommand());
 		COMMANDS.put("abort", new AbortCommand());

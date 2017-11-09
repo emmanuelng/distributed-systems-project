@@ -8,14 +8,14 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import common.transactions.TransactionHandler;
+import common.rm.ResourceManager;
 
 public class TransactionManager {
 
 	public static final long TRANSACTION_TIMEOUT = 60000;
 
 	private int id;
-	private Map<Integer, Set<TransactionHandler>> transactions;
+	private Map<Integer, Set<ResourceManager>> transactions;
 	private Set<Integer> abortedTransactions;
 	private Map<Integer, Timer> timers;
 
@@ -37,9 +37,9 @@ public class TransactionManager {
 		if (transactions.containsKey(id)) {
 			boolean success = true;
 
-			for (TransactionHandler handler : transactions.get(id)) {
+			for (ResourceManager rm : transactions.get(id)) {
 				try {
-					success &= handler.commit(id);
+					success &= rm.commit(id);
 				} catch (RemoteException e) {
 					System.err.println("An error occurred while commiting transaction " + id);
 				}
@@ -55,9 +55,9 @@ public class TransactionManager {
 		if (transactions.containsKey(id)) {
 			boolean success = true;
 
-			for (TransactionHandler handler : transactions.get(id)) {
+			for (ResourceManager rm : transactions.get(id)) {
 				try {
-					success &= handler.abort(id);
+					success &= rm.abort(id);
 				} catch (RemoteException e) {
 					System.err.println("An error occurred while aborting transaction " + id);
 				}
@@ -71,9 +71,9 @@ public class TransactionManager {
 		return false;
 	}
 
-	public void enlist(int id, TransactionHandler handler) {
+	public void enlist(int id, ResourceManager rm) {
 		if (transactions.containsKey(id)) {
-			transactions.get(id).add(handler);
+			transactions.get(id).add(rm);
 		}
 	}
 

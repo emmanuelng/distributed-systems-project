@@ -16,11 +16,11 @@ public class QueryRoomPriceCommand extends Command {
 	public void execute(Middleware middleware, List<String> arguments) throws Exception {
 		System.out.println("Querying a room price using id: " + arguments.get(0));
 		System.out.println("Room Location: " + arguments.get(1) + "\n");
-		
+
 		int id = Integer.parseInt(arguments.get(0));
 		String location = arguments.get(1);
 		int price = middleware.queryRoomsPrice(id, location);
-		
+
 		System.out.println("Price of Rooms at this location:" + price);
 	}
 

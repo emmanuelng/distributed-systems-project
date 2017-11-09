@@ -23,7 +23,7 @@ public class NewCarCommand extends Command {
 		String location = arguments.get(1);
 		int numCars = Integer.parseInt(arguments.get(2));
 		int price = Integer.parseInt(arguments.get(3));
-		
+
 		if (middleware.addCars(id, location, numCars, price)) {
 			System.out.println("Car added.");
 		} else {

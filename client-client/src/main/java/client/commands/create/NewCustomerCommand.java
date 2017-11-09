@@ -15,10 +15,10 @@ public class NewCustomerCommand extends Command {
 	@Override
 	public void execute(Middleware middleware, List<String> arguments) throws Exception {
 		System.out.println("\nAdding a new Customer using id:" + arguments.get(0) + "\n");
-		
+
 		int id = Integer.parseInt(arguments.get(0));
 		int customerId = middleware.newCustomer(id);
-		
+
 		System.out.println("New customer id:" + customerId);
 	}
 

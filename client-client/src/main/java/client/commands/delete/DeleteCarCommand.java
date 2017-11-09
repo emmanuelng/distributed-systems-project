@@ -16,10 +16,10 @@ public class DeleteCarCommand extends Command {
 	public void execute(Middleware middleware, List<String> arguments) throws Exception {
 		System.out.println("\nDeleting the cars from a particular location using id: " + arguments.get(0));
 		System.out.println("Car Location: " + arguments.get(1));
-		
+
 		int id = Integer.parseInt(arguments.get(0));
 		String location = arguments.get(1);
-		
+
 		if (middleware.deleteCars(id, location)) {
 			System.out.println("Cars deleted.");
 		} else {

@@ -1,12 +1,11 @@
 package hotels;
 
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import common.locks.DeadlockException;
-import common.transactions.TransactionHandler;
+import common.rm.ResourceManager;
 
-public interface HotelManager extends Remote, TransactionHandler {
+public interface HotelManager extends ResourceManager {
 
 	/**
 	 * Add rooms to a location. This should look a lot like addFlight, only keyed on

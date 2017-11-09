@@ -21,7 +21,7 @@ public class ReserveRoomCommand extends Command {
 		int id = Integer.parseInt(arguments.get(0));
 		int customer = Integer.parseInt(arguments.get(1));
 		String location = arguments.get(2);
-		
+
 		if (middleware.reserveRoom(id, customer, location)) {
 			System.out.println("Room reserved.");
 		} else {

@@ -1,22 +1,23 @@
 package customers;
 
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import common.locks.DeadlockException;
-import common.transactions.TransactionHandler;
+import common.rm.ResourceManager;
 
-public interface CustomerManager extends Remote, TransactionHandler {
+public interface CustomerManager extends ResourceManager {
 
 	/**
 	 * Returns a unique customer identifier.
-	 * @throws DeadlockException 
+	 * 
+	 * @throws DeadlockException
 	 */
 	public int newCustomer(int id) throws RemoteException, DeadlockException;
 
 	/**
 	 * New customer with providing id.
-	 * @throws DeadlockException 
+	 * 
+	 * @throws DeadlockException
 	 */
 	public boolean newCustomer(int id, int cid) throws RemoteException, DeadlockException;
 
@@ -24,13 +25,14 @@ public interface CustomerManager extends Remote, TransactionHandler {
 	 * Removes the customer and associated reservations.
 	 * 
 	 * @return success
-	 * @throws DeadlockException 
+	 * @throws DeadlockException
 	 */
 	public boolean deleteCustomer(int id, int cid) throws RemoteException, DeadlockException;
 
 	/**
 	 * Returns a bill.
-	 * @throws DeadlockException 
+	 * 
+	 * @throws DeadlockException
 	 */
 	public String queryCustomerInfo(int id, int cid) throws RemoteException, DeadlockException;
 
@@ -38,15 +40,16 @@ public interface CustomerManager extends Remote, TransactionHandler {
 	 * Adds a reservation to a customer.
 	 * 
 	 * @return success
-	 * @throws DeadlockException 
+	 * @throws DeadlockException
 	 */
-	public boolean reserve(int id, int cid, String manager, String itemId, int price) throws RemoteException, DeadlockException;
+	public boolean reserve(int id, int cid, String manager, String itemId, int price)
+			throws RemoteException, DeadlockException;
 
 	/**
 	 * Cancels a reservation.
 	 * 
 	 * @return success
-	 * @throws DeadlockException 
+	 * @throws DeadlockException
 	 */
 	public boolean cancelReservation(int id, int cid, String manager, String itemId) throws DeadlockException;
 
@@ -55,13 +58,14 @@ public interface CustomerManager extends Remote, TransactionHandler {
 	 * has the following format: manager/itemId/amount
 	 * 
 	 * @return the string
-	 * @throws DeadlockException 
+	 * @throws DeadlockException
 	 */
 	public String queryReservations(int id, int cid) throws RemoteException, DeadlockException;
 
 	/**
 	 * Removes all the reservations associated with the given item.
-	 * @throws DeadlockException 
+	 * 
+	 * @throws DeadlockException
 	 */
 	public void clearReservationsForItem(int id, String itemId) throws RemoteException, DeadlockException;
 

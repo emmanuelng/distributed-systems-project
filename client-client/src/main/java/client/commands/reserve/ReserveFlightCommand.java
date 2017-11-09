@@ -17,11 +17,11 @@ public class ReserveFlightCommand extends Command {
 		System.out.println("\nReserving a seat on a flight using id: " + arguments.get(0));
 		System.out.println("Customer id: " + arguments.get(1));
 		System.out.println("Flight number: " + arguments.get(2) + "\n");
-		
+
 		int id = Integer.parseInt(arguments.get(0));
 		int customer = Integer.parseInt(arguments.get(1));
 		int flightNumber = Integer.parseInt(arguments.get(2));
-		
+
 		if (middleware.reserveFlight(id, customer, flightNumber)) {
 			System.out.println("Flight reserved");
 		} else {

@@ -18,12 +18,12 @@ public class NewRoomCommand extends Command {
 		System.out.println("Room Location: " + arguments.get(1));
 		System.out.println("Add Number of Rooms: " + arguments.get(2));
 		System.out.println("Set Price: " + arguments.get(3) + "\n");
-		
+
 		int id = Integer.parseInt(arguments.get(0));
 		String location = arguments.get(1);
 		int numRooms = Integer.parseInt(arguments.get(2));
 		int price = Integer.parseInt(arguments.get(3));
-		
+
 		if (middleware.addRooms(id, location, numRooms, price)) {
 			System.out.println("Rooms added.");
 		} else {
