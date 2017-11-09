@@ -370,7 +370,7 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean itinerary(int id, int customer, Vector<Object> flightNumbers, String location, boolean car,
+	public boolean itinerary(int id, int customer, Vector<Integer> flightNumbers, String location, boolean car,
 			boolean room) throws RemoteException {
 		try {
 			boolean success = true;
@@ -378,8 +378,8 @@ public class MiddlewareImpl implements Middleware {
 			Vector<Object> reservedFlights = new Vector<>();
 			boolean carReserved = false, roomReserved = false;
 
-			for (Object flightNumber : flightNumbers) {
-				if (!reserveFlight(id, customer, Integer.parseInt((String) flightNumber))) {
+			for (Integer flightNumber : flightNumbers) {
+				if (!reserveFlight(id, customer, flightNumber)) {
 					success = false;
 				} else {
 					reservedFlights.add(flightNumber);
