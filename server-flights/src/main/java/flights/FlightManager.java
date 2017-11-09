@@ -4,8 +4,9 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import common.locks.DeadlockException;
+import common.transactions.TransactionHandler;
 
-public interface FlightManager extends Remote {
+public interface FlightManager extends Remote, TransactionHandler {
 
 	/**
 	 * Add seats to a flight. In general this will be used to create a new flight,
@@ -54,26 +55,5 @@ public interface FlightManager extends Remote {
 	 * @throws DeadlockException 
 	 */
 	public boolean releaseSeats(int id, int flightNumber, int amount) throws RemoteException, DeadlockException;
-
-	/**
-	 * Starts a new transaction
-	 * 
-	 * @return success
-	 */
-	public boolean start(int id);
-
-	/**
-	 * Commits a transaction.
-	 * 
-	 * @return success
-	 */
-	public boolean commit(int id);
-
-	/**
-	 * Aborts a transaction.
-	 * 
-	 * @return success
-	 */
-	public boolean abort(int id);
 
 }

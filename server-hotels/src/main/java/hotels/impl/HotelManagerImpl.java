@@ -83,11 +83,6 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 	}
 
 	@Override
-	public boolean start(int id) {
-		return startTransaction(id);
-	}
-
-	@Override
 	public boolean commit(int id) {
 		return commitTransaction(id);
 	}

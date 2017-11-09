@@ -1,7 +1,6 @@
 package common.reservations;
 
 import java.util.HashSet;
-import java.util.Set;
 
 import common.data.RMHashtable;
 import common.locks.DeadlockException;
@@ -12,7 +11,6 @@ public abstract class ReservationManager<R extends ReservableItem> {
 
 	private RMHashtable<String, R> reservableItems;
 	private LockManager lockManager;
-	private Set<Integer> activeTransactions;
 
 	/**
 	 * Builds a new {@link ReservationManager}
@@ -23,7 +21,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	public ReservationManager() {
 		this.reservableItems = new RMHashtable<>();
 		this.lockManager = new LockManager();
-		this.activeTransactions = new HashSet<>();
+		new HashSet<>();
 	}
 
 	/**
@@ -168,7 +166,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * 
 	 * @see ReservationManager#queryNum(int, String)
 	 * @return success
-	 * @throws DeadlockException 
+	 * @throws DeadlockException
 	 */
 	protected boolean reserveItem(int id, String key) throws DeadlockException {
 		log("reserveItem(" + id + ", " + key + ") called");
@@ -192,44 +190,18 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		return success;
 	}
 
-	/**
-	 * Starts a new transaction.
-	 * 
-	 * @param id
-	 *            the transaction id
-	 */
-	protected boolean startTransaction(int id) {
-		log("Starting transaction " + id);
-		return activeTransactions.add(id);
-	}
-
-	/**
-	 * Confirms that the given transaction is done.
-	 * 
-	 * @param id
-	 *            the transaction id
-	 */
 	protected boolean commitTransaction(int id) {
-		if (activeTransactions.contains(id)) {
-			log("Committing transaction " + id);
-			lockManager.unlockAll(id);
-			activeTransactions.remove(id);
-			return true;
-		}
-
+		log("Committing transaction " + id);
+		lockManager.unlockAll(id);
 		return false;
 	}
 
 	protected boolean abortTransaction(int id) {
-		if (activeTransactions.contains(id)) {
-			log("Aborting transaction " + id);
-			lockManager.unlockAll(id);
-			reservableItems.cancel(id);
-			activeTransactions.remove(id);
-			return true;
-		}
+		log("Aborting transaction " + id);
+		lockManager.unlockAll(id);
+		reservableItems.cancel(id);
+		return true;
 
-		return false;
 	}
 
 	/**

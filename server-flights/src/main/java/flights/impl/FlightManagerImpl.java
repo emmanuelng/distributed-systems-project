@@ -84,11 +84,6 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 	}
 
 	@Override
-	public boolean start(int id) {
-		return startTransaction(id);
-	}
-
-	@Override
 	public boolean commit(int id) {
 		return commitTransaction(id);
 	}

@@ -7,8 +7,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Vector;
 
 import cars.CarManager;
@@ -117,23 +115,23 @@ public class MiddlewareImpl implements Middleware {
 	private FlightManager flightManager;
 	private HotelManager hotelManager;
 	private CustomerManager customerManager;
-	private int transactionId;
-	private Set<Integer> activeTransactions;
+	private TransactionManager tm;
 
 	public MiddlewareImpl(CarManager carManager, FlightManager flightManager, HotelManager hotelManager) {
 		this.carManager = carManager;
 		this.flightManager = flightManager;
 		this.hotelManager = hotelManager;
-		this.transactionId = 0;
-		this.activeTransactions = new HashSet<>();
 
 		// The customers are handled in the middle ware server
 		this.customerManager = new CustomerManagerImpl();
+		this.tm = new TransactionManager();
 	}
 
 	@Override
-	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException, InvalidTransactionException {
+	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice)
+			throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, flightManager);
 
 		try {
 			return flightManager.addFlight(id, flightNum, flightSeats, flightPrice);
@@ -144,8 +142,10 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean addCars(int id, String location, int numCars, int price) throws RemoteException, InvalidTransactionException {
+	public boolean addCars(int id, String location, int numCars, int price)
+			throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, carManager);
 
 		try {
 			return carManager.addCars(id, location, numCars, price);
@@ -156,8 +156,10 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException, InvalidTransactionException {
+	public boolean addRooms(int id, String location, int numRooms, int price)
+			throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, hotelManager);
 
 		try {
 			return hotelManager.addRooms(id, location, numRooms, price);
@@ -170,6 +172,7 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int newCustomer(int id) throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, customerManager);
 
 		try {
 			return customerManager.newCustomer(id);
@@ -182,6 +185,7 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean newCustomer(int id, int cid) throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, customerManager);
 
 		try {
 			return customerManager.newCustomer(id, cid);
@@ -194,6 +198,7 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean deleteFlight(int id, int flightNum) throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, flightManager);
 
 		try {
 			return flightManager.deleteFlight(id, flightNum);
@@ -206,6 +211,7 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean deleteCars(int id, String location) throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, carManager);
 
 		try {
 			return carManager.deleteCars(id, location);
@@ -218,6 +224,7 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean deleteRooms(int id, String location) throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, hotelManager);
 
 		try {
 			return hotelManager.deleteRooms(id, location);
@@ -229,8 +236,10 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean deleteCustomer(int id, int customer) throws RemoteException, InvalidTransactionException {
-		boolean success = true;
 		checkTransactionId(id);
+		tm.enlist(id, customerManager);
+
+		boolean success = true;
 
 		try {
 			// Release the items reserved by the customer, then remove the customer
@@ -254,10 +263,13 @@ public class MiddlewareImpl implements Middleware {
 
 					// Call the right manager
 					if (managerName.equals("cars")) {
+						tm.enlist(id, carManager);
 						carManager.releaseCars(id, itemId, amount);
 					} else if (managerName.equals("flights")) {
+						tm.enlist(id, flightManager);
 						flightManager.releaseSeats(id, Integer.parseInt(itemId), amount);
 					} else if (managerName.equals("hotels")) {
+						tm.enlist(id, hotelManager);
 						hotelManager.releaseRoom(id, itemId, amount);
 					}
 				}
@@ -278,6 +290,7 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int queryFlight(int id, int flightNumber) throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, flightManager);
 
 		try {
 			return flightManager.queryFlight(id, flightNumber);
@@ -290,6 +303,7 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int queryCars(int id, String location) throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, carManager);
 
 		try {
 			return carManager.queryCars(id, location);
@@ -302,6 +316,7 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int queryRooms(int id, String location) throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, hotelManager);
 
 		try {
 			return hotelManager.queryRooms(id, location);
@@ -314,6 +329,7 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public String queryCustomerInfo(int id, int customer) throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, customerManager);
 
 		try {
 			return customerManager.queryCustomerInfo(id, customer);
@@ -326,6 +342,7 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int queryFlightPrice(int id, int flightNumber) throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, flightManager);
 
 		try {
 			return flightManager.queryFlightPrice(id, flightNumber);
@@ -338,6 +355,7 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int queryCarsPrice(int id, String location) throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, carManager);
 
 		try {
 			return carManager.queryCarsPrice(id, location);
@@ -350,6 +368,7 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int queryRoomsPrice(int id, String location) throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, hotelManager);
 
 		try {
 			return hotelManager.queryRoomsPrice(id, location);
@@ -363,6 +382,8 @@ public class MiddlewareImpl implements Middleware {
 	public boolean reserveFlight(int id, int customer, int flightNumber)
 			throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, flightManager);
+		tm.enlist(id, customerManager);
 
 		try {
 			if (flightManager.reserveFlight(id, flightNumber)) {
@@ -381,6 +402,8 @@ public class MiddlewareImpl implements Middleware {
 	public boolean reserveCar(int id, int customer, String location)
 			throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, carManager);
+		tm.enlist(id, customerManager);
 
 		try {
 			if (carManager.reserveCar(id, location)) {
@@ -399,6 +422,8 @@ public class MiddlewareImpl implements Middleware {
 	public boolean reserveRoom(int id, int customer, String location)
 			throws RemoteException, InvalidTransactionException {
 		checkTransactionId(id);
+		tm.enlist(id, hotelManager);
+		tm.enlist(id, customerManager);
 
 		try {
 			if (hotelManager.reserveRoom(id, location)) {
@@ -449,17 +474,22 @@ public class MiddlewareImpl implements Middleware {
 			}
 
 			if (!success) {
+				tm.enlist(id, customerManager);
+
+				tm.enlist(id, flightManager);
 				for (Object flightNumber : reservedFlights) {
 					flightManager.releaseSeats(id, (int) flightNumber, 1);
 					customerManager.cancelReservation(id, customer, "flights", (String) flightNumber);
 				}
 
 				if (carReserved) {
+					tm.enlist(id, carManager);
 					carManager.releaseCars(id, location, 1);
 					customerManager.cancelReservation(id, customer, "cars", location);
 				}
 
 				if (roomReserved) {
+					tm.enlist(id, hotelManager);
 					hotelManager.releaseRoom(id, location, 1);
 					customerManager.cancelReservation(id, customer, "hotels", location);
 				}
@@ -474,32 +504,20 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public int start() {
-		int id = transactionId++;
-		activeTransactions.add(id);
-		return id;
+		return tm.startTransaction();
 	}
 
 	@Override
 	public boolean commit(int id) throws InvalidTransactionException {
 		checkTransactionId(id);
-
-		carManager.commit(id);
-		hotelManager.commit(id);
-		flightManager.commit(id);
-		customerManager.commit(id);
-		activeTransactions.remove(id);
+		tm.commitTransaction(id);
 		return true;
 	}
 
 	@Override
 	public boolean abort(int id) throws InvalidTransactionException {
 		checkTransactionId(id);
-
-		carManager.abort(id);
-		hotelManager.abort(id);
-		flightManager.abort(id);
-		customerManager.abort(id);
-		activeTransactions.remove(id);
+		tm.abortTransaction(id);
 		return false;
 	}
 
@@ -510,7 +528,7 @@ public class MiddlewareImpl implements Middleware {
 	 * @throws InvalidTransactionException
 	 */
 	private void checkTransactionId(int id) throws InvalidTransactionException {
-		if (!activeTransactions.contains(id)) {
+		if (!tm.isValid(id)) {
 			throw new InvalidTransactionException();
 		}
 	}

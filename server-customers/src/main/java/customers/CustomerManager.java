@@ -4,8 +4,9 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import common.locks.DeadlockException;
+import common.transactions.TransactionHandler;
 
-public interface CustomerManager extends Remote {
+public interface CustomerManager extends Remote, TransactionHandler {
 
 	/**
 	 * Returns a unique customer identifier.
@@ -63,26 +64,5 @@ public interface CustomerManager extends Remote {
 	 * @throws DeadlockException 
 	 */
 	public void clearReservationsForItem(int id, String itemId) throws RemoteException, DeadlockException;
-
-	/**
-	 * Starts a new transaction
-	 * 
-	 * @return success
-	 */
-	public boolean start(int id);
-
-	/**
-	 * Commits a transaction.
-	 * 
-	 * @return success
-	 */
-	public boolean commit(int id);
-
-	/**
-	 * Aborts a transaction.
-	 * 
-	 * @return success
-	 */
-	public boolean abort(int id);
 
 }

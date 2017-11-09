@@ -6,9 +6,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import common.data.RMHashtable;
 import common.locks.DeadlockException;
@@ -55,12 +53,10 @@ public class CustomerManagerImpl implements CustomerManager {
 
 	private RMHashtable<Integer, Customer> customers;
 	private LockManager lockManager;
-	private Set<Integer> activeTransactions;
 
 	public CustomerManagerImpl() {
 		this.customers = new RMHashtable<>();
 		this.lockManager = new LockManager();
-		this.activeTransactions = new HashSet<>();
 	}
 
 	@Override
@@ -184,36 +180,22 @@ public class CustomerManagerImpl implements CustomerManager {
 	}
 
 	@Override
-	public boolean start(int id) {
-		log("Starting transaction " + id);
-		return activeTransactions.add(id);
-	}
-
-	@Override
 	public boolean commit(int id) {
-		if (activeTransactions.contains(id)) {
-			log("Committing transaction " + id);
-			lockManager.unlockAll(id);
-			activeTransactions.remove(id);
-			return true;
-		}
-
-		return false;
+		log("Committing transaction " + id);
+		lockManager.unlockAll(id);
+		return true;
 	}
 
 	@Override
 	public boolean abort(int id) {
-		if (activeTransactions.contains(id)) {
-			log("Aborting transaction " + id);
+		log("Aborting transaction " + id);
 
-			customers.cancel(id);
-			for (Customer customer : customers.values()) {
-				customer.cancel(id);
-			}
-
-			return true;
+		customers.cancel(id);
+		for (Customer customer : customers.values()) {
+			customer.cancel(id);
 		}
-		return false;
+
+		return true;
 	}
 
 	private void log(String message) {

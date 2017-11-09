@@ -4,8 +4,9 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import common.locks.DeadlockException;
+import common.transactions.TransactionHandler;
 
-public interface CarManager extends Remote {
+public interface CarManager extends Remote, TransactionHandler {
 
 	/**
 	 * Add cars to a location. This should look a lot like addFlight, only keyed on
@@ -50,26 +51,5 @@ public interface CarManager extends Remote {
 	 * @throws DeadlockException 
 	 */
 	public boolean releaseCars(int id, String location, int amount) throws RemoteException, DeadlockException;
-
-	/**
-	 * Starts a new transaction
-	 * 
-	 * @return success
-	 */
-	public boolean start(int id);
-
-	/**
-	 * Commits a transaction.
-	 * 
-	 * @return success
-	 */
-	public boolean commit(int id);
-
-	/**
-	 * Aborts a transaction.
-	 * 
-	 * @return success
-	 */
-	public boolean abort(int id);
 
 }
