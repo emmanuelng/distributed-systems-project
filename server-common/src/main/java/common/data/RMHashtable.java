@@ -62,7 +62,9 @@ public class RMHashtable<K, V> {
 	 * @param id
 	 */
 	public void cancel(int id) {
-		actions.remove(id).undo();
+		if (actions.containsKey(id)) {
+			actions.remove(id).undo();
+		}
 	}
 
 	/**
