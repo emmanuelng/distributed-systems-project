@@ -193,7 +193,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	protected boolean commitTransaction(int id) {
 		log("Committing transaction " + id);
 		lockManager.unlockAll(id);
-		return false;
+		return true;
 	}
 
 	protected boolean abortTransaction(int id) {
