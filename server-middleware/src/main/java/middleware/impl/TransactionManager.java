@@ -50,7 +50,6 @@ public class TransactionManager {
 				}
 			}
 
-			timers.remove(id).cancel();
 			transactions.remove(id);
 			return success;
 		}
@@ -71,7 +70,6 @@ public class TransactionManager {
 				}
 			}
 
-			timers.remove(id).cancel();
 			transactions.remove(id);
 			abortedTransactions.add(id);
 			return success;
@@ -106,8 +104,12 @@ public class TransactionManager {
 
 				@Override
 				public void run() {
-					System.out.println("Transaction " + id + " waited for too long. Abort.");
-					abortTransaction(id);
+					if (transactions.containsKey(id)) {
+						System.out.println("Timeout. Aborting transaction " + id);
+						abortTransaction(id);
+					} else {
+						timers.remove(id);
+					}
 				}
 
 			}, TRANSACTION_TIMEOUT);
