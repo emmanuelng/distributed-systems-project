@@ -14,6 +14,8 @@ public class Customer {
 		private int price;
 
 		Reservation(String manager, String itemId, int price) {
+			this.manager = manager;
+			this.itemId = itemId;
 			this.amount = 1;
 			this.price = price;
 		}
