@@ -77,8 +77,9 @@ public class RMHashtable<K, V> {
 	 * @return the {@link CompositeAction}
 	 */
 	private CompositeAction getCompositeAction(int id) {
+		System.out.println("[RMHashtable] Getting the composite action of transaction " + id);
+		
 		if (!actions.containsKey(id)) {
-			System.out.println("[RMHashtable] Adding new composite action for transaction " + id);
 			actions.put(id, new CompositeAction());
 		}
 
