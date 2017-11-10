@@ -25,7 +25,7 @@ if [ $# -gt 1 ]; then
 		cd $DIR/$dirname
 
 		# Generate the policy file
-		echo "grant codeBase \"file:"$DIR"/"$dirname"\" {" > $DIR/$dirname/java.policy
+		echo "grant codeBase \"file:"$DIR"/"$dirname"/build/libs/"$dirname"-1.0.jar\" {" > $DIR/$dirname/java.policy
 		echo "	permission java.security.AllPermission;" >> $DIR/$dirname/java.policy
 		echo "};" >> $DIR/$dirname/java.policy
 		echo >> $DIR/$dirname/java.policy
@@ -42,7 +42,7 @@ if [ $# -gt 1 ]; then
 		export CLASSPATH=$classpath
 
 		# Run the app
-		java -Djava.security.policy=java.policy -Djava.rmi.server.codebase=file:$DIR/$dirname/build/libs/$dirname-1.0.jar ${APPS[$dirname]} ${@:3}
+		java -Djava.security.policy=$DIR/$dirname/java.policy -Djava.rmi.server.codebase=file:$DIR/$dirname/build/libs/$dirname-1.0.jar ${APPS[$dirname]} ${@:3}
 	else
 		echo 'Invalid arguments.'
 		echo
