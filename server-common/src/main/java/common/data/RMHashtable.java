@@ -63,6 +63,7 @@ public class RMHashtable<K, V> {
 	 */
 	public void cancel(int id) {
 		if (actions.containsKey(id)) {
+			System.out.println("Cancelling actions from transaction " + id);
 			actions.remove(id).undo();
 		}
 	}
