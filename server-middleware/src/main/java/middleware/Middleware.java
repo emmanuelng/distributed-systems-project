@@ -218,7 +218,7 @@ public interface Middleware extends Remote {
 	 * 
 	 * @return the transaction id
 	 */
-	public int start();
+	public int start() throws RemoteException;
 
 	/**
 	 * Commits a transaction.
@@ -226,7 +226,7 @@ public interface Middleware extends Remote {
 	 * @throws InvalidTransactionException
 	 * @throws TimeoutException
 	 */
-	public boolean commit(int id) throws InvalidTransactionException, TimeoutException;
+	public boolean commit(int id) throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Aborts a transaction.
@@ -234,6 +234,6 @@ public interface Middleware extends Remote {
 	 * @throws InvalidTransactionException
 	 * @throws TimeoutException
 	 */
-	public boolean abort(int id) throws InvalidTransactionException, TimeoutException;
+	public boolean abort(int id) throws RemoteException, InvalidTransactionException, TimeoutException;
 
 }

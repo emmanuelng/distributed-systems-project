@@ -519,14 +519,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean commit(int id) throws InvalidTransactionException, TimeoutException {
+	public boolean commit(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
 		checkTransaction(id);
 		tm.commitTransaction(id);
 		return true;
 	}
 
 	@Override
-	public boolean abort(int id) throws InvalidTransactionException, TimeoutException {
+	public boolean abort(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
 		checkTransaction(id);
 		tm.abortTransaction(id);
 		return false;
@@ -539,7 +539,7 @@ public class MiddlewareImpl implements Middleware {
 	 * @throws InvalidTransactionException
 	 * @throws TimeoutException
 	 */
-	private void checkTransaction(int id) throws InvalidTransactionException, TimeoutException {
+	private void checkTransaction(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
 		if (!tm.isValid(id)) {
 			throw new InvalidTransactionException();
 		} else if (tm.isAborted(id)) {
