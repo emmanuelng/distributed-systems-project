@@ -1,11 +1,11 @@
 package hotels;
 
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import common.locks.DeadlockException;
-import common.rm.ResourceManager;
 
-public interface HotelManager extends ResourceManager {
+public interface HotelManager extends Remote {
 
 	/**
 	 * Add rooms to a location. This should look a lot like addFlight, only keyed on
@@ -53,4 +53,13 @@ public interface HotelManager extends ResourceManager {
 	 */
 	public boolean releaseRoom(int id, String location, int amount) throws RemoteException, DeadlockException;
 
+	/**
+	 * Commits a transaction.
+	 */
+	public boolean commit(int id) throws RemoteException;
+
+	/**
+	 * Aborts a transaction.
+	 */
+	public boolean abort(int id) throws RemoteException;
 }

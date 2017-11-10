@@ -1,5 +1,6 @@
 package middleware.impl;
 
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,14 +9,17 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import common.rm.ResourceManager;
+import cars.CarManager;
+import customers.CustomerManager;
+import flights.FlightManager;
+import hotels.HotelManager;
 
 public class TransactionManager {
 
 	public static final long TRANSACTION_TIMEOUT = 60000;
 
 	private int id;
-	private Map<Integer, Set<ResourceManager>> transactions;
+	private Map<Integer, Set<Remote>> transactions;
 	private Set<Integer> abortedTransactions;
 	private Map<Integer, Timer> timers;
 
@@ -37,9 +41,19 @@ public class TransactionManager {
 		if (transactions.containsKey(id)) {
 			boolean success = true;
 
-			for (ResourceManager rm : transactions.get(id)) {
+			for (Remote rm : transactions.get(id)) {
 				try {
-					success &= rm.commit(id);
+
+					if (rm instanceof CarManager) {
+						success &= ((CarManager) rm).commit(id);
+					} else if (rm instanceof FlightManager) {
+						success &= ((FlightManager) rm).commit(id);
+					} else if (rm instanceof HotelManager) {
+						success &= ((HotelManager) rm).commit(id);
+					} else if (rm instanceof CustomerManager) {
+						success &= ((CustomerManager) rm).commit(id);
+					}
+
 				} catch (RemoteException e) {
 					System.err.println("An error occurred while commiting transaction " + id);
 				}
@@ -55,9 +69,19 @@ public class TransactionManager {
 		if (transactions.containsKey(id)) {
 			boolean success = true;
 
-			for (ResourceManager rm : transactions.get(id)) {
+			for (Remote rm : transactions.get(id)) {
 				try {
-					success &= rm.abort(id);
+
+					if (rm instanceof CarManager) {
+						success &= ((CarManager) rm).abort(id);
+					} else if (rm instanceof FlightManager) {
+						success &= ((FlightManager) rm).abort(id);
+					} else if (rm instanceof HotelManager) {
+						success &= ((HotelManager) rm).abort(id);
+					} else if (rm instanceof CustomerManager) {
+						success &= ((CustomerManager) rm).abort(id);
+					}
+
 				} catch (RemoteException e) {
 					System.err.println("An error occurred while aborting transaction " + id);
 				}
@@ -71,7 +95,7 @@ public class TransactionManager {
 		return false;
 	}
 
-	public void enlist(int id, ResourceManager rm) {
+	public void enlist(int id, Remote rm) {
 		if (transactions.containsKey(id)) {
 			transactions.get(id).add(rm);
 		}

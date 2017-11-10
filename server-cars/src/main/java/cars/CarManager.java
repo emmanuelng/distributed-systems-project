@@ -1,11 +1,11 @@
 package cars;
 
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import common.locks.DeadlockException;
-import common.rm.ResourceManager;
 
-public interface CarManager extends ResourceManager {
+public interface CarManager extends Remote {
 
 	/**
 	 * Add cars to a location. This should look a lot like addFlight, only keyed on
@@ -54,4 +54,13 @@ public interface CarManager extends ResourceManager {
 	 */
 	public boolean releaseCars(int id, String location, int amount) throws RemoteException, DeadlockException;
 
+	/**
+	 * Commits a transaction.
+	 */
+	public boolean commit(int id) throws RemoteException;
+
+	/**
+	 * Aborts a transaction.
+	 */
+	public boolean abort(int id) throws RemoteException;
 }
