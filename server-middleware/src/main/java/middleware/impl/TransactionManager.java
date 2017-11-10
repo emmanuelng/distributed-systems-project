@@ -50,6 +50,7 @@ public class TransactionManager {
 				}
 			}
 
+			timers.remove(id).cancel();
 			transactions.remove(id);
 			return success;
 		}
@@ -70,6 +71,7 @@ public class TransactionManager {
 				}
 			}
 
+			timers.remove(id).cancel();
 			transactions.remove(id);
 			abortedTransactions.add(id);
 			return success;
