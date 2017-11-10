@@ -200,6 +200,11 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		log("Aborting transaction " + id);
 		lockManager.unlockAll(id);
 		reservableItems.cancel(id);
+		
+		for (ReservableItem ri: reservableItems.values()) {
+			ri.cancel(id);
+		}
+		
 		return true;
 
 	}
