@@ -63,7 +63,7 @@ public class RMHashtable<K, V> {
 	 */
 	public void cancel(int id) {
 		if (actions.containsKey(id)) {
-			System.out.println("Cancelling actions from transaction " + id);
+			System.out.println("[RMHashtable] Cancelling actions from transaction " + id);
 			actions.remove(id).undo();
 		}
 	}
@@ -78,6 +78,7 @@ public class RMHashtable<K, V> {
 	 */
 	private CompositeAction getCompositeAction(int id) {
 		if (!actions.containsKey(id)) {
+			System.out.println("[RMHashtable] Adding new composite action for transaction " + id);
 			actions.put(id, new CompositeAction());
 		}
 
