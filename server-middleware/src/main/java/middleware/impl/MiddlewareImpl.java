@@ -247,34 +247,31 @@ public class MiddlewareImpl implements Middleware {
 		try {
 			// Release the items reserved by the customer, then remove the customer
 			tm.enlist(id, customerManager);
-			String reservationsStr = customerManager.queryReservations(id, customer);
-			if (reservationsStr != null) {
+			String reservations = customerManager.queryReservations(id, customer);
 
-				String[] reservationStrArray = reservationsStr.split(";");
-				String[][] reservationsToRemove = new String[reservationStrArray.length][3];
-				int i = 0;
+			if (reservations != null) {
+				for (String reservation : reservations.split(";")) {
+					System.out.println("[Middleware] Cancelling reservation " + reservation);
+					String[] splitted = reservation.split("/");
 
-				for (String reservation : reservationsStr.split(";")) {
-					reservationsToRemove[i] = reservation.split("/");
-					i++;
-				}
+					if (splitted.length == 3) {
+						// Parse the reservation string
+						String managerName = splitted[0];
+						String itemId = splitted[1];
+						int amount = Integer.parseInt(splitted[2]);
 
-				for (String[] reservation : reservationsToRemove) {
-					// A reservation array has the format [manager, itemId, amount]
-					String managerName = reservation[0];
-					String itemId = reservation[1];
-					int amount = Integer.parseInt(reservation[2]);
+						// Call the right manager
+						if (managerName.equals("cars")) {
+							tm.enlist(id, carManager);
+							carManager.releaseCars(id, itemId, amount);
+						} else if (managerName.equals("flights")) {
+							tm.enlist(id, flightManager);
+							flightManager.releaseSeats(id, Integer.parseInt(itemId), amount);
+						} else if (managerName.equals("hotels")) {
+							tm.enlist(id, hotelManager);
+							hotelManager.releaseRoom(id, itemId, amount);
+						}
 
-					// Call the right manager
-					if (managerName.equals("cars")) {
-						tm.enlist(id, carManager);
-						carManager.releaseCars(id, itemId, amount);
-					} else if (managerName.equals("flights")) {
-						tm.enlist(id, flightManager);
-						flightManager.releaseSeats(id, Integer.parseInt(itemId), amount);
-					} else if (managerName.equals("hotels")) {
-						tm.enlist(id, hotelManager);
-						hotelManager.releaseRoom(id, itemId, amount);
 					}
 				}
 
