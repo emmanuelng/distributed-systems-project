@@ -29,7 +29,7 @@ public class TransactionManager {
 	public int startTransaction() {
 		int transaction = id++;
 
-		System.out.println("Starting transaction " + transaction);
+		System.out.println("[TransactionManager] Starting transaction " + transaction);
 		transactions.put(transaction, new HashSet<>());
 		resetTimeout(transaction);
 
@@ -38,15 +38,14 @@ public class TransactionManager {
 
 	public boolean commitTransaction(int id) {
 		if (transactions.containsKey(id)) {
-			System.out.println("Commiting transaction " + id);
+			System.out.println("[TransactionManager] Commiting transaction " + id);
 			boolean success = true;
 
 			for (ResourceManager rm : transactions.get(id)) {
 				try {
 					success &= rm.commit(id);
-					System.out.println(rm.getClass().getSimpleName() + ": success=" + success);
 				} catch (RemoteException e) {
-					System.err.println("An error occurred while commiting transaction " + id);
+					System.err.println("[TransactionManager] An error occurred while commiting transaction " + id);
 				}
 			}
 
@@ -58,15 +57,14 @@ public class TransactionManager {
 
 	public boolean abortTransaction(int id) {
 		if (transactions.containsKey(id)) {
-			System.out.println("Aborting transaction " + id);
+			System.out.println("[TransactionManager] Aborting transaction " + id);
 			boolean success = true;
 
 			for (ResourceManager rm : transactions.get(id)) {
 				try {
 					success &= rm.abort(id);
-					System.out.println(rm.getClass().getSimpleName() + ": success=" + success);
 				} catch (RemoteException e) {
-					System.err.println("An error occurred while aborting transaction " + id);
+					System.err.println("[TransactionManager] An error occurred while aborting transaction " + id);
 				}
 			}
 
@@ -104,7 +102,7 @@ public class TransactionManager {
 				@Override
 				public void run() {
 					if (transactions.containsKey(id)) {
-						System.out.println("Timeout. Aborting transaction " + id);
+						System.out.println("[TransactionManager] Timeout. Aborting transaction " + id);
 						timedOutTransactions.add(id);
 						abortTransaction(id);
 					} else {

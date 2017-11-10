@@ -190,7 +190,9 @@ public class CustomerManagerImpl implements CustomerManager {
 	public boolean abort(int id) {
 		log("Aborting transaction " + id);
 
+		lockManager.unlockAll(id);
 		customers.cancel(id);
+
 		for (Customer customer : customers.values()) {
 			customer.cancel(id);
 		}
