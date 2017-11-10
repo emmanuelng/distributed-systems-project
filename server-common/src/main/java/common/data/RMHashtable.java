@@ -6,8 +6,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import common.data.actions.CompositeAction;
-import common.data.actions.PutAction;
-import common.data.actions.RemoveAction;
+import common.data.actions.DataAction;
 
 public class RMHashtable<K, V> {
 
@@ -20,8 +19,19 @@ public class RMHashtable<K, V> {
 	}
 
 	public synchronized V put(int id, K key, V value) {
-		PutAction<K, V> putAction = new PutAction<>(data, key);
-		getCompositeAction(id).add(putAction);
+		V oldValue = data.get(key);
+
+		compositeAction(id).add(new DataAction() {
+			@Override
+			public void undo() {
+				if (oldValue != null) {
+					data.put(key, oldValue);
+				} else {
+					data.remove(key);
+				}
+			}
+		});
+
 		return data.put(key, value);
 	}
 
@@ -29,10 +39,17 @@ public class RMHashtable<K, V> {
 		return data.get(key);
 	}
 
+	@SuppressWarnings("unchecked")
 	public synchronized V remove(int id, Object key) {
-		@SuppressWarnings("unchecked")
-		RemoveAction<K, V> removeAction = new RemoveAction<>(data, (K) key);
-		getCompositeAction(id).add(removeAction);
+		V oldvalue = data.get(key);
+
+		compositeAction(id).add(new DataAction() {
+			@Override
+			public void undo() {
+				data.put((K) key, oldvalue);
+			}
+		});
+
 		return data.remove(key);
 	}
 
@@ -76,9 +93,9 @@ public class RMHashtable<K, V> {
 	 *            the transaction identifier
 	 * @return the {@link CompositeAction}
 	 */
-	private CompositeAction getCompositeAction(int id) {
+	private CompositeAction compositeAction(int id) {
 		System.out.println("[RMHashtable] Getting the composite action of transaction " + id);
-		
+
 		if (!actions.containsKey(id)) {
 			actions.put(id, new CompositeAction());
 		}

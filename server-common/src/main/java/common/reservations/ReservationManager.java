@@ -69,10 +69,10 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		}
 
 		if (price > 0) {
-			item.setPrice(price);
+			item.setPrice(id, price);
 		}
 
-		item.setCount(item.getCount() + numItems);
+		item.setCount(id, item.getCount() + numItems);
 		log("increaseItemCount(" + id + ", " + key + ", " + numItems + ") succeeded");
 
 		return true;
@@ -182,8 +182,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 			log("reserveItem(" + id + ", " + key + ") failed: no more items");
 			success = false;
 		} else {
-			item.setCount(item.getCount() - 1);
-			item.setReserved(item.getReserved() + 1);
+			item.setCount(id, item.getCount() - 1);
+			item.setReserved(id, item.getReserved() + 1);
 			log("reserveItem(" + id + ", " + key + ") succeeded");
 		}
 
