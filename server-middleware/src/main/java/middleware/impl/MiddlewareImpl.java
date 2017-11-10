@@ -538,7 +538,7 @@ public class MiddlewareImpl implements Middleware {
 	 * @throws TimeoutException
 	 */
 	private void checkTransaction(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
-		if (tm.isAborted(id)) {
+		if (tm.isTimedOut(id)) {
 			throw new TimeoutException();
 		} else if (!tm.isValid(id)) {
 			throw new InvalidTransactionException();

@@ -16,13 +16,13 @@ public class TransactionManager {
 
 	private int id;
 	private Map<Integer, Set<ResourceManager>> transactions;
-	private Set<Integer> abortedTransactions;
+	private Set<Integer> timedOutTransactions;
 	private Map<Integer, Timer> timers;
 
 	public TransactionManager() {
 		this.id = 0;
 		this.transactions = new HashMap<>();
-		this.abortedTransactions = new HashSet<>();
+		this.timedOutTransactions = new HashSet<>();
 		this.timers = new HashMap<>();
 	}
 
@@ -71,7 +71,6 @@ public class TransactionManager {
 			}
 
 			transactions.remove(id);
-			abortedTransactions.add(id);
 			return success;
 		}
 
@@ -88,8 +87,8 @@ public class TransactionManager {
 		return transactions.containsKey(id);
 	}
 
-	public boolean isAborted(int id) {
-		return abortedTransactions.contains(id);
+	public boolean isTimedOut(int id) {
+		return timedOutTransactions.contains(id);
 	}
 
 	public void resetTimeout(int id) {
@@ -106,6 +105,7 @@ public class TransactionManager {
 				public void run() {
 					if (transactions.containsKey(id)) {
 						System.out.println("Timeout. Aborting transaction " + id);
+						timedOutTransactions.add(id);
 						abortTransaction(id);
 					} else {
 						timers.remove(id);
