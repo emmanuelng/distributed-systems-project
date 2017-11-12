@@ -93,4 +93,9 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 		return abortTransaction(id);
 	}
 
+	@Override
+	public boolean shutdown() throws RemoteException {
+		return shutdownManager();
+	}
+
 }

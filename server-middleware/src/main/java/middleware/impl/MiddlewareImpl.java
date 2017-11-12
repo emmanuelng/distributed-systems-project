@@ -526,6 +526,18 @@ public class MiddlewareImpl implements Middleware {
 		checkTransaction(id);
 		return tm.abortTransaction(id);
 	}
+	
+	@Override
+	public boolean shutdown() throws RemoteException {
+		if (tm.canShutDown()) {
+			carManager.shutdown();
+			flightManager.shutdown();
+			hotelManager.shutdown();
+		}
+		
+		System.exit(0);
+		return true;
+	}
 
 	/**
 	 * Checks if the given id is a valid transaction id. If it is not valid, throws

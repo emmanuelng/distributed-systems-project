@@ -203,4 +203,11 @@ public class CustomerManagerImpl implements CustomerManager {
 	private void log(String message) {
 		System.out.println("[CustomerManager] " + message);
 	}
+
+	@Override
+	public boolean shutdown() throws RemoteException {
+		// Since this manager runs on the middle ware server, this method is not
+		// necessary.
+		return false;
+	}
 }

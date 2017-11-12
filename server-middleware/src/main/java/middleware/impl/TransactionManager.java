@@ -98,7 +98,6 @@ public class TransactionManager {
 
 			Timer timer = new Timer();
 			timer.schedule(new TimerTask() {
-
 				@Override
 				public void run() {
 					if (transactions.containsKey(id)) {
@@ -109,11 +108,18 @@ public class TransactionManager {
 						timers.remove(id);
 					}
 				}
-
 			}, TRANSACTION_TIMEOUT);
 
 			timers.put(id, timer);
 		}
+	}
+
+	/**
+	 * Checks if the system can be shutdown gracefully. It is the case when no
+	 * transaction is active in the system.
+	 */
+	public boolean canShutDown() {
+		return transactions.isEmpty();
 	}
 
 }

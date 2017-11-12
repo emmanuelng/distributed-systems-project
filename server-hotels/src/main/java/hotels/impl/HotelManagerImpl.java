@@ -1,6 +1,7 @@
 package hotels.impl;
 
 import java.rmi.RMISecurityManager;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -90,6 +91,11 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 	@Override
 	public boolean abort(int id) {
 		return abortTransaction(id);
+	}
+
+	@Override
+	public boolean shutdown() throws RemoteException {
+		return shutdownManager();
 	}
 
 }

@@ -208,6 +208,11 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		return true;
 
 	}
+	
+	protected boolean shutdownManager() {
+		System.exit(0);
+		return true;
+	}
 
 	/**
 	 * Writes a message to the log.

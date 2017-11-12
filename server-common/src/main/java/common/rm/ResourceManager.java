@@ -14,4 +14,9 @@ public interface ResourceManager extends Remote {
 	 * Aborts a transaction.
 	 */
 	public boolean abort(int id) throws RemoteException;
+	
+	/**
+	 * Shuts down the resource manager
+	 */
+	public boolean shutdown() throws RemoteException;
 }

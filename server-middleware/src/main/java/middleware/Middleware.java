@@ -235,5 +235,10 @@ public interface Middleware extends Remote {
 	 * @throws TimeoutException
 	 */
 	public boolean abort(int id) throws RemoteException, InvalidTransactionException, TimeoutException;
+	
+	/**
+	 * Shutdowns the system gracefully.
+	 */
+	public boolean shutdown() throws RemoteException;
 
 }
