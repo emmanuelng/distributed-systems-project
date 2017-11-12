@@ -183,31 +183,31 @@ public class LockManager {
 
 			if (dataObj.getXId() == tmpDataObj.getXId()) {
 				// The transaction already has a lock on this data item
-				if (dataObj.getLockType() == DataObj.READ) {
+				if (dataObj.getLockType() == TrxnObj.READ) {
 					// since transaction already has a lock (may be READ, may be WRITE. we don't
 					// care) on this data item and it is requesting a READ lock, this lock request
 					// is redundant.
 					throw new RedundantLockRequestException(dataObj.getXId(), "Redundant READ lock request");
-				} else if (dataObj.getLockType() == DataObj.WRITE) {
+				} else if (dataObj.getLockType() == TrxnObj.WRITE) {
 					// Transaction already has a WRITE lock on this data item
-					if (tmpDataObj.getLockType() == DataObj.READ) {
+					if (tmpDataObj.getLockType() == TrxnObj.READ) {
 						// Transaction already had a READ lock
 						bitset.set(0);
-					} else if (tmpDataObj.getLockType() == DataObj.WRITE) {
+					} else if (tmpDataObj.getLockType() == TrxnObj.WRITE) {
 						// The transaction already had a write lock
 						String message = "Redundant WRITE lock request";
 						throw new RedundantLockRequestException(dataObj.getXId(), message);
 					}
 				}
 			} else {
-				if (dataObj.getLockType() == DataObj.READ) {
-					if (tmpDataObj.getLockType() == DataObj.WRITE) {
+				if (dataObj.getLockType() == TrxnObj.READ) {
+					if (tmpDataObj.getLockType() == TrxnObj.WRITE) {
 						// transaction is requesting a READ lock and some other transaction
 						// already has a WRITE lock on it ==> conflict
 						System.out.println("Want READ, someone has WRITE");
 						return true;
 					}
-				} else if (dataObj.getLockType() == DataObj.WRITE) {
+				} else if (dataObj.getLockType() == TrxnObj.WRITE) {
 					// transaction is requesting a WRITE lock and some other transaction has either
 					// a READ or a WRITE lock on it ==> conflict
 					System.out.println("Want WRITE, someone has READ or WRITE");

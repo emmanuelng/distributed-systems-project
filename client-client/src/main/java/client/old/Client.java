@@ -81,12 +81,12 @@ public class Client {
 			arguments = obj.parse(command);
 
 			// decide which of the commands this was
-			switch (obj.findChoice((String) arguments.elementAt(0))) {
+			switch (obj.findChoice(arguments.elementAt(0))) {
 			case 1: // help section
 				if (arguments.size() == 1) // command was "help"
 					obj.listCommands();
 				else if (arguments.size() == 2) // command was "help <commandname>"
-					obj.listSpecific((String) arguments.elementAt(1));
+					obj.listSpecific(arguments.elementAt(1));
 				else // wrong use of help command
 					System.out.println("Improper use of help command. Type help or help, <commandname>");
 				break;

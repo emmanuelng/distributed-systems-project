@@ -193,6 +193,12 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	protected boolean commitTransaction(int id) {
 		log("Committing transaction " + id);
 		lockManager.unlockAll(id);
+		reservableItems.commit(id);
+
+		for (ReservableItem ri : reservableItems.values()) {
+			ri.commit(id);
+		}
+
 		return true;
 	}
 
@@ -200,15 +206,15 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		log("Aborting transaction " + id);
 		lockManager.unlockAll(id);
 		reservableItems.cancel(id);
-		
-		for (ReservableItem ri: reservableItems.values()) {
+
+		for (ReservableItem ri : reservableItems.values()) {
 			ri.cancel(id);
 		}
-		
+
 		return true;
 
 	}
-	
+
 	protected boolean shutdownManager() {
 		System.exit(0);
 		return true;

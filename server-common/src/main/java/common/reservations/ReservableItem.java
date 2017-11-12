@@ -83,6 +83,10 @@ public abstract class ReservableItem {
 			actions.remove(id).undo();
 		}
 	}
+	
+	public void commit(int id) {
+		actions.remove(id);
+	}
 
 	@Override
 	public abstract String toString();

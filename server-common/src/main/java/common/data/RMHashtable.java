@@ -86,6 +86,14 @@ public class RMHashtable<K, V> {
 	}
 
 	/**
+	 * Commits a transactions. After calling this methods, it becomes impossible to
+	 * undo the given transaction.
+	 */
+	public void commit(int id) {
+		actions.remove(id);
+	}
+
+	/**
 	 * Returns the composite action related to the given transaction. Creates a new
 	 * one if it does not exist yet.
 	 * 
