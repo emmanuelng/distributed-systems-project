@@ -70,7 +70,7 @@ public class Client {
 
 			if (middleware != null) {
 				System.out.println("Successfully connected!\n");
-				loop();
+				//loop();
 			} else {
 				System.err.println("Error: The middleware is null");
 			}
