@@ -61,18 +61,24 @@ public class CustomerManagerImpl implements CustomerManager {
 
 	@Override
 	public int newCustomer(int id) throws DeadlockException {
-		log("newCustomer(" + id + ") called");
+        long startTime = System.nanoTime();
+        System.out.println("[CustomerManager] newCustomer start " + id + ": " + startTime);
+	    log("newCustomer(" + id + ") called");
 
 		lockManager.lock(id, "customers", TrxnObj.WRITE);
 		int cid = Integer.parseInt(String.valueOf(id) + String.valueOf(Calendar.getInstance().get(Calendar.MILLISECOND))
 				+ String.valueOf(Math.round(Math.random() * 100 + 1)));
 		customers.put(id, cid, new Customer(cid));
 		log("newCustomer(" + id + ") returns ID=" + cid);
+        long endTime = System.nanoTime();
+        System.out.println("[CustomerManager] newCustomer end "+ id + ": " + endTime);
 		return cid;
 	}
 
 	@Override
 	public boolean newCustomer(int id, int cid) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[CustomerManager] newCustomer start (cid) " + id + ": " + startTime);
 		log("newCustomer(" + id + ", " + cid + ") called");
 
 		lockManager.lock(id, "customers", TrxnObj.WRITE);
@@ -86,21 +92,28 @@ public class CustomerManagerImpl implements CustomerManager {
 			log("newCustomer(" + id + ", " + cid + ") failed: customer already exist");
 			success = false;
 		}
-
+        long endTime = System.nanoTime();
+        System.out.println("[CustomerManager] newCustomer end (cid) "+ id + ": " + endTime);
 		return success;
 	}
 
 	@Override
 	public boolean deleteCustomer(int id, int cid) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[CustomerManager] deleteCustomer start " + id + ": " + startTime);
 		log("deleteCustomer(" + id + ", " + cid + ") called");
 
 		lockManager.lock(id, "customers", TrxnObj.WRITE);
+        long endTime = System.nanoTime();
+        System.out.println("[CustomerManager] deleteCustomer end:"+ id + ": " + endTime);
 		return customers.remove(id, cid) != null;
 	}
 
 	@Override
 	public String queryCustomerInfo(int id, int cid) throws DeadlockException {
-		log("queryCustomerInfo(" + id + ", " + cid + ") called");
+        long startTime = System.nanoTime();
+        System.out.println("[CustomerManager] queryCustomer start " + id + ": " + startTime);
+	    log("queryCustomerInfo(" + id + ", " + cid + ") called");
 
 		lockManager.lock(id, "customers", TrxnObj.READ);
 		String bill = "";
@@ -112,13 +125,16 @@ public class CustomerManagerImpl implements CustomerManager {
 			bill = customer.printBill();
 			log("queryCustomerInfo(" + id + ", " + cid + ") succeeded, bills follows:\n" + bill);
 		}
-
+        long endTime = System.nanoTime();
+        System.out.println("[CustomerManager] queryCustomer end:"+ id + ": " + endTime);
 		return bill;
 	}
 
 	@Override
 	public boolean reserve(int id, int cid, String manager, String itemId, int price) throws DeadlockException {
-		log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") called");
+        long startTime = System.nanoTime();
+        System.out.println("[CustomerManager] reserve start " + id + ": " + startTime);
+	    log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") called");
 
 		lockManager.lock(id, "customer-" + cid, TrxnObj.WRITE);
 		boolean success = true;
@@ -131,13 +147,16 @@ public class CustomerManagerImpl implements CustomerManager {
 			customer.reserve(id, manager, itemId, price);
 			log("reserve(" + id + ", " + cid + ", " + manager + ", " + itemId + ") succeeded");
 		}
-
+        long endTime = System.nanoTime();
+        System.out.println("[CustomerManager] reserve end:"+ id + ": " + endTime);
 		return success;
 	}
 
 	@Override
 	public boolean cancelReservation(int id, int cid, String manager, String itemId) throws DeadlockException {
-		log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId + ") called");
+        long startTime = System.nanoTime();
+        System.out.println("[CustomerManager] cancelReservation start " + id + ": " + startTime);
+	    log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId + ") called");
 
 		lockManager.lock(id, "customer-" + cid, TrxnObj.WRITE);
 		boolean success = true;
@@ -151,12 +170,15 @@ public class CustomerManagerImpl implements CustomerManager {
 			customer.cancelReservation(id, manager, itemId);
 			log("cancelReservation(" + id + ", " + cid + ", " + manager + ", " + itemId + ") succeeded");
 		}
-
+        long endTime = System.nanoTime();
+        System.out.println("[CustomerManager] cancelReservation end:"+ id + ": " + endTime);
 		return success;
 	}
 
 	@Override
 	public String queryReservations(int id, int cid) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[CustomerManager] queryReservation start " + id + ": " + startTime);
 		log("queryReservations(" + id + ", " + cid + ") called");
 
 		lockManager.lock(id, "customer-" + cid, TrxnObj.READ);
@@ -168,27 +190,39 @@ public class CustomerManagerImpl implements CustomerManager {
 		}
 
 		log("queryReservations(" + id + ", " + cid + ") returning " + reservations);
+        long endTime = System.nanoTime();
+        System.out.println("[CustomerManager] queryReservation end:"+ id + ": " + endTime);
 		return reservations;
 	}
 
 	@Override
 	public void clearReservationsForItem(int id, String itemId) throws RemoteException, DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[CustomerManager] clearReservation start " + id + ": " + startTime);
 		for (Entry<Integer, Customer> entry : customers.entrySet()) {
 			lockManager.lock(id, "customer-" + entry.getKey(), TrxnObj.WRITE);
 			entry.getValue().clearReservationsForItem(id, itemId);
 		}
+        long endTime = System.nanoTime();
+        System.out.println("[CustomerManager] clearReservation end:"+ id + ": " + endTime);
 	}
 
 	@Override
 	public boolean commit(int id) {
+        long startTime = System.nanoTime();
+        System.out.println("[CustomerManager] commit start " + id + ": " + startTime);
 		log("Committing transaction " + id);
 		lockManager.unlockAll(id);
+        long endTime = System.nanoTime();
+        System.out.println("[CustomerManager] commit end:"+ id + ": " + endTime);
 		return true;
 	}
 
 	@Override
 	public boolean abort(int id) {
-		log("Aborting transaction " + id);
+		long startTime = System.nanoTime();
+        System.out.println("[CustomerManager] abort start " + id + ": " + startTime);
+		log("Aborting transaction " + id );
 
 		lockManager.unlockAll(id);
 		customers.cancel(id);
@@ -196,7 +230,8 @@ public class CustomerManagerImpl implements CustomerManager {
 		for (Customer customer : customers.values()) {
 			customer.cancel(id);
 		}
-
+        long endTime = System.nanoTime();
+		System.out.println("[CustomerManager] abort end:"+ id + ": " + endTime);
 		return true;
 	}
 

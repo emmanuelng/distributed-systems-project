@@ -20,7 +20,8 @@ public class LockManager {
 	}
 
 	public boolean lock(int xid, String strData, int lockType) throws DeadlockException {
-
+		long startTime = System.nanoTime();
+		System.out.println("[LockManager] lock start "+ xid + ": "+ startTime);
 		// If any parameter is invalid, then return false
 		if (xid < 0 || strData == null) {
 			return false;
@@ -74,18 +75,22 @@ public class LockManager {
 				}
 			}
 		} catch (DeadlockException deadlock) {
+            long endTime = System.nanoTime();
+            System.out.println("[LockManager] lock deadlock "+ xid + ": "+ endTime);
 			throw deadlock;
 		} catch (RedundantLockRequestException redundantlockrequest) {
 			// just ignore the redundant lock request
 			return true;
 		}
-
+        long endTime = System.nanoTime();
+        System.out.println("[LockManager] lock end "+ xid + ": "+ endTime);
 		return true;
 	}
 
 	// remove all locks for this transaction in the lock table.
 	public boolean unlockAll(int xid) {
-
+        long startTime = System.nanoTime();
+        System.out.println("[LockManager] unlock start "+ xid + ": "+ startTime);
 		// if any parameter is invalid, then return false
 		if (xid < 0) {
 			return false;
@@ -158,7 +163,8 @@ public class LockManager {
 				}
 			}
 		}
-
+        long endTime = System.nanoTime();
+        System.out.println("[LockManager] unlock end "+ xid + ": "+ endTime);
 		return true;
 	}
 
