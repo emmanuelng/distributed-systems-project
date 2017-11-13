@@ -1,6 +1,8 @@
 package common.reservations;
 
 import java.util.HashSet;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import common.data.RMHashtable;
 import common.locks.DeadlockException;
@@ -216,7 +218,16 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	}
 
 	protected boolean shutdownManager() {
-		System.exit(0);
+		log("Will shut down in 1 second.");
+		
+		Timer shutdownTimer = new Timer();
+		shutdownTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				System.exit(0);
+			}
+		}, 1000);
+		
 		return true;
 	}
 
