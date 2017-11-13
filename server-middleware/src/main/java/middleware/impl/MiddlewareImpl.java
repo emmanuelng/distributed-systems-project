@@ -532,21 +532,26 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean shutdown() throws RemoteException {
 		if (tm.canShutDown()) {
+			System.out.println("[Middleware] Shutting down managers...");
+			
 			carManager.shutdown();
 			flightManager.shutdown();
 			hotelManager.shutdown();
+
+			System.out.println("[Middleware] Will shut down in 1 second.");
+
+			Timer shutdownTimer = new Timer();
+			shutdownTimer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					System.exit(0);
+				}
+			}, 1000);
+
+			return true;
 		}
 
-		System.out.println("[Middleware] Will shut down in 1 second.");
-		Timer shutdownTimer = new Timer();
-		shutdownTimer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				System.exit(0);
-			}
-		}, 1000);
-
-		return true;
+		return false;
 	}
 
 	/**
