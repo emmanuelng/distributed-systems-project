@@ -49,48 +49,65 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 
 	@Override
 	public boolean addRooms(int id, String location, int numRooms, int price) throws DeadlockException {
+		long startTime = System.nanoTime();
+		System.out.println("[HotelManager] addRooms start: " + startTime);
 		if (getItem(id, location) == null) {
 			addItem(id, location, new Hotel(location, numRooms, price));
 		} else {
 			increaseItemCount(id, location, numRooms, price);
 		}
-
+        long finishTime = System.nanoTime();
+        System.out.println("[HotelManager] addRooms finish: " + finishTime);
 		return true;
 	}
 
 	@Override
 	public boolean deleteRooms(int id, String location) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[HotelManager] deleteRooms: " + startTime);
 		return deleteItem(id, location);
 	}
 
 	@Override
 	public int queryRooms(int id, String location) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[HotelManager] queryRooms: " + startTime);
 		return queryNum(id, location);
 	}
 
 	@Override
 	public int queryRoomsPrice(int id, String location) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[HotelManager] queryRoomsPrice: " + startTime);
 		return queryPrice(id, location);
 	}
 
 	@Override
 	public boolean reserveRoom(int id, String location) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[HotelManager] reserveRooms: " + startTime);
 		return reserveItem(id, location);
 	}
 
 	@Override
 	public boolean releaseRoom(int id, String location, int amount) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[HotelManager] releaseRooms: " + startTime);
 		return increaseItemCount(id, location, amount, 0);
 	}
 
 	@Override
 	public boolean commit(int id) {
-		return commitTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("[HotelManager] commit:" + startTime);
+	    return commitTransaction(id);
 	}
 
 	@Override
 	public boolean abort(int id) {
-		return abortTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("[HotelManager] abort:" + startTime);
+	    return abortTransaction(id);
 	}
 
 	@Override

@@ -130,13 +130,17 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(addFlight M)");
+	    checkTransaction(id);
 		tm.enlist(id, flightManager);
 
 		try {
 			return flightManager.addFlight(id, flightNum, flightSeats, flightPrice);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(addFlight M)");
 			return false;
 		}
 	}
@@ -144,13 +148,17 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean addCars(int id, String location, int numCars, int price)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(addCar M)");
+	    checkTransaction(id);
 		tm.enlist(id, carManager);
 
 		try {
 			return carManager.addCars(id, location, numCars, price);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(addCar M)");
 			return false;
 		}
 	}
@@ -158,39 +166,48 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean addRooms(int id, String location, int numRooms, int price)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(addRooms M)");
+        checkTransaction(id);
 		try {
 			tm.enlist(id, hotelManager);
 			return hotelManager.addRooms(id, location, numRooms, price);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(addRoom M)");
 			return false;
 		}
 	}
 
 	@Override
 	public int newCustomer(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(newCustomer M)");
+	    checkTransaction(id);
 		try {
 			tm.enlist(id, customerManager);
 			return customerManager.newCustomer(id);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(newCustomer M)");
 			return 0;
 		}
 	}
 
 	@Override
 	public boolean newCustomer(int id, int cid) throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(newCustomer cid M)");
+	    checkTransaction(id);
 		try {
 			tm.enlist(id, customerManager);
 			return customerManager.newCustomer(id, cid);
 		} catch (DeadlockException e) {
 			abort(cid);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(newCustomer cid M)");
 			return false;
 		}
 	}
@@ -198,13 +215,16 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean deleteFlight(int id, int flightNum)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(deleteFlight M)");
+	    checkTransaction(id);
 		try {
 			tm.enlist(id, flightManager);
 			return flightManager.deleteFlight(id, flightNum);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(deleteFlight M)");
 			return false;
 		}
 	}
@@ -212,13 +232,16 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean deleteCars(int id, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(deleteCars M)");
+	    checkTransaction(id);
 		try {
 			tm.enlist(id, carManager);
 			return carManager.deleteCars(id, location);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(deleteCars M)");
 			return false;
 		}
 	}
@@ -226,13 +249,16 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean deleteRooms(int id, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(deleteRooms M)");
+	    checkTransaction(id);
 		try {
 			tm.enlist(id, hotelManager);
 			return hotelManager.deleteRooms(id, location);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(deleteRooms M)");
 			return false;
 		}
 	}
@@ -240,8 +266,9 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean deleteCustomer(int id, int customer)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(deleteCustomer M)");
+	    checkTransaction(id);
 		boolean success = true;
 
 		try {
@@ -284,6 +311,8 @@ public class MiddlewareImpl implements Middleware {
 			return success;
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(deleteCustomer M)");
 			return false;
 		}
 	}
@@ -291,13 +320,16 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int queryFlight(int id, int flightNumber)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(queryFlight M)");
+	    checkTransaction(id);
 		try {
 			tm.enlist(id, flightManager);
 			return flightManager.queryFlight(id, flightNumber);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(queryFlight M)");
 			return 0;
 		}
 	}
@@ -305,13 +337,16 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int queryCars(int id, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(queryCars M)");
+	    checkTransaction(id);
 		try {
 			tm.enlist(id, carManager);
 			return carManager.queryCars(id, location);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(queryCars M)");
 			return 0;
 		}
 	}
@@ -319,13 +354,16 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int queryRooms(int id, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(queryRooms M)");
+	    checkTransaction(id);
 		try {
 			tm.enlist(id, hotelManager);
 			return hotelManager.queryRooms(id, location);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(queryRooms M)");
 			return 0;
 		}
 	}
@@ -333,13 +371,16 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public String queryCustomerInfo(int id, int customer)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(queryCustomer M)");
+	    checkTransaction(id);
 		try {
 			tm.enlist(id, customerManager);
 			return customerManager.queryCustomerInfo(id, customer);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(queryCustomer M)");
 			return null;
 		}
 	}
@@ -347,13 +388,16 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int queryFlightPrice(int id, int flightNumber)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(queryFlightPrice M)");
+	    checkTransaction(id);
 		try {
 			tm.enlist(id, flightManager);
 			return flightManager.queryFlightPrice(id, flightNumber);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(queryFlightPrice M)");
 			return 0;
 		}
 	}
@@ -361,13 +405,17 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int queryCarsPrice(int id, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(queryCarPrice M)");
+	    checkTransaction(id);
 
 		try {
 			tm.enlist(id, carManager);
 			return carManager.queryCarsPrice(id, location);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(queryCarprice M)");
 			return 0;
 		}
 	}
@@ -375,13 +423,16 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public int queryRoomsPrice(int id, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
-
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(queryRoomPrice M)");
+        checkTransaction(id);
 		try {
 			tm.enlist(id, hotelManager);
 			return hotelManager.queryRoomsPrice(id, location);
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(queryRoomPrice M)");
 			return 0;
 		}
 	}
@@ -389,7 +440,9 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean reserveFlight(int id, int customer, int flightNumber)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(reserveFlight M)");
+	    checkTransaction(id);
 
 		try {
 			tm.enlist(id, flightManager);
@@ -402,6 +455,8 @@ public class MiddlewareImpl implements Middleware {
 			return false;
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(reserveFlight M)");
 			return false;
 		}
 	}
@@ -409,7 +464,9 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean reserveCar(int id, int customer, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(reserveCar M)");
+	    checkTransaction(id);
 
 		try {
 			tm.enlist(id, carManager);
@@ -422,6 +479,8 @@ public class MiddlewareImpl implements Middleware {
 			return false;
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(reserveCar M)");
 			return false;
 		}
 	}
@@ -429,7 +488,9 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean reserveRoom(int id, int customer, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(reserveRoom M)");
+	    checkTransaction(id);
 
 		try {
 			tm.enlist(id, hotelManager);
@@ -442,6 +503,8 @@ public class MiddlewareImpl implements Middleware {
 			return false;
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(reserveRoom M)");
 			return false;
 		}
 	}
@@ -449,7 +512,9 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean itinerary(int id, int customer, Vector<Integer> flightNumbers, String location, boolean car,
 			boolean room) throws RemoteException, InvalidTransactionException, TimeoutException {
-		checkTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("Transaction "+ id + ": " + startTime + "(Itinerary M)");
+	    checkTransaction(id);
 
 		try {
 			boolean success = true;
@@ -506,35 +571,46 @@ public class MiddlewareImpl implements Middleware {
 			return success;
 		} catch (DeadlockException e) {
 			abort(id);
+            long abortTime = System.nanoTime();
+            System.out.println("Transaction "+ id + ": " + abortTime + "(Itinerary M)");
 			return false;
 		}
 	}
 
 	@Override
 	public int start() {
-		return tm.startTransaction();
+		long tStartTime = System.nanoTime();
+		System.out.println("Transaction start time: " + tStartTime + "(Middleware Layer)");
+	    return tm.startTransaction();
 	}
 
 	@Override
 	public boolean commit(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
 		checkTransaction(id);
+        long cStartTime = System.nanoTime();
+        System.out.println("Transaction commit time "+ id +": " + cStartTime + "(Middleware Layer)");
 		return tm.commitTransaction(id);
 	}
 
 	@Override
 	public boolean abort(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
 		checkTransaction(id);
+        long aStartTime = System.nanoTime();
+        System.out.println("Transaction abort time"+ id +": " + aStartTime + "(Middleware Layer)");
 		return tm.abortTransaction(id);
 	}
 	
 	@Override
 	public boolean shutdown() throws RemoteException {
+        long sStartTime = System.nanoTime();
+        System.out.println("Transaction shutdown start time" +": " + sStartTime + "(Middleware Layer)");
 		if (tm.canShutDown()) {
 			carManager.shutdown();
 			flightManager.shutdown();
 			hotelManager.shutdown();
 		}
-		
+        long sEndTime = System.nanoTime();
+        System.out.println("Transaction shutdown end time" +": " + sEndTime + "(Middleware Layer)");
 		System.exit(0);
 		return true;
 	}

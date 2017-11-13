@@ -54,48 +54,65 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 
 	@Override
 	public boolean addCars(int id, String location, int numCars, int price) throws DeadlockException {
+		long startTime = System.nanoTime();
+		System.out.println("[CarManager] addCars start:" + startTime);
 		if (getItem(id, location) == null) {
 			addItem(id, location, new Car(location, numCars, price));
 		} else {
 			increaseItemCount(id, location, numCars, price);
 		}
-
+		long finishTime = System.nanoTime();
+		System.out.println("[CarManager] addCars finish:" + finishTime);
 		return true;
 	}
 
 	@Override
 	public boolean deleteCars(int id, String location) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[CarManager] deleteCars: " + startTime);
 		return deleteItem(id, location);
 	}
 
 	@Override
 	public int queryCars(int id, String location) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[CarManager] queryCars: " + startTime);
 		return queryNum(id, location);
 	}
 
 	@Override
 	public int queryCarsPrice(int id, String location) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[CarManager] queryCarsPrice: " + startTime);
 		return queryPrice(id, location);
 	}
 
 	@Override
 	public boolean reserveCar(int id, String location) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[CarManager] reserveCar: " + startTime);
 		return reserveItem(id, location);
 	}
 
 	@Override
 	public boolean releaseCars(int id, String location, int amount) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[CarManager] releaseCars: " + startTime);
 		return increaseItemCount(id, location, amount, 0);
 	}
 
 	@Override
 	public boolean commit(int id) {
-		return commitTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("[CarManager] commit: " + startTime);
+	    return commitTransaction(id);
 	}
 
 	@Override
 	public boolean abort(int id) {
-		return abortTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("[CarManager] abort: " + startTime);
+	    return abortTransaction(id);
 	}
 
 	@Override

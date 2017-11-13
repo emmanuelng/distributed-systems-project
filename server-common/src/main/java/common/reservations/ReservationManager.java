@@ -15,7 +15,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	/**
 	 * Builds a new {@link ReservationManager}
 	 * 
-	 * @param resourceName
+	 * @param **resourceName
 	 *            the name of the managed resource. Must be unique.
 	 */
 	public ReservationManager() {
@@ -26,14 +26,17 @@ public abstract class ReservationManager<R extends ReservableItem> {
 
 	/**
 	 * Adds an item to the list of items. The key must be unique in the manager.
-	 * 
-	 * @see Middleware#deleteCustomer(int, int)
+	 *
+	 * @see **Middleware #deleteCustomer(int, int)
 	 * @return success
 	 * @throws DeadlockException
 	 */
 	protected boolean addItem(int id, String key, R instance) throws DeadlockException {
+		long startTime = System.nanoTime();
+		System.out.println("[ReservationManager] addItem start " + id+ ": " + startTime);
 		log("addItem(" + id + ", " + key + ") called");
 
+		long locktime = System.nanoTime();
 		lockManager.lock(id, "reservableItems", TrxnObj.WRITE);
 
 		if (reservableItems.containsKey(id, key)) {
@@ -42,7 +45,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 
 		log("addItem(" + id + ", " + key + ") created new " + instance);
 		reservableItems.put(id, key, instance);
-
+        long endTime = System.nanoTime();
+        System.out.println("[ReservationManager] addItem end " + id+ ": " + endTime);
 		return true;
 	}
 
@@ -58,7 +62,9 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * @throws DeadlockException
 	 */
 	protected boolean increaseItemCount(int id, String key, int numItems, int price) throws DeadlockException {
-		log("increaseItemCount(" + id + ", " + key + ", " + numItems + ") called");
+        long startTime = System.nanoTime();
+        System.out.println("[ReservationManager] increaseItem start " + id+ ": " + startTime);
+	    log("increaseItemCount(" + id + ", " + key + ", " + numItems + ") called");
 
 		lockManager.lock(id, "reservableItems", TrxnObj.WRITE);
 		R item = reservableItems.get(id, key);
@@ -74,7 +80,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 
 		item.setCount(id, item.getCount() + numItems);
 		log("increaseItemCount(" + id + ", " + key + ", " + numItems + ") succeeded");
-
+        long endTime = System.nanoTime();
+        System.out.println("[ReservationManager] increaseItem end " + id+ ": " + endTime);
 		return true;
 	}
 
@@ -85,7 +92,9 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * @throws DeadlockException
 	 */
 	protected R getItem(int id, String key) throws DeadlockException {
-		lockManager.lock(id, "reservableItems", TrxnObj.READ);
+        long startTime = System.nanoTime();
+        System.out.println("[ReservationManager] getItem  " + id+ ": " + startTime);
+	    lockManager.lock(id, "reservableItems", TrxnObj.READ);
 		return reservableItems.get(id, key);
 	}
 
@@ -97,7 +106,9 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * @throws DeadlockException
 	 */
 	protected boolean deleteItem(int id, String key) throws DeadlockException {
-		log("deleteItem(" + id + ", " + key + ") called");
+        long startTime = System.nanoTime();
+        System.out.println("[ReservationManager] deleteItem  " + id+ ": " + startTime);
+	    log("deleteItem(" + id + ", " + key + ") called");
 
 		lockManager.lock(id, "reservableItems", TrxnObj.WRITE);
 		boolean success = true;
@@ -113,7 +124,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 			log("deleteItem(\" + id + \", \" + key + \"): successfully removed item " + item);
 			reservableItems.remove(id, item);
 		}
-
+        long endTime = System.nanoTime();
+        System.out.println("[ReservationManager] deleteItem end " + id+ ": " + endTime);
 		return success;
 	}
 
@@ -123,6 +135,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * @throws DeadlockException
 	 */
 	protected int queryNum(int id, String key) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[ReservationManager] queryNum start  " + id+ ": " + startTime);
 		log("queryNum(" + id + ", " + key + ") called");
 
 		lockManager.lock(id, "reservableItems", TrxnObj.READ);
@@ -135,7 +149,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		} else {
 			log("queryNum(" + id + ", " + key + "): item does not exist. Returns 0 by default.");
 		}
-
+        long endTime = System.nanoTime();
+        System.out.println("[ReservationManager] queryNum end " + id+ ": " + endTime);
 		return num;
 	}
 
@@ -145,7 +160,9 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * @throws DeadlockException
 	 */
 	protected int queryPrice(int id, String key) throws DeadlockException {
-		log("queryPrice(" + id + ", " + key + ") called");
+        long startTime = System.nanoTime();
+        System.out.println("[ReservationManager] queryPrice start  " + id+ ": " + startTime);
+	    log("queryPrice(" + id + ", " + key + ") called");
 
 		lockManager.lock(id, "reservableItems", TrxnObj.READ);
 		int price = 0;
@@ -157,7 +174,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		} else {
 			log("queryPrice(" + id + ", " + key + "): item does not exist. Returns 0 by default.");
 		}
-
+        long endTime = System.nanoTime();
+        System.out.println("[ReservationManager] queryPrice end " + id+ ": " + endTime);
 		return price;
 	}
 
@@ -169,6 +187,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * @throws DeadlockException
 	 */
 	protected boolean reserveItem(int id, String key) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[ReservationManager] reserveItem start  " + id+ ": " + startTime);
 		log("reserveItem(" + id + ", " + key + ") called");
 
 		lockManager.lock(id, "reservableItems", TrxnObj.READ);
@@ -186,11 +206,14 @@ public abstract class ReservationManager<R extends ReservableItem> {
 			item.setReserved(id, item.getReserved() + 1);
 			log("reserveItem(" + id + ", " + key + ") succeeded");
 		}
-
+        long endTime = System.nanoTime();
+        System.out.println("[ReservationManager] reserveItem end " + id+ ": " + endTime);
 		return success;
 	}
 
 	protected boolean commitTransaction(int id) {
+        long startTime = System.nanoTime();
+        System.out.println("[ReservationManager] commit start  " + id+ ": " + startTime);
 		log("Committing transaction " + id);
 		lockManager.unlockAll(id);
 		reservableItems.commit(id);
@@ -198,11 +221,14 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		for (ReservableItem ri : reservableItems.values()) {
 			ri.commit(id);
 		}
-
+        long endTime = System.nanoTime();
+        System.out.println("[ReservationManager] commit end  " + id+ ": " + endTime);
 		return true;
 	}
 
 	protected boolean abortTransaction(int id) {
+        long startTime = System.nanoTime();
+        System.out.println("[ReservationManager] abort start  " + id+ ": " + startTime);
 		log("Aborting transaction " + id);
 		lockManager.unlockAll(id);
 		reservableItems.cancel(id);
@@ -210,7 +236,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		for (ReservableItem ri : reservableItems.values()) {
 			ri.cancel(id);
 		}
-
+        long endTime = System.nanoTime();
+        System.out.println("[ReservationManager] abort end  " + id+ ": " + endTime);
 		return true;
 
 	}

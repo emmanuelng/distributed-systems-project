@@ -49,48 +49,65 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 
 	@Override
 	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws DeadlockException {
+		long startTime = System.nanoTime();
+		System.out.println("[FlightManager] addFlight start: " + startTime);
 		if (getItem(id, Integer.toString(flightNum)) == null) {
 			addItem(id, Integer.toString(flightNum), new Flight(flightNum, flightSeats, flightPrice));
 		} else {
 			increaseItemCount(id, Integer.toString(flightNum), flightSeats, flightPrice);
 		}
-
+		long finishTime = System.nanoTime();
+		System.out.println("[FlightManager] addFlight finish: " + finishTime);
 		return true;
 	}
 
 	@Override
 	public boolean deleteFlight(int id, int flightNum) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[FlightManager] deleteFlight: " + startTime);
 		return deleteItem(id, Integer.toString(flightNum));
 	}
 
 	@Override
 	public int queryFlight(int id, int flightNum) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[FlightManager] queryFlight: " + startTime);
 		return queryNum(id, Integer.toString(flightNum));
 	}
 
 	@Override
 	public int queryFlightPrice(int id, int flightNum) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[FlightManager] queryFlightPrice: " + startTime);
 		return queryPrice(id, Integer.toString(flightNum));
 	}
 
 	@Override
 	public boolean reserveFlight(int id, int flightNum) throws DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[FlightManager] reserveFlight: " + startTime);
 		return reserveItem(id, Integer.toString(flightNum));
 	}
 
 	@Override
 	public boolean releaseSeats(int id, int flightNumber, int amount) throws RemoteException, DeadlockException {
+        long startTime = System.nanoTime();
+        System.out.println("[FlightManager] releaseFlight: " + startTime);
 		return increaseItemCount(id, Integer.toString(flightNumber), amount, 0);
 	}
 
 	@Override
 	public boolean commit(int id) {
-		return commitTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("[FlightManager] commit: " + startTime);
+	    return commitTransaction(id);
 	}
 
 	@Override
 	public boolean abort(int id) {
-		return abortTransaction(id);
+        long startTime = System.nanoTime();
+        System.out.println("[FlightManager] abort: " + startTime);
+	    return abortTransaction(id);
 	}
 
 	@Override
