@@ -1,5 +1,7 @@
 package middleware.impl;
 
+import java.io.EOFException;
+import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RMISecurityManager;
 import java.rmi.Remote;
@@ -7,10 +9,13 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import cars.CarManager;
 import common.locks.DeadlockException;
+import common.rm.ResourceManager;
 import customers.CustomerManager;
 import customers.impl.CustomerManagerImpl;
 import flights.FlightManager;
@@ -530,9 +535,18 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean shutdown() throws RemoteException {
 		if (tm.canShutDown()) {
-			carManager.shutdown();
-			flightManager.shutdown();
-			hotelManager.shutdown();
+			List<ResourceManager> managers = new ArrayList<>();
+			managers.add(carManager);
+			managers.add(flightManager);
+			managers.add(hotelManager);
+			
+			for (ResourceManager manager: managers) {
+				try {
+					manager.shutdown();
+				} catch (Exception e) {
+					continue;
+				}
+			}
 		}
 		
 		System.exit(0);
