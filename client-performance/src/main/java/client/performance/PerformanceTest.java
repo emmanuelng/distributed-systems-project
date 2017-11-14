@@ -74,7 +74,7 @@ public class PerformanceTest {
 		System.out.println("== Test with 1 client ==\n");
 		System.out.println("Average response time with one client: " + sendTransactions() + "ms");
 		
-		System.out.println("== Test with 10 clients ==\n");
+		System.out.println("\n== Test with 10 clients ==\n");
 		for (int i=0; i<10; i++) {
 			clientStub(i);
 		}
@@ -84,7 +84,7 @@ public class PerformanceTest {
 		List<Long> responseTimes = new ArrayList<>();
 		long start;
 
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 50; i++) {
 			start = System.currentTimeMillis();
 			transaction1();
 			responseTimes.add(System.currentTimeMillis() - start);
