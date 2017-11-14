@@ -42,7 +42,14 @@ if [ $# -gt 1 ]; then
 		export CLASSPATH=$classpath
 
 		# Run the app
-		java -Djava.security.policy=$DIR/$dirname/java.policy -Djava.rmi.server.codebase=file:$DIR/$dirname/build/libs/$dirname-1.0.jar ${APPS[$dirname]} ${@:3}
+		codebase="file:$DIR/$dirname/build/libs/$dirname-1.0.jar"
+
+		if [ $1 == 'server' ]; then
+			codebase=$codebase" file:$DIR/server-common/build/libs/server-common-1.0.0.jar"
+
+		fi
+
+		java -Djava.security.policy=$DIR/$dirname/java.policy -Djava.rmi.server.codebase="$codebase" ${APPS[$dirname]} ${@:3}
 	else
 		echo 'Invalid arguments.'
 		echo

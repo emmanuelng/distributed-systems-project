@@ -6,6 +6,7 @@ import java.util.Map;
 import client.commands.Command;
 import client.commands.HelpCommand;
 import client.commands.QuitCommand;
+import client.commands.ShutdownCommand;
 import client.commands.create.NewCarCommand;
 import client.commands.create.NewCustomerCommand;
 import client.commands.create.NewFlightCommand;
@@ -35,6 +36,7 @@ public class CommandRegistry {
 	public static void initialize() {
 		COMMANDS.put("help", new HelpCommand());
 		COMMANDS.put("quit", new QuitCommand());
+		COMMANDS.put("shutdown", new ShutdownCommand());
 
 		COMMANDS.put("newflight", new NewFlightCommand());
 		COMMANDS.put("newcar", new NewCarCommand());
