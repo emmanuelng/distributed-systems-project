@@ -71,10 +71,20 @@ public class PerformanceTest {
 	}
 
 	private void startTest() {
-		List<Long> responseTimes = new ArrayList<>();
+		System.out.println("== Test with 1 client ==\n");
+		System.out.println("Average response time with one client: " + sendTransactions() + "ms");
+		
+		System.out.println("== Test with 10 clients ==\n");
+		for (int i=0; i<10; i++) {
+			clientStub(i);
+		}
+	}
 
+	private long sendTransactions() {
+		List<Long> responseTimes = new ArrayList<>();
 		long start;
-		for (int i = 0; i < 10; i++) {
+
+		for (int i = 0; i < 1000; i++) {
 			start = System.currentTimeMillis();
 			transaction1();
 			responseTimes.add(System.currentTimeMillis() - start);
@@ -94,8 +104,18 @@ public class PerformanceTest {
 		}
 		avg /= responseTimes.size();
 
-		System.out.println("Average response time: " + avg + "ms");
+		return avg;
+	}
 
+	private void clientStub(int id) {
+		Runnable stub = new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("Average response time with one client " + id + ": " + sendTransactions() + "ms");
+			}
+		};
+		
+		new Thread(stub).start();
 	}
 
 	private void transaction1() {
