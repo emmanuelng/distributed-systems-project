@@ -35,7 +35,7 @@ public class ReserveItineraryCommand extends Command {
 		int customer = Integer.parseInt(arguments.get(1));
 		Vector<Integer> flightNumbers = new Vector<>();
 
-		for (int i = 0; i < arguments.size() - 6; i++) {
+		for (int i = 0; i < arguments.size() - 5; i++) {
 			flightNumbers.add(Integer.parseInt(arguments.get(2 + i)));
 		}
 
@@ -62,7 +62,7 @@ public class ReserveItineraryCommand extends Command {
 
 	@Override
 	public String argsDescription() {
-		return "<id>,<customerid>,<flightnumber1>....<flightnumberN>,<LocationToBookCarsOrRooms>,<NumberOfCars>,<NumberOfRoom>";
+		return "<id>,<customerid>,<flightnumber1>....<flightnumberN>,<LocationToBookCarsOrRooms>,<ReserveCar?>,<ReserveRoom?>";
 	}
 
 }
