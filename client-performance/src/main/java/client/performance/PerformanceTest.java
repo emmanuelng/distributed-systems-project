@@ -1,135 +1,133 @@
 package client.performance;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
-import client.Client;
-import client.CommandRegistry;
-import client.commands.Command;
 import middleware.Middleware;
-
-
-
 
 public class PerformanceTest {
 
-    public static final String DEFAULT_HOST = "localhost";
-    public static final int DEFAULT_PORT = 1099;
+	public static final String DEFAULT_HOST = "localhost";
+	public static final int DEFAULT_PORT = 1099;
 
-    static {
-        CommandRegistry.initialize();
-    }
+	public static boolean exit = false;
 
-    public static boolean exit = false;
+	public static void main(String[] args) {
+		PerformanceTest p = null;
 
-    public static void main(String[] args) {
-        PerformanceTest p = null;
+		if (args.length == 0) {
+			p = new PerformanceTest();
+		} else if (args.length == 1) {
+			p = new PerformanceTest(args[0]);
+		} else if (args.length == 2) {
+			p = new PerformanceTest(args[0], Integer.parseInt(args[1]));
+		} else {
+			System.err.println("Usage: java client [rmihost [rmiport]]");
+			System.exit(1);
+		}
 
-        if (args.length == 0) {
-            p = new PerformanceTest();
-        } else if (args.length == 1) {
-            p = new PerformanceTest(args[0]);
-        } else if (args.length == 2) {
-            p = new PerformanceTest(args[0], Integer.parseInt(args[1]));
-        } else {
-            System.err.println("Usage: java client [rmihost [rmiport]]");
-            System.exit(1);
-        }
+		p.start();
+	}
 
-        p.start();
-    }
+	private String host;
+	private int port;
+	private Middleware middleware;
 
-    private String host;
-    private int port;
-    private BufferedReader stdin;
-    private Middleware middleware;
-    private String command;
+	private PerformanceTest(String host, int port) {
+		this.host = host;
+		this.port = port;
+	}
 
-    private PerformanceTest(String host, int port) {
-        this.host = host;
-        this.port = port;
-        this.stdin = new BufferedReader(new InputStreamReader(System.in));
-    }
+	private PerformanceTest(String host) {
+		this(host, DEFAULT_PORT);
+	}
 
-    private PerformanceTest(String host) {
-        this(host, DEFAULT_PORT);
-    }
+	private PerformanceTest() {
+		this(DEFAULT_HOST);
+	}
 
-    private PerformanceTest() {
-        this(DEFAULT_HOST);
-    }
+	private void start() {
+		try {
+			// Connect to the Server
+			Registry registry = LocateRegistry.getRegistry(host, port);
+			middleware = (Middleware) registry.lookup("middleware.group20");
 
-    private void start() {
-        try {
-            // Connect to the Server
-            Registry registry = LocateRegistry.getRegistry(host, port);
-            middleware = (Middleware) registry.lookup("middleware.group20");
+			if (middleware != null) {
+				System.out.println("Successfully connected!\n");
+				startTest();
+			} else {
+				System.err.println("Error: The middleware is null");
+			}
 
-            if (middleware != null) {
-                System.out.println("Successfully connected!\n");
-               // loop();
-            } else {
-                System.err.println("Error: The middleware is null");
-            }
+		} catch (RemoteException e) {
+			System.err.println("Error: Impossible to connect to " + host + ":" + port);
+		} catch (NotBoundException e) {
+			System.err.println("Error: Unable to find the middleware in the registry");
+		}
+	}
 
-        } catch (RemoteException e) {
-            System.err.println("Error: Impossible to connect to " + host + ":" + port);
-        } catch (NotBoundException e) {
-            System.err.println("Error: Unable to find the middleware in the registry");
-        } catch (IOException e) {
-            System.err.println("Error: Unnable to read commands");
-        }
-    }
+	private void startTest() {
+		List<Long> responseTimes = new ArrayList<>();
 
-    /**private void loop() throws IOException {
-        System.out.println("======== Client Interface ========\n");
+		long start;
+		for (int i = 0; i < 10; i++) {
+			start = System.currentTimeMillis();
+			transaction1();
+			responseTimes.add(System.currentTimeMillis() - start);
 
-        while (!exit) {
-            System.out.print("\n> ");
-            command = stdin.readLine();
-            execute(command.trim());
-        }
+			start = System.currentTimeMillis();
+			transaction2();
+			responseTimes.add(System.currentTimeMillis() - start);
 
-        System.out.println("Exiting client.");
-    }**/
+			start = System.currentTimeMillis();
+			transaction3();
+			responseTimes.add(System.currentTimeMillis() - start);
+		}
 
-    private void execute(String input) {
-        if (input.isEmpty()) {
-            return;
-        }
+		long avg = 0;
+		for (long time : responseTimes) {
+			avg += time;
+		}
+		avg /= responseTimes.size();
 
-        List<String> args = new ArrayList<>();
-        StringTokenizer tokenizer = new StringTokenizer(command, " ");
+		System.out.println("Average response time: " + avg + "ms");
 
-        while (tokenizer.hasMoreElements()) {
-            args.add(tokenizer.nextToken().trim());
-        }
+	}
 
-        Command cmd = CommandRegistry.COMMANDS.get(args.remove(0));
+	private void transaction1() {
+		try {
+			int id = middleware.start();
+			middleware.addCars(id, "montreal", 50, 100);
+			middleware.queryCars(id, "montreal");
+			middleware.commit(id);
+		} catch (Exception e) {
+			// Stop
+		}
+	}
 
-        if (cmd != null) {
-            if (args.size() >= cmd.minArgs() && (cmd.maxArgs() < 0 || args.size() <= cmd.maxArgs())) {
-                try {
-                    cmd.execute(middleware, args);
-                } catch (Exception e) {
-                    System.out.print("Error: " + e.getClass().getSimpleName());
-                    if (e.getMessage() != null) {
-                        System.out.print(": " + e.getMessage() + "\n");
-                    }
-                }
-            } else {
-                System.out.println(cmd.invalidArgsNbMsg());
-            }
-        } else {
-            System.out.println("The interface does not support this command\n");
-        }
-    }
+	private void transaction2() {
+		try {
+			int id = middleware.start();
+			middleware.addFlight(id, 0, 50, 100);
+			middleware.queryFlight(id, 0);
+			middleware.commit(id);
+		} catch (Exception e) {
+			// Stop
+		}
+	}
+
+	private void transaction3() {
+		try {
+			int id = middleware.start();
+			middleware.addRooms(id, "montreal", 50, 100);
+			middleware.queryRooms(id, "montreal");
+			middleware.commit(id);
+		} catch (Exception e) {
+			// Stop
+		}
+	}
 }
