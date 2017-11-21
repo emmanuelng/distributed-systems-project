@@ -33,6 +33,7 @@ public class RMHashtable<K, V> {
 	@SuppressWarnings("unchecked")
 	public RMHashtable(String pathname) {
 		this.pathname = pathname;
+		this.outputStreams = new Hashtable<>();
 
 		try {
 			// Recover data from the main record
@@ -47,7 +48,6 @@ public class RMHashtable<K, V> {
 		}
 
 		this.actions = new Hashtable<>();
-		this.outputStreams = new Hashtable<>();
 	}
 
 	public synchronized V put(int id, K key, V value) {
