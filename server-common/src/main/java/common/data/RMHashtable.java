@@ -1,5 +1,11 @@
 package common.data;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map.Entry;
@@ -13,9 +19,35 @@ public class RMHashtable<K, V> {
 	private Hashtable<K, V> data;
 	private Hashtable<Integer, CompositeAction> actions;
 
-	public RMHashtable() {
-		this.data = new Hashtable<>();
+	private String pathname;
+	private Hashtable<String, ObjectOutputStream> outputStreams;
+
+	/**
+	 * Creates a new {@link RMHashtable}. If the given file exists, initializes it
+	 * with the data contained in it. Otherwise creates the file and starts with no
+	 * data.
+	 * 
+	 * @param pathname
+	 *            path to the save file
+	 */
+	@SuppressWarnings("unchecked")
+	public RMHashtable(String pathname) {
+		this.pathname = pathname;
+
+		try {
+			// Recover data from the main record
+			FileInputStream fis = new FileInputStream(pathname);
+			ObjectInputStream ois = new ObjectInputStream(fis);
+			this.data = (Hashtable<K, V>) ois.readObject();
+			ois.close();
+		} catch (ClassNotFoundException | IOException e) {
+			// If for any reason it failed, initialize with empty data
+			this.data = new Hashtable<>();
+			save();
+		}
+
 		this.actions = new Hashtable<>();
+		this.outputStreams = new Hashtable<>();
 	}
 
 	public synchronized V put(int id, K key, V value) {
@@ -91,6 +123,7 @@ public class RMHashtable<K, V> {
 	 */
 	public void commit(int id) {
 		actions.remove(id);
+		save();
 	}
 
 	/**
@@ -109,6 +142,62 @@ public class RMHashtable<K, V> {
 		}
 
 		return actions.get(id);
+	}
+
+	/**
+	 * Saves the data to disk. If the file does not exist, creates a new one.
+	 * 
+	 * @return success
+	 */
+	private boolean save() {
+		System.out.println("[RMHashtable] Saving data to disk...");
+
+		ObjectOutputStream mainRecordOut = getOutput(pathname);
+		ObjectOutputStream backup1Out = getOutput(pathname + ".backup1");
+		ObjectOutputStream backup2Out = getOutput(pathname + ".backup2");
+
+		if (mainRecordOut != null && backup1Out != null && backup2Out != null) {
+			try {
+				mainRecordOut.writeObject(data);
+				backup1Out.writeObject(data);
+				backup2Out.writeObject(data);
+			} catch (IOException e) {
+				System.out.println("[RMHashtable] Error: Unable to write to disk.");
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Returns the {@link ObjectOutputStream} corresponding to the file located at
+	 * the given path.
+	 * 
+	 * @param pathname
+	 *            the path of the file
+	 * @return the {@link ObjectOutputStream} or <code>null</code> in case of
+	 *         failure
+	 */
+	private ObjectOutputStream getOutput(String pathname) {
+		if (!outputStreams.containsKey(pathname)) {
+			try {
+				File file = new File(pathname);
+
+				// Create the file if it does not exist.
+				// If the file exists, this will have no effect.
+				file.createNewFile();
+
+				FileOutputStream fos = new FileOutputStream(file);
+				outputStreams.put(pathname, new ObjectOutputStream(fos));
+
+			} catch (IOException e) {
+				System.out.println("[RMHashtable] Error: Unable to open " + pathname);
+				outputStreams.put(pathname, null);
+			}
+		}
+
+		return outputStreams.get(pathname);
 	}
 
 }

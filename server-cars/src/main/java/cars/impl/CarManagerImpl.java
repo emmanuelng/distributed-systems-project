@@ -45,11 +45,8 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 		}
 	}
 
-	/**
-	 * Builds a new {@link CarManagerImpl}.
-	 */
 	public CarManagerImpl() {
-		super();
+		super("cars");
 	}
 
 	@Override

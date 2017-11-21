@@ -47,6 +47,10 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 		}
 	}
 
+	public HotelManagerImpl() {
+		super("hotels");
+	}
+
 	@Override
 	public boolean addRooms(int id, String location, int numRooms, int price) throws DeadlockException {
 		if (getItem(id, location) == null) {

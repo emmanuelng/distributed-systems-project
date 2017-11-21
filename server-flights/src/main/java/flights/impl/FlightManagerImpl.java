@@ -47,6 +47,10 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 		}
 	}
 
+	public FlightManagerImpl() {
+		super("flights");
+	}
+
 	@Override
 	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws DeadlockException {
 		if (getItem(id, Integer.toString(flightNum)) == null) {

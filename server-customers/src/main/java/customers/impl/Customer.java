@@ -38,7 +38,7 @@ public class Customer {
 	 */
 	public Customer(int cid) {
 		this.cid = cid;
-		this.reservations = new RMHashtable<>();
+		this.reservations = new RMHashtable<>("server-customers/data/reservations.data");
 	}
 
 	/**

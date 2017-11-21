@@ -20,8 +20,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * @param resourceName
 	 *            the name of the managed resource. Must be unique.
 	 */
-	public ReservationManager() {
-		this.reservableItems = new RMHashtable<>();
+	public ReservationManager(String name) {
+		this.reservableItems = new RMHashtable<>("server-" + name + "/data/" + name + ".data");
 		this.lockManager = new LockManager();
 		new HashSet<>();
 	}

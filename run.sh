@@ -49,6 +49,7 @@ if [ $# -gt 1 ]; then
 
 		fi
 
+		cd $DIR
 		java -Djava.security.policy=$DIR/$dirname/java.policy -Djava.rmi.server.codebase="$codebase" ${APPS[$dirname]} ${@:3}
 	else
 		echo 'Invalid arguments.'
