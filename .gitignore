@@ -1,3 +1,6 @@
+*.classpath
+data/
+
 ## JAVA
 
 # Compiled class file

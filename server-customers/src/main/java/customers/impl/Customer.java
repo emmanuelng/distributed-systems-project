@@ -21,8 +21,8 @@ public class Customer {
 		}
 
 		/**
-		 * Returns the reservation as an array of String. The format is [manager,
-		 * itemId, amount].
+		 * Returns the reservation as an array of String. The format is
+		 * [manager, itemId, amount].
 		 */
 		public String toString() {
 			return manager + "/" + itemId + "/" + amount;
@@ -38,7 +38,7 @@ public class Customer {
 	 */
 	public Customer(int cid) {
 		this.cid = cid;
-		this.reservations = new RMHashtable<>("server-customers/data/reservations.data");
+		this.reservations = new RMHashtable<>("data/customers/customers/" + cid + ".data");
 	}
 
 	/**

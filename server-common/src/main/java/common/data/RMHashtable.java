@@ -23,9 +23,9 @@ public class RMHashtable<K, V> {
 	private Hashtable<String, ObjectOutputStream> outputStreams;
 
 	/**
-	 * Creates a new {@link RMHashtable}. If the given file exists, initializes it
-	 * with the data contained in it. Otherwise creates the file and starts with no
-	 * data.
+	 * Creates a new {@link RMHashtable}. If the given file exists, initializes
+	 * it with the data contained in it. Otherwise creates the file and starts
+	 * with no data.
 	 * 
 	 * @param pathname
 	 *            path to the save file
@@ -118,8 +118,8 @@ public class RMHashtable<K, V> {
 	}
 
 	/**
-	 * Commits a transactions. After calling this methods, it becomes impossible to
-	 * undo the given transaction.
+	 * Commits a transactions. After calling this methods, it becomes impossible
+	 * to undo the given transaction.
 	 */
 	public void commit(int id) {
 		actions.remove(id);
@@ -127,8 +127,8 @@ public class RMHashtable<K, V> {
 	}
 
 	/**
-	 * Returns the composite action related to the given transaction. Creates a new
-	 * one if it does not exist yet.
+	 * Returns the composite action related to the given transaction. Creates a
+	 * new one if it does not exist yet.
 	 * 
 	 * @param id
 	 *            the transaction identifier
@@ -171,8 +171,8 @@ public class RMHashtable<K, V> {
 	}
 
 	/**
-	 * Returns the {@link ObjectOutputStream} corresponding to the file located at
-	 * the given path.
+	 * Returns the {@link ObjectOutputStream} corresponding to the file located
+	 * at the given path.
 	 * 
 	 * @param pathname
 	 *            the path of the file
@@ -186,6 +186,7 @@ public class RMHashtable<K, V> {
 
 				// Create the file if it does not exist.
 				// If the file exists, this will have no effect.
+				file.getParentFile().mkdirs();
 				file.createNewFile();
 
 				FileOutputStream fos = new FileOutputStream(file);
@@ -193,7 +194,6 @@ public class RMHashtable<K, V> {
 
 			} catch (IOException e) {
 				System.out.println("[RMHashtable] Error: Unable to open " + pathname);
-				outputStreams.put(pathname, null);
 			}
 		}
 

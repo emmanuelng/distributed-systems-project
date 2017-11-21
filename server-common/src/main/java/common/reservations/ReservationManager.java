@@ -21,7 +21,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 *            the name of the managed resource. Must be unique.
 	 */
 	public ReservationManager(String name) {
-		this.reservableItems = new RMHashtable<>("server-" + name + "/data/" + name + ".data");
+		this.reservableItems = new RMHashtable<>("data/" + name + "/" + name + ".data");
 		this.lockManager = new LockManager();
 		new HashSet<>();
 	}
@@ -92,8 +92,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	}
 
 	/**
-	 * Deletes an item. Fails if the item is reserved by at least one customer or if
-	 * it does not exist.
+	 * Deletes an item. Fails if the item is reserved by at least one customer
+	 * or if it does not exist.
 	 * 
 	 * @return success
 	 * @throws DeadlockException
@@ -219,7 +219,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 
 	protected boolean shutdownManager() {
 		log("Will shut down in 1 second.");
-		
+
 		Timer shutdownTimer = new Timer();
 		shutdownTimer.schedule(new TimerTask() {
 			@Override
@@ -227,7 +227,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 				System.exit(0);
 			}
 		}, 1000);
-		
+
 		return true;
 	}
 
