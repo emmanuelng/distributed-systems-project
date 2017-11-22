@@ -41,6 +41,7 @@ if [ $# -gt 1 ]; then
 		fi
 
 		# Run the app
+		cd $DIR
 		export CLASSPATH=$classpath
 		java -cp $classpath -Djava.security.policy=$policy -Djava.rmi.server.codebase="$codebase" ${APPS[$dirname]} ${@:3}
 	else
