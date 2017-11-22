@@ -38,6 +38,15 @@ if [ $# -gt 1 ]; then
 		if [ $1 == 'server' ]; then
 			classpath=$classpath":$DIR/server-common/build/libs/server-common-1.0.jar"
 			codebase=$codebase" file:$DIR/server-common/build/libs/server-common-1.0.jar"
+		else
+			classpath=$classpath":$DIR/server-middleware/build/libs/server-middleware-1.0.jar"
+		fi
+
+		if [ $2 == 'middleware' ]; then
+			classpath=$classpath":$DIR/server-cars/build/libs/server-cars-1.0.jar"
+			classpath=$classpath":$DIR/server-flights/build/libs/server-flights-1.0.jar"
+			classpath=$classpath":$DIR/server-hotels/build/libs/server-hotels-1.0.jar"
+			classpath=$classpath":$DIR/server-customers/build/libs/server-customers-1.0.jar"
 		fi
 
 		# Run the app
