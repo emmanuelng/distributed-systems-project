@@ -21,8 +21,8 @@ public class Customer {
 		}
 
 		/**
-		 * Returns the reservation as an array of String. The format is
-		 * [manager, itemId, amount].
+		 * Returns the reservation as an array of String. The format is [manager,
+		 * itemId, amount].
 		 */
 		public String toString() {
 			return manager + "/" + itemId + "/" + amount;

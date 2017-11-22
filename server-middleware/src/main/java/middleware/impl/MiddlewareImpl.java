@@ -533,7 +533,7 @@ public class MiddlewareImpl implements Middleware {
 	public boolean shutdown() throws RemoteException {
 		if (tm.canShutDown()) {
 			System.out.println("[Middleware] Shutting down managers...");
-			
+
 			carManager.shutdown();
 			flightManager.shutdown();
 			hotelManager.shutdown();
