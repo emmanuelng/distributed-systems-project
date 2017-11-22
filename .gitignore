@@ -1,5 +1,8 @@
-*.classpath
-data/
+## PROJECT
+
+*.data
+*.backup1
+*.backup2
 
 ## JAVA
 
