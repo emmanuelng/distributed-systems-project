@@ -1,3 +1,9 @@
+## PROJECT
+
+*.data
+*.backup1
+*.backup2
+
 ## JAVA
 
 # Compiled class file
