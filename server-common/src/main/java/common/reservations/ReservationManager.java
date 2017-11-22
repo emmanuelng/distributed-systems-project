@@ -92,8 +92,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	}
 
 	/**
-	 * Deletes an item. Fails if the item is reserved by at least one customer
-	 * or if it does not exist.
+	 * Deletes an item. Fails if the item is reserved by at least one customer or if
+	 * it does not exist.
 	 * 
 	 * @return success
 	 * @throws DeadlockException
@@ -194,14 +194,16 @@ public abstract class ReservationManager<R extends ReservableItem> {
 
 	protected boolean commitTransaction(int id) {
 		log("Committing transaction " + id);
+		boolean success = true;
+
 		lockManager.unlockAll(id);
-		reservableItems.commit(id);
+		success &= reservableItems.commit(id);
 
 		for (ReservableItem ri : reservableItems.values()) {
 			ri.commit(id);
 		}
 
-		return true;
+		return success;
 	}
 
 	protected boolean abortTransaction(int id) {

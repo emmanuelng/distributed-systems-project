@@ -1,11 +1,14 @@
 package common.reservations;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 import common.data.actions.CompositeAction;
 import common.data.actions.DataAction;
 
-public abstract class ReservableItem {
+public abstract class ReservableItem implements Serializable {
+
+	private static final long serialVersionUID = 3721280128228108266L;
 
 	private int count;
 	private int price;
@@ -83,7 +86,7 @@ public abstract class ReservableItem {
 			actions.remove(id).undo();
 		}
 	}
-	
+
 	public void commit(int id) {
 		actions.remove(id);
 	}
