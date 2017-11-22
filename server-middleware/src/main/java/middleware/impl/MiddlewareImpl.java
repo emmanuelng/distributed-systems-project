@@ -516,7 +516,7 @@ public class MiddlewareImpl implements Middleware {
 	public int start() {
 		return tm.startTransaction();
 	}
-	
+
 	@Override
 	public boolean prepare(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
 		// TODO Auto-generated method stub
@@ -539,31 +539,40 @@ public class MiddlewareImpl implements Middleware {
 	public boolean shutdown() throws RemoteException {
 		if (tm.canShutDown()) {
 			System.out.println("[Middleware] Shutting down managers...");
+			boolean success = true;
 
-			carManager.shutdown();
-			flightManager.shutdown();
-			hotelManager.shutdown();
+			success &= carManager.shutdown();
+			success &= flightManager.shutdown();
+			success &= hotelManager.shutdown();
 
-			System.out.println("[Middleware] Will shut down in 1 second.");
-
-			Timer shutdownTimer = new Timer();
-			shutdownTimer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					System.exit(0);
-				}
-			}, 1000);
-
-			return true;
+			return success & selfDestroy();
 		}
 
 		return false;
 	}
-	
+
 	@Override
 	public boolean crash(String which) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		boolean success = false;
+
+		switch (which.toLowerCase()) {
+		case "middleware":
+			success = selfDestroy();
+			break;
+		case "cars":
+			success = carManager.shutdown();
+			break;
+		case "flights":
+			success = flightManager.shutdown();
+			break;
+		case "hotels":
+			success = hotelManager.shutdown();
+			break;
+		default:
+			break;
+		}
+
+		return success;
 	}
 
 	/**
@@ -583,4 +592,22 @@ public class MiddlewareImpl implements Middleware {
 		}
 	}
 
+	/**
+	 * Starts a timer that stops the middle ware after one second.
+	 * 
+	 * @return success
+	 */
+	private boolean selfDestroy() {
+		System.out.println("[Middleware] Will shut down in 1 second.");
+
+		Timer shutdownTimer = new Timer();
+		shutdownTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				System.exit(0);
+			}
+		}, 1000);
+		
+		return true;
+	}
 }
