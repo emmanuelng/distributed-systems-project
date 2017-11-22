@@ -25,32 +25,24 @@ if [ $# -gt 1 ]; then
 		cd $DIR/$dirname
 
 		# Generate the policy file
-		echo "grant codeBase \"file:"$DIR"/"$dirname"/build/libs/"$dirname"-1.0.jar\" {" > $DIR/$dirname/java.policy
+		echo "grant codeBase \"file:$DIR/$dirname/build/libs/$dirname-1.0.jar\" {" > $DIR/$dirname/java.policy
 		echo "	permission java.security.AllPermission;" >> $DIR/$dirname/java.policy
 		echo "};" >> $DIR/$dirname/java.policy
 		echo >> $DIR/$dirname/java.policy
 
-		# Set the classpath
-		classpath="$DIR/client-client/build/libs/client-client-1.0.jar"
-		classpath=$classpath":$DIR/client-performance/build/libs/client-performance-1.0.jar"
-		classpath=$classpath":$DIR/server-common/build/libs/server-common-1.0.0.jar"
-		classpath=$classpath":$DIR/server-cars/build/libs/server-cars-1.0.jar"
-		classpath=$classpath":$DIR/server-flights/build/libs/server-flights-1.0.jar"
-		classpath=$classpath":$DIR/server-hotels/build/libs/server-hotels-1.0.jar"
-		classpath=$classpath":$DIR/server-middleware/build/libs/server-middleware-1.0.jar"
-		classpath=$classpath":$DIR/server-customers/build/libs/server-customers-1.0.jar"
-		export CLASSPATH=$classpath
-
-		# Run the app
+		# Get the parameters
+		policy="$DIR/$dirname/java.policy"
+		classpath="$DIR/$dirname/build/libs/$dirname-1.0.jar"
 		codebase="file:$DIR/$dirname/build/libs/$dirname-1.0.jar"
 
 		if [ $1 == 'server' ]; then
-			codebase=$codebase" file:$DIR/server-common/build/libs/server-common-1.0.0.jar"
-
+			classpath=$classpath":$DIR/server-common/build/libs/server-common-1.0.jar"
+			codebase=$codebase" file:$DIR/server-common/build/libs/server-common-1.0.jar"
 		fi
 
-		cd $DIR
-		java -Djava.security.policy=$DIR/$dirname/java.policy -Djava.rmi.server.codebase="$codebase" ${APPS[$dirname]} ${@:3}
+		# Run the app
+		export CLASSPATH=$classpath
+		java -cp $classpath -Djava.security.policy=$policy -Djava.rmi.server.codebase="$codebase" ${APPS[$dirname]} ${@:3}
 	else
 		echo 'Invalid arguments.'
 		echo
