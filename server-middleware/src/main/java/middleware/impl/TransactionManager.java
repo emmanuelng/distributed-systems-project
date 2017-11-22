@@ -37,42 +37,35 @@ public class TransactionManager {
 	}
 
 	public boolean commitTransaction(int id) {
-		if (transactions.containsKey(id)) {
-			System.out.println("[TransactionManager] Commiting transaction " + id);
-			boolean success = true;
+		System.out.println("[TransactionManager] Commiting transaction " + id);
+		boolean success = true;
 
-			for (ResourceManager rm : transactions.get(id)) {
-				try {
-					success &= rm.commit(id);
-				} catch (RemoteException e) {
-					System.err.println("[TransactionManager] An error occurred while commiting transaction " + id);
-				}
+		for (ResourceManager rm : transactions.get(id)) {
+			try {
+				success &= rm.commit(id);
+			} catch (RemoteException e) {
+				System.err.println("[TransactionManager] An error occurred while commiting transaction " + id);
 			}
-
-			transactions.remove(id);
-			return success;
 		}
-		return false;
+
+		transactions.remove(id);
+		return success;
 	}
 
 	public boolean abortTransaction(int id) {
-		if (transactions.containsKey(id)) {
-			System.out.println("[TransactionManager] Aborting transaction " + id);
-			boolean success = true;
+		System.out.println("[TransactionManager] Aborting transaction " + id);
+		boolean success = true;
 
-			for (ResourceManager rm : transactions.get(id)) {
-				try {
-					success &= rm.abort(id);
-				} catch (RemoteException e) {
-					System.err.println("[TransactionManager] An error occurred while aborting transaction " + id);
-				}
+		for (ResourceManager rm : transactions.get(id)) {
+			try {
+				success &= rm.abort(id);
+			} catch (RemoteException e) {
+				System.err.println("[TransactionManager] An error occurred while aborting transaction " + id);
 			}
-
-			transactions.remove(id);
-			return success;
 		}
 
-		return false;
+		transactions.remove(id);
+		return success;
 	}
 
 	public void enlist(int id, ResourceManager rm) {

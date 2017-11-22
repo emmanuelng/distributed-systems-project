@@ -88,6 +88,11 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 	}
 
 	@Override
+	public boolean prepare(int id) {
+		return prepareCommit(id);
+	}
+
+	@Override
 	public boolean commit(int id) {
 		return commitTransaction(id);
 	}

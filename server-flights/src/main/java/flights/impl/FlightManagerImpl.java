@@ -86,6 +86,11 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 	public boolean releaseSeats(int id, int flightNumber, int amount) throws RemoteException, DeadlockException {
 		return increaseItemCount(id, Integer.toString(flightNumber), amount, 0);
 	}
+	
+	@Override
+	public boolean prepare(int id) {
+		return prepareCommit(id);
+	}
 
 	@Override
 	public boolean commit(int id) {

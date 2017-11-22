@@ -86,6 +86,11 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 	}
 
 	@Override
+	public boolean prepare(int id) {
+		return prepareCommit(id);
+	}
+
+	@Override
 	public boolean commit(int id) {
 		return commitTransaction(id);
 	}

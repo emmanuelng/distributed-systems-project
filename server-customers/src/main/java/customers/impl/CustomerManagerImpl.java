@@ -180,6 +180,12 @@ public class CustomerManagerImpl implements CustomerManager {
 	}
 
 	@Override
+	public boolean prepare(int id) {
+		// TODO
+		return true;
+	}
+
+	@Override
 	public boolean commit(int id) {
 		log("Committing transaction " + id);
 		lockManager.unlockAll(id);
@@ -200,14 +206,15 @@ public class CustomerManagerImpl implements CustomerManager {
 		return true;
 	}
 
-	private void log(String message) {
-		System.out.println("[CustomerManager] " + message);
-	}
-
 	@Override
 	public boolean shutdown() throws RemoteException {
 		// Since this manager runs on the middle ware server, this method is not
 		// necessary.
 		return false;
 	}
+
+	private void log(String message) {
+		System.out.println("[CustomerManager] " + message);
+	}
+
 }

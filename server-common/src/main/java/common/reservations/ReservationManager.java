@@ -192,6 +192,11 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		return success;
 	}
 
+	public boolean prepareCommit(int id) {
+		// TODO
+		return true;
+	}
+
 	protected boolean commitTransaction(int id) {
 		log("Committing transaction " + id);
 		boolean success = true;
