@@ -11,7 +11,7 @@ public interface ResourceManager extends Remote {
 	 * @return <code>true</code> if it can commit, <code>false</code> if it wants to
 	 *         abort.
 	 */
-	public boolean prepare(int id);
+	public boolean prepare(int id) throws RemoteException;
 
 	/**
 	 * Commits a transaction.
