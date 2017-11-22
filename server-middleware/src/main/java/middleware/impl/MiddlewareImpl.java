@@ -516,6 +516,12 @@ public class MiddlewareImpl implements Middleware {
 	public int start() {
 		return tm.startTransaction();
 	}
+	
+	@Override
+	public boolean prepare(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 	@Override
 	public boolean commit(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
@@ -551,6 +557,12 @@ public class MiddlewareImpl implements Middleware {
 			return true;
 		}
 
+		return false;
+	}
+	
+	@Override
+	public boolean crash(String which) throws RemoteException {
+		// TODO Auto-generated method stub
 		return false;
 	}
 

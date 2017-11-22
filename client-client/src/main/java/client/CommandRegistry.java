@@ -1,9 +1,10 @@
 package client;
 
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.TreeMap;
 
 import client.commands.Command;
+import client.commands.CrashCommand;
 import client.commands.HelpCommand;
 import client.commands.QuitCommand;
 import client.commands.ShutdownCommand;
@@ -28,16 +29,18 @@ import client.commands.reserve.ReserveItineraryCommand;
 import client.commands.reserve.ReserveRoomCommand;
 import client.commands.transactions.AbortCommand;
 import client.commands.transactions.CommitCommand;
+import client.commands.transactions.PrepareCommand;
 import client.commands.transactions.StartCommand;
 
 public class CommandRegistry {
 
-	public static final Map<String, Command> COMMANDS = new Hashtable<>();
+	public static final Map<String, Command> COMMANDS = new TreeMap<>();
 
 	public static void initialize() {
 		COMMANDS.put("help", new HelpCommand());
 		COMMANDS.put("quit", new QuitCommand());
 		COMMANDS.put("shutdown", new ShutdownCommand());
+		COMMANDS.put("crash", new CrashCommand());
 
 		COMMANDS.put("newflight", new NewFlightCommand());
 		COMMANDS.put("newcar", new NewCarCommand());
@@ -63,6 +66,7 @@ public class CommandRegistry {
 		COMMANDS.put("itinerary", new ReserveItineraryCommand());
 
 		COMMANDS.put("start", new StartCommand());
+		COMMANDS.put("prepare", new PrepareCommand());
 		COMMANDS.put("commit", new CommitCommand());
 		COMMANDS.put("abort", new AbortCommand());
 	}
