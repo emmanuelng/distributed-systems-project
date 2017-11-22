@@ -38,6 +38,12 @@ if [ $# -gt 1 ]; then
 		if [ $1 == 'server' ]; then
 			classpath=$classpath":$DIR/server-common/build/libs/server-common-1.0.jar"
 			codebase=$codebase" file:$DIR/server-common/build/libs/server-common-1.0.jar"
+
+			# Add permissions for the common codebase
+			echo "grant codeBase \"file:$DIR/server-common/build/libs/server-common-1.0.jar\" {" >> $DIR/$dirname/java.policy
+			echo "	permission java.security.AllPermission;" >> $DIR/$dirname/java.policy
+			echo "};" >> $DIR/$dirname/java.policy
+			echo >> $DIR/$dirname/java.policy
 		else
 			classpath=$classpath":$DIR/server-middleware/build/libs/server-middleware-1.0.jar"
 		fi
