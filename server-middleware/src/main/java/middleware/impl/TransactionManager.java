@@ -205,7 +205,12 @@ public class TransactionManager {
 	 * transaction is active in the system.
 	 */
 	public boolean canShutDown() {
-		return transactions.isEmpty();
+		for (Transaction transaction : transactions.values()) {
+			if (transaction.status == Status.ACTIVE) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }
