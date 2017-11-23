@@ -1,11 +1,16 @@
-package middleware.impl;
+package middleware.impl.exceptions;
 
 public class InvalidTransactionException extends Exception {
 
 	private static final long serialVersionUID = -1443608606597153984L;
+	private String message;
+
+	public InvalidTransactionException(String message) {
+		this.message = message;
+	}
 
 	@Override
 	public String getMessage() {
-		return "The given id is invalid. Please use the start command to get a valid id.";
+		return message;
 	}
 }

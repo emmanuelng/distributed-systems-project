@@ -4,8 +4,9 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Vector;
 
-import middleware.impl.InvalidTransactionException;
-import middleware.impl.TimeoutException;
+import middleware.impl.exceptions.InvalidTransactionException;
+import middleware.impl.exceptions.NotPreparedException;
+import middleware.impl.exceptions.TimeoutException;
 
 /**
  * Simplified version from CSE 593 University of Washington
@@ -175,7 +176,7 @@ public interface Middleware extends Remote {
 	/**
 	 * Commits a transaction.
 	 */
-	public boolean commit(int id) throws RemoteException, InvalidTransactionException, TimeoutException;
+	public boolean commit(int id) throws RemoteException, InvalidTransactionException, TimeoutException, NotPreparedException;
 
 	/**
 	 * Aborts a transaction.
@@ -191,7 +192,8 @@ public interface Middleware extends Remote {
 	 * Simulates a crash of a server.
 	 * 
 	 * @param which
-	 *            the name of the server ("cars", "flights", "hotels" or "middleware")
+	 *            the name of the server ("cars", "flights", "hotels" or
+	 *            "middleware")
 	 */
 	public boolean crash(String which) throws RemoteException;
 

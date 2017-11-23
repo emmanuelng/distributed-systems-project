@@ -115,9 +115,9 @@ public class Client {
 				try {
 					cmd.execute(middleware, args);
 				} catch (Exception e) {
-					System.out.print("Error: " + e.getClass().getSimpleName());
+					System.out.print("Error");
 					if (e.getMessage() != null) {
-						System.out.print(": " + e.getMessage() + "\n");
+						System.out.println(": " + e.getMessage());
 					}
 				}
 			} else {
