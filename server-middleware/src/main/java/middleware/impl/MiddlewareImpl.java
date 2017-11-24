@@ -443,20 +443,17 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean reserveCar(int id, int customer, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-
 		CarManager carManager = (CarManager) rm(RM.CARS);
 		CustomerManager customerManager = (CustomerManager) rm(RM.CUSTOMERS);
 		checkTransaction(id);
 
 		try {
-
 			tm.enlist(id, RM.CARS);
 			if (carManager.reserveCar(id, location)) {
 				int price = carManager.queryCarsPrice(id, location);
 				tm.enlist(id, RM.CUSTOMERS);
 				return customerManager.reserve(id, customer, "cars", location, price);
 			}
-
 		} catch (DeadlockException e) {
 			abort(id);
 		}
@@ -467,7 +464,6 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean reserveRoom(int id, int customer, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
-
 		HotelManager hotelManager = (HotelManager) rm(RM.HOTELS);
 		CustomerManager customerManager = (CustomerManager) rm(RM.CUSTOMERS);
 		checkTransaction(id);
@@ -491,7 +487,6 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean itinerary(int id, int customer, Vector<Integer> flightNumbers, String location, boolean car,
 			boolean room) throws RemoteException, InvalidTransactionException, TimeoutException {
-
 		FlightManager flightManager = (FlightManager) rm(RM.FLIGHTS);
 		CarManager carManager = (CarManager) rm(RM.CARS);
 		HotelManager hotelManager = (HotelManager) rm(RM.HOTELS);
