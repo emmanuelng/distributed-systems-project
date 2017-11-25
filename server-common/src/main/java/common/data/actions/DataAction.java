@@ -1,6 +1,8 @@
 package common.data.actions;
 
-public interface DataAction {
+import java.io.Serializable;
+
+public interface DataAction extends Serializable {
 
 	/**
 	 * Undoes the action.

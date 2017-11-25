@@ -21,7 +21,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 *            the name of the managed resource. Must be unique.
 	 */
 	public ReservationManager(String name) {
-		this.reservableItems = new RMHashtable<>("data/" + name + "/" + name + ".data");
+		this.reservableItems = new RMHashtable<>("server-data/" + name + "/" + name);
 		this.lockManager = new LockManager();
 		new HashSet<>();
 	}
@@ -193,8 +193,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	}
 
 	public boolean prepareCommit(int id) {
-		// TODO
-		return true;
+		// Return true only if the transaction is active, i.e. if it was not committed or aborted yet.
+		return reservableItems.activeTransactions().contains(id);
 	}
 
 	protected boolean commitTransaction(int id) {
@@ -238,7 +238,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 				System.exit(status);
 			}
 		}, 1000);
-		
+
 		return true;
 	}
 

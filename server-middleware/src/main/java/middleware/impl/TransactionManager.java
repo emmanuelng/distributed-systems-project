@@ -1,9 +1,17 @@
 package middleware.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -21,14 +29,23 @@ public class TransactionManager {
 	 * Represents the status of a transaction
 	 */
 	public static enum Status {
-		ACTIVE, PREPARED, COMMITTED, ABORTED, TIMED_OUT, INVALID
+		ACTIVE, // The transaction is active (not saved)
+		IN_PREPARATION, // The prepare phase was started, but no decision was taken
+		PREPARED, // The first phase is done. The transaction is ready to commit.
+		IN_COMMIT, // The commit was started, but not all servers received the request
+		COMMITTED, // The transaction is committed on all sites
+		IN_ABORT, // The abort was started, but not all servers received the request
+		ABORTED, // The transaction is aborted on all sites
+		TIMED_OUT, // The transaction was aborted due to a timeout
+		INVALID // An error occurred during the transaction processing
 	}
 
 	/**
-	 * A private class representing a transaction
+	 * A private class representing a transaction.
 	 */
-	private class Transaction {
+	private static class Transaction implements Serializable {
 
+		private static final long serialVersionUID = 2084803164578661556L;
 		private Set<RM> rms; // The resource managers involved in the transaction
 		private Status status;
 
@@ -45,58 +62,55 @@ public class TransactionManager {
 
 	/**
 	 * Initializes a new {@link TransactionManager}
-	 * 
-	 * @param middleware
-	 *            the middleware
 	 */
 	public TransactionManager(MiddlewareImpl middleware) {
 		this.tid = 0;
 		this.transactions = new HashMap<>();
 		this.timers = new HashMap<>();
 		this.middleware = middleware;
+
+		loadSave();
 	}
 
 	/**
 	 * Initializes a transaction. Sets its status to {@link Status#ACTIVE} and
 	 * initializes a timer.
-	 * 
-	 * @return the transaction id
 	 */
 	public int startTransaction() {
 		tid++;
 
-		System.out.println("[TransactionManager] Starting transaction " + tid);
+		log("Starting transaction " + tid);
 		transactions.put(tid, new Transaction());
 		resetTimeout(tid);
 
+		save();
 		return tid;
 	}
 
 	/**
-	 * Prepares a transaction before being commited. Check that every resource
+	 * Prepares a transaction before being committed. Check that every resource
 	 * managers can commit the transaction.
-	 * 
-	 * @param id
-	 *            the transaction id
 	 */
 	public boolean prepareTransaction(int id) {
 		// TODO
-		transactions.get(id).status = Status.PREPARED;
+		setTransactionStatus(id, Status.PREPARED);
 		return true;
 	}
 
 	/**
 	 * Commits a transaction.
-	 * 
-	 * @param id
-	 *            the transaction id
 	 */
 	public boolean commitTransaction(int id) throws InvalidTransactionException, NotPreparedException {
-		System.out.println("[TransactionManager] Commiting transaction " + id);
+		log("Commiting transaction " + id);
 		boolean success = true;
 		Transaction transaction = transactions.get(id);
 
-		if (transaction != null && transaction.status == Status.PREPARED) {
+		if (transaction == null) {
+			// The transaction does not exist
+			throw new InvalidTransactionException("This transaction does not exist.");
+		} else if (transaction.status == Status.PREPARED || transaction.status == Status.IN_PREPARATION) {
+			// The transaction is valid
+			setTransactionStatus(id, Status.IN_PREPARATION);
 			for (RM rmid : transactions.get(id).rms) {
 				try {
 					ResourceManager rm = middleware.rm(rmid);
@@ -105,26 +119,28 @@ public class TransactionManager {
 					System.err.println("[TransactionManager] An error occurred while commiting transaction " + id);
 				}
 			}
-		} else if (transaction != null && transaction.status == Status.ACTIVE) {
+		} else if (transaction.status == Status.ACTIVE) {
+			// The transaction is active, but not prepared
 			throw new NotPreparedException();
 		} else {
-			throw new InvalidTransactionException("Invalid transaction id");
+			// Cannot commit aborted or committed transactions
+			throw new InvalidTransactionException("Invalid transaction id.");
 		}
 
-		transaction.status = success ? Status.COMMITTED : transaction.status;
+		// If the commit was successful, set its state to COMMITTED
+		Status status = success ? Status.COMMITTED : Status.ACTIVE;
+		setTransactionStatus(id, status);
 		return success;
 	}
 
 	/**
 	 * Aborts a transaction.
-	 * 
-	 * @param id
-	 *            the transaction id.
 	 */
 	public boolean abortTransaction(int id) {
-		System.out.println("[TransactionManager] Aborting transaction " + id);
+		log("Aborting transaction " + id);
 		boolean success = true;
 
+		setTransactionStatus(id, Status.IN_ABORT);
 		for (RM rmid : transactions.get(id).rms) {
 			try {
 				ResourceManager rm = middleware.rm(rmid);
@@ -134,17 +150,13 @@ public class TransactionManager {
 			}
 		}
 
-		transactions.get(id).status = success ? Status.ABORTED : transactions.get(id).status;
+		Status status = success ? Status.ABORTED : Status.ACTIVE;
+		setTransactionStatus(id, status);
 		return success;
 	}
 
 	/**
 	 * Adds a resource manager to the set of involved managers.
-	 * 
-	 * @param id
-	 *            the transaction id
-	 * @param rm
-	 *            the resource manager id
 	 */
 	public void enlist(int id, RM rm) {
 		if (transactions.containsKey(id)) {
@@ -155,10 +167,6 @@ public class TransactionManager {
 	/**
 	 * Returns the status of a transaction. If the transaction number is invalid,
 	 * returns {@link Status#INVALID}
-	 * 
-	 * @param id
-	 *            the transaction id
-	 * @return the status
 	 */
 	public Status getStatus(int id) {
 		return transactions.containsKey(id) ? transactions.get(id).status : Status.INVALID;
@@ -167,14 +175,11 @@ public class TransactionManager {
 	/**
 	 * Resets the timer associated to the given transaction. Assumes that the given
 	 * id number is valid.
-	 * 
-	 * @param id
-	 *            the transaction id.
 	 */
 	public void resetTimeout(int id) {
 		if (transactions.containsKey(id)) {
 			// If the timer is reset, it means that the transaction must be active
-			transactions.get(id).status = Status.ACTIVE;
+			setTransactionStatus(id, Status.ACTIVE);
 
 			// Cancel the previous timer
 			if (timers.containsKey(id)) {
@@ -187,8 +192,8 @@ public class TransactionManager {
 				@Override
 				public void run() {
 					if (transactions.containsKey(id)) {
-						System.out.println("[TransactionManager] Timeout. Aborting transaction " + id);
-						transactions.get(id).status = Status.TIMED_OUT;
+						log("Timeout. Aborting transaction " + id);
+						setTransactionStatus(id, Status.TIMED_OUT);
 						abortTransaction(id);
 					} else {
 						timers.remove(id);
@@ -211,6 +216,97 @@ public class TransactionManager {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Changes the status of a transaction and saves it to disk.
+	 */
+	private void setTransactionStatus(int id, Status status) {
+		Transaction transaction = transactions.get(id);
+		if (transaction != null && transaction.status != status) {
+			transaction.status = status;
+			save();
+		}
+	}
+
+	/**
+	 * Saves the state of the {@link TransactionManager} to disk. If the save file
+	 * does not exist, creates a new one.
+	 */
+	private boolean save() {
+		log("Saving data to disk...");
+
+		try {
+			File file = new File("server-data/middleware/transactions.data");
+
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+
+			FileOutputStream fos = new FileOutputStream(file);
+			ObjectOutputStream oos = new ObjectOutputStream(fos);
+
+			oos.writeObject(transactions);
+			oos.close();
+
+		} catch (IOException e) {
+			log("Error: Unable to save to disk");
+			e.printStackTrace();
+			return false;
+		}
+
+		return true;
+
+	}
+
+	/**
+	 * Checks if the save file exists. If yes, reads it and restores the
+	 * {@link TransactionManager}, otherwise creates a new save file with the
+	 * {@link TransactionManager#save()} method.
+	 */
+	@SuppressWarnings("unchecked")
+	private void loadSave() {
+		try {
+			FileInputStream fis = new FileInputStream("server-data/middleware/transactions.data");
+			ObjectInputStream ois = new ObjectInputStream(fis);
+			HashMap<Integer, Transaction> data = (HashMap<Integer, Transaction>) ois.readObject();
+
+			for (Entry<Integer, Transaction> entry : data.entrySet()) {
+				tid = entry.getKey() > tid ? entry.getKey() : tid;
+				transactions.put(entry.getKey(), entry.getValue());
+
+				switch (entry.getValue().status) {
+				case ACTIVE:
+					resetTimeout(entry.getKey());
+					break;
+				case IN_PREPARATION:
+					prepareTransaction(entry.getKey());
+					break;
+				case IN_COMMIT:
+					try {
+						commitTransaction(entry.getKey());
+					} catch (InvalidTransactionException | NotPreparedException e) {
+						// Ignore. These exceptions should not occur.
+					}
+					break;
+				case IN_ABORT:
+					abortTransaction(entry.getKey());
+					break;
+				default:
+					break;
+				}
+			}
+
+			ois.close();
+		} catch (IOException | ClassNotFoundException e) {
+			save();
+		}
+	}
+
+	/**
+	 * Writes a message to standard out.
+	 */
+	private void log(String message) {
+		System.out.println("[TransactionManager] " + message);
 	}
 
 }

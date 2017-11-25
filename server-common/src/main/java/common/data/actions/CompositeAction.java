@@ -4,6 +4,7 @@ import java.util.Stack;
 
 public class CompositeAction implements DataAction {
 
+	private static final long serialVersionUID = -7930644094706643798L;
 	private Stack<DataAction> actions;
 
 	public CompositeAction() {

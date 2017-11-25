@@ -30,6 +30,9 @@ public abstract class ReservableItem implements Serializable {
 		int oldvalue = count;
 
 		compositeAction(id).add(new DataAction() {
+
+			private static final long serialVersionUID = -5633788465576437612L;
+
 			@Override
 			public void undo() {
 				count = oldvalue;
@@ -43,6 +46,9 @@ public abstract class ReservableItem implements Serializable {
 		int oldvalue = price;
 
 		compositeAction(id).add(new DataAction() {
+
+			private static final long serialVersionUID = 3826568959486853905L;
+
 			@Override
 			public void undo() {
 				price = oldvalue;
@@ -56,6 +62,9 @@ public abstract class ReservableItem implements Serializable {
 		int oldvalue = r;
 
 		compositeAction(id).add(new DataAction() {
+
+			private static final long serialVersionUID = -5876294314650449071L;
+
 			@Override
 			public void undo() {
 				reserved = oldvalue;

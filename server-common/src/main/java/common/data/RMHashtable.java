@@ -18,10 +18,8 @@ public class RMHashtable<K, V> {
 
 	private Hashtable<K, V> data;
 	private Hashtable<Integer, CompositeAction> actions;
-
 	private String pathname;
-	private Hashtable<String, ObjectOutputStream> outputStreams;
-
+	
 	/**
 	 * Creates a new {@link RMHashtable}. If the given file exists, initializes it
 	 * with the data contained in it. Otherwise creates the file and starts with no
@@ -30,30 +28,22 @@ public class RMHashtable<K, V> {
 	 * @param pathname
 	 *            path to the save file
 	 */
-	@SuppressWarnings("unchecked")
 	public RMHashtable(String pathname) {
 		this.pathname = pathname;
-		this.outputStreams = new Hashtable<>();
-
-		try {
-			// Recover data from the main record
-			FileInputStream fis = new FileInputStream(pathname);
-			ObjectInputStream ois = new ObjectInputStream(fis);
-			this.data = (Hashtable<K, V>) ois.readObject();
-			ois.close();
-		} catch (ClassNotFoundException | IOException e) {
-			// If for any reason it failed, initialize with empty data
-			this.data = new Hashtable<>();
-			save();
-		}
-
+		new Hashtable<>();
+		this.data = new Hashtable<>();
 		this.actions = new Hashtable<>();
+
+		loadSave();
 	}
 
 	public synchronized V put(int id, K key, V value) {
 		V oldValue = data.get(key);
 
 		compositeAction(id).add(new DataAction() {
+
+			private static final long serialVersionUID = -8694865005726588307L;
+
 			@Override
 			public void undo() {
 				if (oldValue != null) {
@@ -76,6 +66,9 @@ public class RMHashtable<K, V> {
 		V oldvalue = data.get(key);
 
 		compositeAction(id).add(new DataAction() {
+
+			private static final long serialVersionUID = 2602552916806504010L;
+
 			@Override
 			public void undo() {
 				data.put((K) key, oldvalue);
@@ -103,6 +96,10 @@ public class RMHashtable<K, V> {
 
 	public Set<Entry<K, V>> entrySet() {
 		return data.entrySet();
+	}
+
+	public Set<Integer> activeTransactions() {
+		return actions.keySet();
 	}
 
 	/**
@@ -145,6 +142,32 @@ public class RMHashtable<K, V> {
 	}
 
 	/**
+	 * Loads the save file if it exists. If not, creates new files with the
+	 * {@link RMHashtable#save()} method.
+	 */
+	@SuppressWarnings("unchecked")
+	private void loadSave() {
+		try {
+			FileInputStream fis = null;
+			ObjectInputStream ois = null;
+
+			// Restore the data
+			fis = new FileInputStream(pathname + ".data");
+			ois = new ObjectInputStream(fis);
+			data.putAll((Hashtable<K, V>) ois.readObject());
+
+			// Restore the actions
+			fis = new FileInputStream(pathname + ".actions");
+			ois = new ObjectInputStream(fis);
+			actions.putAll((Hashtable<Integer, CompositeAction>) ois.readObject());
+
+			ois.close();
+		} catch (ClassNotFoundException | IOException e) {
+			save();
+		}
+	}
+
+	/**
 	 * Saves the data to disk. If the file does not exist, creates a new one.
 	 * 
 	 * @return success
@@ -152,52 +175,34 @@ public class RMHashtable<K, V> {
 	private boolean save() {
 		System.out.println("[RMHashtable] Saving data to disk...");
 
-		ObjectOutputStream mainRecordOut = getOutput(pathname);
-		ObjectOutputStream backup1Out = getOutput(pathname + ".backup1");
-		ObjectOutputStream backup2Out = getOutput(pathname + ".backup2");
+		try {
 
-		if (mainRecordOut != null && backup1Out != null && backup2Out != null) {
-			try {
-				mainRecordOut.writeObject(data);
-				backup1Out.writeObject(data);
-				backup2Out.writeObject(data);
-			} catch (IOException e) {
-				System.out.println("[RMHashtable] Error: Unable to write to disk: " + e.getMessage());
-				return false;
-			}
+			// Save the data
+			saveObj(pathname + ".data", data);
+
+			// Save the actions
+			saveObj(pathname + ".actions", actions);
+
+		} catch (IOException e) {
+			System.out.println("[RMHashtable] Unable to write to disk");
+			return false;
 		}
 
 		return true;
 	}
 
-	/**
-	 * Returns the {@link ObjectOutputStream} corresponding to the file located at
-	 * the given path.
-	 * 
-	 * @param pathname
-	 *            the path of the file
-	 * @return the {@link ObjectOutputStream} or <code>null</code> in case of
-	 *         failure
-	 */
-	private ObjectOutputStream getOutput(String pathname) {
-		if (!outputStreams.containsKey(pathname)) {
-			try {
-				File file = new File(pathname);
+	private void saveObj(String pathname, Object obj) throws IOException {
+		// Open file. Create it if it does not exist
+		File file = new File(pathname);
+		file.getParentFile().mkdirs();
+		file.createNewFile();
 
-				// Create the file if it does not exist.
-				// If the file exists, this will have no effect.
-				file.getParentFile().mkdirs();
-				file.createNewFile();
+		// Write the object to file
+		FileOutputStream fos = new FileOutputStream(file);
+		ObjectOutputStream oos = new ObjectOutputStream(fos);
+		oos.writeObject(data);
 
-				FileOutputStream fos = new FileOutputStream(file);
-				outputStreams.put(pathname, new ObjectOutputStream(fos));
-
-			} catch (IOException e) {
-				System.out.println("[RMHashtable] Error: Unable to open " + pathname);
-			}
-		}
-
-		return outputStreams.get(pathname);
+		oos.close();
 	}
 
 }
