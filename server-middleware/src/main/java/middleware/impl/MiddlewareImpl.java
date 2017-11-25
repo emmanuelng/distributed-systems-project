@@ -590,7 +590,7 @@ public class MiddlewareImpl implements Middleware {
 			success &= flightManager.shutdown();
 			success &= hotelManager.shutdown();
 
-			return success & selfDestroy();
+			return success & selfDestroy(0);
 		}
 
 		return false;
@@ -607,16 +607,16 @@ public class MiddlewareImpl implements Middleware {
 
 		switch (which.toLowerCase()) {
 		case "middleware":
-			success = selfDestroy();
+			success = selfDestroy(1);
 			break;
 		case "cars":
-			success = carManager.shutdown();
+			success = carManager.selfDestroy(1);
 			break;
 		case "flights":
-			success = flightManager.shutdown();
+			success = flightManager.selfDestroy(1);
 			break;
 		case "hotels":
-			success = hotelManager.shutdown();
+			success = hotelManager.selfDestroy(1);
 			break;
 		default:
 			break;
@@ -654,7 +654,7 @@ public class MiddlewareImpl implements Middleware {
 	 * 
 	 * @return success
 	 */
-	private boolean selfDestroy() {
+	private boolean selfDestroy(int status) {
 		System.out.println("[Middleware] Will shut down in 1 second.");
 
 		Timer shutdownTimer = new Timer();

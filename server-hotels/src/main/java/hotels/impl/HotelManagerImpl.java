@@ -107,4 +107,9 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 		return shutdownManager();
 	}
 
+	@Override
+	public boolean selfDestroy(int status) throws RemoteException {
+		return selfDestroyManager(status);
+	}
+
 }

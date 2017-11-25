@@ -208,8 +208,13 @@ public class CustomerManagerImpl implements CustomerManager {
 
 	@Override
 	public boolean shutdown() throws RemoteException {
-		// Since this manager runs on the middle ware server, this method is not
-		// necessary.
+		// Not necessary. Ignore.
+		return false;
+	}
+
+	@Override
+	public boolean selfDestroy(int status) throws RemoteException {
+		// Not necessary. Ignore.
 		return false;
 	}
 

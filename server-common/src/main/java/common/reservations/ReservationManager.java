@@ -225,16 +225,20 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	}
 
 	protected boolean shutdownManager() {
+		return selfDestroyManager(1);
+	}
+
+	protected boolean selfDestroyManager(int status) {
 		log("Will shut down in 1 second.");
 
 		Timer shutdownTimer = new Timer();
 		shutdownTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				System.exit(0);
+				System.exit(status);
 			}
 		}, 1000);
-
+		
 		return true;
 	}
 

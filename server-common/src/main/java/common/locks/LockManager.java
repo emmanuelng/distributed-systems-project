@@ -171,7 +171,7 @@ public class LockManager {
 	 * from READ lock to WRITE lock, then bitset is set.
 	 */
 	private boolean lockConflict(DataObj dataObj, BitSet bitset)
-			throws DeadlockException, RedundantLockRequestException {
+			throws RedundantLockRequestException {
 		Vector<XObj> vect = LockManager.lockTable.elements(dataObj);
 		int size = vect.size();
 

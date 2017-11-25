@@ -104,5 +104,10 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 	public boolean shutdown() throws RemoteException {
 		return shutdownManager();
 	}
+	
+	@Override
+	public boolean selfDestroy(int status) {
+		return selfDestroyManager(status);
+	}
 
 }

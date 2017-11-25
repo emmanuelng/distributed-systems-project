@@ -107,4 +107,9 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 		return shutdownManager();
 	}
 
+	@Override
+	public boolean selfDestroy(int status) throws RemoteException {
+		return selfDestroyManager(status);
+	}
+
 }

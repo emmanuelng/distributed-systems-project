@@ -27,4 +27,9 @@ public interface ResourceManager extends Remote {
 	 * Shuts down the resource manager
 	 */
 	public boolean shutdown() throws RemoteException;
+	
+	/**
+	 * Stops the server.
+	 */
+	public boolean selfDestroy(int status) throws RemoteException;
 }
