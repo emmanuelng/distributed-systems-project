@@ -60,7 +60,14 @@ if [ $# -gt 1 ]; then
 		# Run the app
 		cd $DIR
 		export CLASSPATH=$classpath
-		java -cp $classpath -Djava.security.policy=$policy -Djava.rmi.server.codebase="$codebase" ${APPS[$dirname]} ${@:3}
+		until java -Djava.security.policy=$policy -Djava.rmi.server.codebase="$codebase" ${APPS[$dirname]} ${@:3}; do
+			if [ $1 == 'server' ]; then
+				printf "\nRestarting...\n"
+				sleep 1
+			else
+				break
+			fi
+		done
 	else
 		echo 'Invalid arguments.'
 	fi

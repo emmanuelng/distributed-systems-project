@@ -3,6 +3,7 @@ package client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.rmi.ConnectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -65,22 +66,28 @@ public class Client {
 	private void start() {
 		try {
 			// Connect to the Server
-			Registry registry = LocateRegistry.getRegistry(host, port);
-			middleware = (Middleware) registry.lookup("middleware.group20");
-
+			connect();
 			if (middleware != null) {
 				System.out.println("Successfully connected!\n");
 				loop();
 			} else {
 				System.err.println("Error: The middleware is null");
 			}
-
-		} catch (RemoteException e) {
-			System.err.println("Error: Impossible to connect to " + host + ":" + port);
-		} catch (NotBoundException e) {
-			System.err.println("Error: Unable to find the middleware in the registry");
 		} catch (IOException e) {
 			System.err.println("Error: Unnable to read commands");
+		}
+	}
+
+	private void connect() {
+		try {
+			Registry registry = LocateRegistry.getRegistry(host, port);
+			middleware = (Middleware) registry.lookup("middleware.group20");
+		} catch (NotBoundException e) {
+			System.err.println("Error: Unable to find the middleware in the registry");
+			System.exit(1);
+		} catch (RemoteException e) {
+			System.err.println("Error: Impossible to connect to " + host + ":" + port);
+			System.exit(1);
 		}
 	}
 
@@ -114,7 +121,12 @@ public class Client {
 			if (args.size() >= cmd.minArgs() && (cmd.maxArgs() < 0 || args.size() <= cmd.maxArgs())) {
 				try {
 					cmd.execute(middleware, args);
+				} catch (ConnectException e) {
+					// Try to reconnect and to re-execute the command
+					connect();
+					execute(input);
 				} catch (Exception e) {
+					e.printStackTrace();
 					System.out.print("Error");
 					if (e.getMessage() != null) {
 						System.out.println(": " + e.getMessage());

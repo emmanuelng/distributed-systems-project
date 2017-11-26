@@ -225,7 +225,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	}
 
 	protected boolean shutdownManager() {
-		return selfDestroyManager(1);
+		return selfDestroyManager(0);
 	}
 
 	protected boolean selfDestroyManager(int status) {

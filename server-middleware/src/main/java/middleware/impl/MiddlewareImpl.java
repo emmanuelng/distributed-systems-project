@@ -661,7 +661,7 @@ public class MiddlewareImpl implements Middleware {
 		shutdownTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				System.exit(0);
+				System.exit(status);
 			}
 		}, 1000);
 
