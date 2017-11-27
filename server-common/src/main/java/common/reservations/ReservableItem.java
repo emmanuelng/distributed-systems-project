@@ -6,88 +6,135 @@ import java.util.HashMap;
 import common.data.actions.CompositeAction;
 import common.data.actions.DataAction;
 
-public abstract class ReservableItem implements Serializable {
+public abstract class ReservableItem {
 
-	private static final long serialVersionUID = 3721280128228108266L;
+	/**
+	 * Object encapsulating the state of the reservatble item.
+	 * 
+	 * @author emmanuel
+	 */
+	private static class ReservableItemState implements Serializable {
 
-	private int count;
-	private int price;
-	private int reserved;
-	private String location;
+		private static final long serialVersionUID = 5823082988949194184L;
 
+		private int count;
+		private int price;
+		private int reserved;
+		private String location;
+
+		public ReservableItemState(int count, int price, int reserved, String location) {
+			this.count = count;
+			this.price = price;
+			this.reserved = reserved;
+			this.location = location;
+		}
+	}
+
+	/**
+	 * Data action for a set count action.
+	 */
+	private static class SetCountDataAction implements DataAction {
+
+		private static final long serialVersionUID = 8226373465956584117L;
+		private ReservableItemState state;
+		private int oldCount;
+
+		public SetCountDataAction(ReservableItemState state, int oldCount) {
+			this.state = state;
+			this.oldCount = oldCount;
+		}
+
+		@Override
+		public void undo() {
+			state.count = oldCount;
+		}
+
+	}
+
+	/**
+	 * Data action for a set price action.
+	 */
+	private static class SetPriceDataAction implements DataAction {
+
+		private static final long serialVersionUID = 5226195108279981869L;
+		private ReservableItemState state;
+		private int oldPrice;
+
+		public SetPriceDataAction(ReservableItemState state, int oldPrice) {
+			this.state = state;
+			this.oldPrice = oldPrice;
+		}
+
+		@Override
+		public void undo() {
+			state.price = oldPrice;
+		}
+
+	}
+
+	/**
+	 * Data action for a set reserved action.
+	 */
+	private static class SetReservedDataAction implements DataAction {
+
+		private static final long serialVersionUID = 6717150813703052540L;
+		private ReservableItemState state;
+		private int oldReserved;
+
+		public SetReservedDataAction(ReservableItemState state, int oldReserved) {
+			this.state = state;
+			this.oldReserved = oldReserved;
+		}
+
+		@Override
+		public void undo() {
+			state.reserved = oldReserved;
+		}
+
+	}
+
+	private ReservableItemState state;
 	private HashMap<Integer, CompositeAction> actions;
 
 	public ReservableItem(String location, int count, int price) {
-		this.location = location;
-		this.count = count;
-		this.price = price;
-		this.reserved = 0;
+		this.state = new ReservableItemState(count, price, 0, location);
+		this.actions = new HashMap<>();
+	}
 
+	public ReservableItem(ReservableItem other) {
+		this.state = other.state;
 		this.actions = new HashMap<>();
 	}
 
 	public void setCount(int id, int c) {
-		int oldvalue = count;
-
-		compositeAction(id).add(new DataAction() {
-
-			private static final long serialVersionUID = -5633788465576437612L;
-
-			@Override
-			public void undo() {
-				count = oldvalue;
-			}
-		});
-
-		count = c;
+		compositeAction(id).add(new SetCountDataAction(state, state.count));
+		state.count = c;
 	}
 
 	public void setPrice(int id, int p) {
-		int oldvalue = price;
-
-		compositeAction(id).add(new DataAction() {
-
-			private static final long serialVersionUID = 3826568959486853905L;
-
-			@Override
-			public void undo() {
-				price = oldvalue;
-			}
-		});
-
-		price = p;
+		compositeAction(id).add(new SetPriceDataAction(state, state.price));
+		state.price = p;
 	}
 
 	public void setReserved(int id, int r) {
-		int oldvalue = r;
-
-		compositeAction(id).add(new DataAction() {
-
-			private static final long serialVersionUID = -5876294314650449071L;
-
-			@Override
-			public void undo() {
-				reserved = oldvalue;
-			}
-		});
-
-		reserved = r;
+		compositeAction(id).add(new SetReservedDataAction(state, state.reserved));
+		state.reserved = r;
 	}
 
 	public int getCount() {
-		return count;
+		return state.count;
 	}
 
 	public int getPrice() {
-		return price;
+		return state.price;
 	}
 
 	public int getReserved() {
-		return reserved;
+		return state.reserved;
 	}
 
 	public String getLocation() {
-		return location;
+		return state.location;
 	}
 
 	public void cancel(int id) {
