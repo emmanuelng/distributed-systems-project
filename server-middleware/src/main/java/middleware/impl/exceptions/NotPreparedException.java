@@ -1,6 +1,8 @@
 package middleware.impl.exceptions;
 
-public class NotPreparedException extends Exception {
+import java.rmi.RemoteException;
+
+public class NotPreparedException extends RemoteException {
 
 	private static final long serialVersionUID = 2996913934140204771L;
 

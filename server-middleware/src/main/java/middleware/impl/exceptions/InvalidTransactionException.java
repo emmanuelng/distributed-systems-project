@@ -1,6 +1,8 @@
 package middleware.impl.exceptions;
 
-public class InvalidTransactionException extends Exception {
+import java.rmi.RemoteException;
+
+public class InvalidTransactionException extends RemoteException {
 
 	private static final long serialVersionUID = -1443608606597153984L;
 	private String message;

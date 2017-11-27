@@ -17,7 +17,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import common.rm.ResourceManager;
-import middleware.impl.MiddlewareImpl.RM;
 import middleware.impl.exceptions.InvalidTransactionException;
 import middleware.impl.exceptions.NotPreparedException;
 
@@ -46,7 +45,7 @@ public class TransactionManager {
 	private static class Transaction implements Serializable {
 
 		private static final long serialVersionUID = 2084803164578661556L;
-		private Set<RM> rms; // The resource managers involved in the transaction
+		private Set<String> rms; // The resource managers involved in the transaction
 		private Status status;
 
 		Transaction() {
@@ -100,67 +99,61 @@ public class TransactionManager {
 	/**
 	 * Commits a transaction.
 	 */
-	public boolean commitTransaction(int id) throws InvalidTransactionException, NotPreparedException {
+	public boolean commitTransaction(int id) throws RemoteException {
 		log("Commiting transaction " + id);
 		boolean success = true;
-		Transaction transaction = transactions.get(id);
 
-		if (transaction == null) {
-			// The transaction does not exist
-			throw new InvalidTransactionException("This transaction does not exist.");
-		} else if (transaction.status == Status.PREPARED || transaction.status == Status.IN_PREPARATION) {
-			// The transaction is valid
-			setTransactionStatus(id, Status.IN_PREPARATION);
-			for (RM rmid : transactions.get(id).rms) {
-				try {
-					ResourceManager rm = middleware.rm(rmid);
-					success &= rm.commit(id);
-				} catch (RemoteException e) {
-					System.err.println("[TransactionManager] An error occurred while commiting transaction " + id);
+		if (transactions.containsKey(id)) {
+			Transaction transaction = transactions.get(id);
+
+			switch (transaction.status) {
+			case ACTIVE:
+				throw new NotPreparedException();
+
+			case IN_PREPARATION:
+			case PREPARED:
+				setTransactionStatus(id, Status.IN_PREPARATION);
+				for (String rm : transactions.get(id).rms) {
+					success &= middleware.commit(rm, id);
 				}
+				break;
+
+			default:
+				throw new InvalidTransactionException("Invalid transaction id.");
 			}
-		} else if (transaction.status == Status.ACTIVE) {
-			// The transaction is active, but not prepared
-			throw new NotPreparedException();
-		} else {
-			// Cannot commit aborted or committed transactions
-			throw new InvalidTransactionException("Invalid transaction id.");
 		}
 
-		// If the commit was successful, set its state to COMMITTED
 		Status status = success ? Status.COMMITTED : Status.ACTIVE;
 		setTransactionStatus(id, status);
+
 		return success;
 	}
 
 	/**
 	 * Aborts a transaction.
 	 */
-	public boolean abortTransaction(int id) {
+	public boolean abortTransaction(int id) throws RemoteException {
 		log("Aborting transaction " + id);
 		boolean success = true;
 
 		setTransactionStatus(id, Status.IN_ABORT);
-		for (RM rmid : transactions.get(id).rms) {
-			try {
-				ResourceManager rm = middleware.rm(rmid);
-				success &= rm.abort(id);
-			} catch (RemoteException e) {
-				System.err.println("[TransactionManager] An error occurred while aborting transaction " + id);
-			}
+		for (String rm : transactions.get(id).rms) {
+			middleware.abort(rm, id);
 		}
 
 		Status status = success ? Status.ABORTED : Status.ACTIVE;
 		setTransactionStatus(id, status);
+
 		return success;
 	}
 
 	/**
 	 * Adds a resource manager to the set of involved managers.
 	 */
-	public void enlist(int id, RM rm) {
+	public void enlist(int id, ResourceManager rm) {
 		if (transactions.containsKey(id)) {
-			transactions.get(id).rms.add(rm);
+			String rmname = rm.getClass().getInterfaces()[0].getName();
+			transactions.get(id).rms.add(rmname);
 		}
 	}
 
@@ -194,7 +187,11 @@ public class TransactionManager {
 					if (transactions.containsKey(id)) {
 						log("Timeout. Aborting transaction " + id);
 						setTransactionStatus(id, Status.TIMED_OUT);
-						abortTransaction(id);
+						try {
+							abortTransaction(id);
+						} catch (RemoteException e) {
+							// Ignore.
+						}
 					} else {
 						timers.remove(id);
 					}
@@ -259,7 +256,7 @@ public class TransactionManager {
 	}
 
 	/**
-	 * Checks if the save file exists. If yes, reads it and restores the
+	 * Restores the state of the transaction manager form the save file.
 	 * {@link TransactionManager}, otherwise creates a new save file with the
 	 * {@link TransactionManager#save()} method.
 	 */
