@@ -10,6 +10,57 @@ import common.data.actions.DataAction;
 
 public class RMHashtable<K, V> {
 
+	/**
+	 * Data action for a put action.
+	 */
+	private static class PutDataAction<K, V> implements DataAction {
+
+		private static final long serialVersionUID = 5030128570040056648L;
+		private Hashtable<K, V> data;
+		private K key;
+		private V oldValue;
+
+		public PutDataAction(Hashtable<K, V> data, K key, V oldvalue) {
+			this.data = data;
+			this.key = key;
+			this.oldValue = oldvalue;
+		}
+
+		@Override
+		public void undo() {
+			if (oldValue != null) {
+				data.put(key, oldValue);
+			} else {
+				data.remove(key);
+			}
+		}
+
+	}
+
+	/**
+	 * Data action for a delete action.
+	 */
+	private static class RemoveDataAction<K, V> implements DataAction {
+
+		private static final long serialVersionUID = -2856717954127246949L;
+		private Hashtable<K, V> data;
+		private K key;
+		private V oldValue;
+
+		@SuppressWarnings("unchecked")
+		public RemoveDataAction(Hashtable<K, V> data, Object key, V oldvalue) {
+			this.data = data;
+			this.key = (K) key;
+			this.oldValue = oldvalue;
+		}
+
+		@Override
+		public void undo() {
+			data.put(key, oldValue);
+		}
+
+	}
+
 	private Hashtable<K, V> data;
 	private Hashtable<Integer, CompositeAction> actions;
 
@@ -28,22 +79,7 @@ public class RMHashtable<K, V> {
 	}
 
 	public synchronized V put(int id, K key, V value) {
-		V oldValue = data.get(key);
-
-		compositeAction(id).add(new DataAction() {
-
-			private static final long serialVersionUID = -8694865005726588307L;
-
-			@Override
-			public void undo() {
-				if (oldValue != null) {
-					data.put(key, oldValue);
-				} else {
-					data.remove(key);
-				}
-			}
-		});
-
+		compositeAction(id).add(new PutDataAction<K, V>(data, key, data.get(key)));
 		return data.put(key, value);
 	}
 
@@ -51,20 +87,8 @@ public class RMHashtable<K, V> {
 		return data.get(key);
 	}
 
-	@SuppressWarnings("unchecked")
 	public synchronized V remove(int id, Object key) {
-		V oldvalue = data.get(key);
-
-		compositeAction(id).add(new DataAction() {
-
-			private static final long serialVersionUID = 2602552916806504010L;
-
-			@Override
-			public void undo() {
-				data.put((K) key, oldvalue);
-			}
-		});
-
+		compositeAction(id).add(new RemoveDataAction<K, V>(data, key, data.get(key)));
 		return data.remove(key);
 	}
 
