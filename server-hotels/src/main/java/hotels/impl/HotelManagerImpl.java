@@ -48,7 +48,7 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 	}
 
 	public HotelManagerImpl() {
-		super("hotels");
+		super();
 	}
 
 	@Override

@@ -55,7 +55,7 @@ public class CustomerManagerImpl implements CustomerManager {
 	private LockManager lockManager;
 
 	public CustomerManagerImpl() {
-		this.customers = new RMHashtable<>("server-data/customers/customers");
+		this.customers = new RMHashtable<>();
 		this.lockManager = new LockManager();
 	}
 

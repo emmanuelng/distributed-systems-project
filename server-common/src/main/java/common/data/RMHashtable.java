@@ -18,8 +18,7 @@ public class RMHashtable<K, V> {
 
 	private Hashtable<K, V> data;
 	private Hashtable<Integer, CompositeAction> actions;
-	private String pathname;
-	
+
 	/**
 	 * Creates a new {@link RMHashtable}. If the given file exists, initializes it
 	 * with the data contained in it. Otherwise creates the file and starts with no
@@ -28,13 +27,10 @@ public class RMHashtable<K, V> {
 	 * @param pathname
 	 *            path to the save file
 	 */
-	public RMHashtable(String pathname) {
-		this.pathname = pathname;
+	public RMHashtable() {
 		new Hashtable<>();
 		this.data = new Hashtable<>();
 		this.actions = new Hashtable<>();
-
-		loadSave();
 	}
 
 	public synchronized V put(int id, K key, V value) {
@@ -120,7 +116,7 @@ public class RMHashtable<K, V> {
 	 */
 	public boolean commit(int id) {
 		actions.remove(id);
-		return save();
+		return true;
 	}
 
 	/**
@@ -139,70 +135,6 @@ public class RMHashtable<K, V> {
 		}
 
 		return actions.get(id);
-	}
-
-	/**
-	 * Loads the save file if it exists. If not, creates new files with the
-	 * {@link RMHashtable#save()} method.
-	 */
-	@SuppressWarnings("unchecked")
-	private void loadSave() {
-		try {
-			FileInputStream fis = null;
-			ObjectInputStream ois = null;
-
-			// Restore the data
-			fis = new FileInputStream(pathname + ".data");
-			ois = new ObjectInputStream(fis);
-			data.putAll((Hashtable<K, V>) ois.readObject());
-
-			// Restore the actions
-			fis = new FileInputStream(pathname + ".actions");
-			ois = new ObjectInputStream(fis);
-			actions.putAll((Hashtable<Integer, CompositeAction>) ois.readObject());
-
-			ois.close();
-		} catch (ClassNotFoundException | IOException e) {
-			save();
-		}
-	}
-
-	/**
-	 * Saves the data to disk. If the file does not exist, creates a new one.
-	 * 
-	 * @return success
-	 */
-	private boolean save() {
-		System.out.println("[RMHashtable] Saving data to disk...");
-
-		try {
-
-			// Save the data
-			saveObj(pathname + ".data", data);
-
-			// Save the actions
-			saveObj(pathname + ".actions", actions);
-
-		} catch (IOException e) {
-			System.out.println("[RMHashtable] Unable to write to disk");
-			return false;
-		}
-
-		return true;
-	}
-
-	private void saveObj(String pathname, Object obj) throws IOException {
-		// Open file. Create it if it does not exist
-		File file = new File(pathname);
-		file.getParentFile().mkdirs();
-		file.createNewFile();
-
-		// Write the object to file
-		FileOutputStream fos = new FileOutputStream(file);
-		ObjectOutputStream oos = new ObjectOutputStream(fos);
-		oos.writeObject(data);
-
-		oos.close();
 	}
 
 }
