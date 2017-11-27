@@ -28,6 +28,7 @@ public class Customer implements RMResource {
 		 * Returns the reservation as an array of String. The format is [manager,
 		 * itemId, amount].
 		 */
+		@Override
 		public String toString() {
 			return manager + "/" + itemId + "/" + amount;
 		}

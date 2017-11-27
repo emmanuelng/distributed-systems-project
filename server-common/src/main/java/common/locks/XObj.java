@@ -22,6 +22,7 @@ public class XObj implements Serializable {
 		}
 	}
 
+	@Override
 	public String toString() {
 		String outString = new String(this.getClass() + "::xid(" + this.xid + ")");
 		return outString;
@@ -31,10 +32,12 @@ public class XObj implements Serializable {
 		return this.xid;
 	}
 
+	@Override
 	public int hashCode() {
 		return this.xid;
 	}
 
+	@Override
 	public boolean equals(Object xobj) {
 		if (xobj == null)
 			return false;
@@ -47,6 +50,7 @@ public class XObj implements Serializable {
 		return false;
 	}
 
+	@Override
 	public Object clone() {
 		try {
 			XObj xobj = (XObj) super.clone();

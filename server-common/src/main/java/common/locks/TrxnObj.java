@@ -29,12 +29,14 @@ public class TrxnObj extends XObj {
 		}
 	}
 
+	@Override
 	public String toString() {
 		String outString = new String(
 				super.toString() + "::strData(" + this.strData + ")::lockType(" + this.lockType + ")");
 		return outString;
 	}
 
+	@Override
 	public boolean equals(Object t) {
 		if (t == null) {
 			return false;
@@ -52,6 +54,7 @@ public class TrxnObj extends XObj {
 		return false;
 	}
 
+	@Override
 	public Object clone() {
 		TrxnObj t = new TrxnObj(this.xid, this.strData, this.lockType);
 		return t;

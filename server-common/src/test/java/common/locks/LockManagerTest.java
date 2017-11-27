@@ -20,6 +20,7 @@ class MyThread extends Thread {
 		this.threadId = threadId;
 	}
 
+	@Override
 	public void run() {
 		if (threadId == 1) {
 			try {

@@ -22,14 +22,17 @@ public class DataObj extends TrxnObj {
 		super(xid, strData, lockType);
 	}
 
+	@Override
 	public int hashCode() {
 		return strData.hashCode();
 	}
 
+	@Override
 	public int key() {
 		return strData.hashCode();
 	}
 
+	@Override
 	public Object clone() {
 		DataObj d = new DataObj(this.xid, this.strData, this.lockType);
 		return d;
