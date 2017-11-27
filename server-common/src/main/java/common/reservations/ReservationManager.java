@@ -193,7 +193,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	}
 
 	public boolean prepareCommit(int id) {
-		// Return true only if the transaction is active, i.e. if it was not committed or aborted yet.
+		// Return true only if the transaction is active, i.e. if it was not committed
+		// or aborted yet.
 		return reservableItems.activeTransactions().contains(id);
 	}
 

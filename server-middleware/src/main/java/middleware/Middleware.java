@@ -176,7 +176,8 @@ public interface Middleware extends Remote {
 	/**
 	 * Commits a transaction.
 	 */
-	public boolean commit(int id) throws RemoteException, InvalidTransactionException, TimeoutException, NotPreparedException;
+	public boolean commit(int id)
+			throws RemoteException, InvalidTransactionException, TimeoutException, NotPreparedException;
 
 	/**
 	 * Aborts a transaction.

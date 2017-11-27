@@ -17,7 +17,8 @@ public class PrepareCommand extends Command {
 		int id = Integer.parseInt(arguments.get(0));
 
 		if (middleware.prepare(id)) {
-			System.out.println("The transaction is ready for commit.\nUse the commit command to commit the transaction");
+			System.out
+					.println("The transaction is ready for commit.\nUse the commit command to commit the transaction");
 		} else {
 			System.out.println("The transaction cannot commit now. Please try later.");
 		}
