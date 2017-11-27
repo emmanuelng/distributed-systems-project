@@ -5,6 +5,8 @@ import common.reservations.ReservableItem;
 
 public class Car extends ReservableItem {
 
+	private static final long serialVersionUID = 8982812673841658486L;
+
 	/**
 	 * Builds a new {@link Car} object.
 	 */

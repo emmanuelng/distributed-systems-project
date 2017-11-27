@@ -46,7 +46,7 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 	}
 
 	public CarManagerImpl() {
-		super();
+		super("cars");
 	}
 
 	@Override

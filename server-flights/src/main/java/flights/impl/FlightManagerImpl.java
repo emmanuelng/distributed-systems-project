@@ -48,7 +48,7 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 	}
 
 	public FlightManagerImpl() {
-		super();
+		super("flights");
 	}
 
 	@Override

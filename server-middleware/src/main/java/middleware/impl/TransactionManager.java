@@ -1,11 +1,6 @@
 package middleware.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.HashMap;
@@ -16,6 +11,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import common.files.SaveFile;
 import common.rm.ResourceManager;
 import middleware.impl.exceptions.InvalidTransactionException;
 import middleware.impl.exceptions.NotPreparedException;
@@ -59,6 +55,8 @@ public class TransactionManager {
 	private Map<Integer, Transaction> transactions;
 	private Map<Integer, Timer> timers;
 
+	private SaveFile<Map<Integer, Transaction>> saveFile;
+
 	/**
 	 * Initializes a new {@link TransactionManager}
 	 */
@@ -67,6 +65,7 @@ public class TransactionManager {
 		this.transactions = new HashMap<>();
 		this.timers = new HashMap<>();
 		this.middleware = middleware;
+		this.saveFile = new SaveFile<>("middleware", "transactions");
 
 		loadSave();
 	}
@@ -232,20 +231,9 @@ public class TransactionManager {
 		log("Saving data to disk...");
 
 		try {
-			File file = new File("server-data/middleware/transactions.data");
-
-			file.getParentFile().mkdirs();
-			file.createNewFile();
-
-			FileOutputStream fos = new FileOutputStream(file);
-			ObjectOutputStream oos = new ObjectOutputStream(fos);
-
-			oos.writeObject(transactions);
-			oos.close();
-
+			saveFile.save(transactions);
 		} catch (IOException e) {
 			log("Error: Unable to save to disk");
-			e.printStackTrace();
 			return false;
 		}
 
@@ -258,12 +246,9 @@ public class TransactionManager {
 	 * {@link TransactionManager}, otherwise creates a new save file with the
 	 * {@link TransactionManager#save()} method.
 	 */
-	@SuppressWarnings("unchecked")
 	private void loadSave() {
 		try {
-			FileInputStream fis = new FileInputStream("server-data/middleware/transactions.data");
-			ObjectInputStream ois = new ObjectInputStream(fis);
-			HashMap<Integer, Transaction> data = (HashMap<Integer, Transaction>) ois.readObject();
+			Map<Integer, Transaction> data = saveFile.read();
 
 			for (Entry<Integer, Transaction> entry : data.entrySet()) {
 				tid = entry.getKey() > tid ? entry.getKey() : tid;
@@ -291,7 +276,6 @@ public class TransactionManager {
 				}
 			}
 
-			ois.close();
 		} catch (IOException | ClassNotFoundException e) {
 			save();
 		}

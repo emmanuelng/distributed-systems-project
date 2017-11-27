@@ -4,6 +4,10 @@ import common.data.RMResource;
 
 public abstract class ReservableItem implements RMResource {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 803614182016115952L;
 	private int count;
 	private int price;
 	private int reserved;

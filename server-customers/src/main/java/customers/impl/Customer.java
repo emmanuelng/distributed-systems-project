@@ -7,8 +7,11 @@ import common.data.RMResource;
 
 public class Customer implements RMResource {
 
+	private static final long serialVersionUID = 1517200217993301281L;
+
 	private class Reservation implements RMResource {
 
+		private static final long serialVersionUID = -731384985266533262L;
 		private String manager;
 		private String itemId;
 		private int amount;
@@ -46,7 +49,7 @@ public class Customer implements RMResource {
 	 */
 	public Customer(int cid) {
 		this.cid = cid;
-		this.reservations = new RMHashtable<>();
+		this.reservations = new RMHashtable<>("customers", "reservations_" + cid);
 	}
 
 	/**
@@ -125,7 +128,7 @@ public class Customer implements RMResource {
 	@Override
 	public RMResource copy() {
 		Customer copy = new Customer(cid);
-		copy.reservations = reservations.copy();
+		copy.reservations = new RMHashtable<>(reservations);
 		return copy;
 	}
 
