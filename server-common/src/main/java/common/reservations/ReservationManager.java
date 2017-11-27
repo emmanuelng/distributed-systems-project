@@ -191,13 +191,12 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	}
 
 	public boolean prepareCommit(int id) {
-		// TODO
-		return true;
+		return reservableItems.prepare(id);
 	}
 
 	protected boolean commitTransaction(int id) {
 		log("Committing transaction " + id);
-		
+
 		lockManager.unlockAll(id);
 		reservableItems.commit(id);
 
@@ -209,7 +208,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 */
 	protected boolean abortTransaction(int id) {
 		log("Aborting transaction " + id);
-		
+
 		lockManager.unlockAll(id);
 		reservableItems.abort(id);
 

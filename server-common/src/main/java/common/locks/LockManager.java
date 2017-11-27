@@ -23,7 +23,7 @@ public class LockManager implements Serializable {
 		this.waitTable = new TPHashTable(LockManager.TABLE_SIZE);
 	}
 
-	public LockManager(LockManager other) {		
+	public LockManager(LockManager other) {
 		lockTable = (TPHashTable) other.lockTable.clone();
 		stampTable = (TPHashTable) other.stampTable.clone();
 		waitTable = (TPHashTable) other.waitTable.clone();

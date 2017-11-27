@@ -63,6 +63,10 @@ public class RMHashtable<K, V extends RMResource> {
 		return data.entrySet();
 	}
 
+	public boolean prepare(int id) {
+		return snapshots.containsKey(id);
+	}
+
 	public boolean commit(int id) {
 		snapshots.remove(id);
 		return true;
@@ -71,7 +75,6 @@ public class RMHashtable<K, V extends RMResource> {
 	public boolean abort(int id) {
 		if (snapshots.containsKey(id)) {
 			data = snapshots.remove(id);
-			System.out.println(data);
 		}
 
 		return false;
@@ -81,6 +84,14 @@ public class RMHashtable<K, V extends RMResource> {
 		return new RMHashtable<>(this);
 	}
 
+	/**
+	 * Creates a "snapshot" of the {@link RMHashtable}. meaning a deep copy at the
+	 * time where this method is called. If the given transaction already have a
+	 * snapshot, nothing happens.
+	 * 
+	 * @param id
+	 *            the transaction id
+	 */
 	@SuppressWarnings("unchecked")
 	private void createSnapshot(int id) {
 		if (!snapshots.containsKey(id)) {

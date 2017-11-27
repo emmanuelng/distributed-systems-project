@@ -45,11 +45,11 @@ public abstract class ReservableItem implements RMResource {
 	}
 
 	public void abort(int id) {
-		
+
 	}
 
 	public void commit(int id) {
-		
+
 	}
 
 	@Override
