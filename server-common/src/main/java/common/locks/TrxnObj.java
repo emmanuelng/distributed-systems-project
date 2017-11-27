@@ -2,6 +2,7 @@ package common.locks;
 
 public class TrxnObj extends XObj {
 
+	private static final long serialVersionUID = -1202276637382102516L;
 	public static final int READ = 0;
 	public static final int WRITE = 1;
 

@@ -12,6 +12,8 @@ public class DataObj extends TrxnObj {
 	// TrxnObj:: public static final int READ = 0;
 	// TrxnObj:: public static final int WRITE = 1;
 
+	private static final long serialVersionUID = 6885900334634617415L;
+
 	DataObj() {
 		super();
 	}

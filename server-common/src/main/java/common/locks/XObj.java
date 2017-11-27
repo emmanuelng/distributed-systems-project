@@ -1,7 +1,10 @@
 package common.locks;
 
-public class XObj {
+import java.io.Serializable;
 
+public class XObj implements Serializable {
+
+	private static final long serialVersionUID = -2583997600828273125L;
 	protected int xid = 0;
 
 	XObj() {

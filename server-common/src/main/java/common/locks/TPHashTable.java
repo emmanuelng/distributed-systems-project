@@ -1,18 +1,20 @@
 package common.locks;
 
+import java.io.Serializable;
 import java.util.Vector;
 
 /**
  * HashTable class for the Lock Manager.
  */
-public class TPHashTable {
+public class TPHashTable implements Serializable {
 
+	private static final long serialVersionUID = 2776697809348151622L;
 	private static final int HASH_DEPTH = 8;
 
 	private Vector<Vector<XObj>> vect;
 	private int iSize; // size of the hash table
 
-	TPHashTable(int iSize) {
+	public TPHashTable(int iSize) {
 		this.iSize = iSize;
 
 		vect = new Vector<Vector<XObj>>(iSize);
