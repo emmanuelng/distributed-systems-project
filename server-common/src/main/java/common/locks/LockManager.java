@@ -23,12 +23,6 @@ public class LockManager implements Serializable {
 		this.waitTable = new TPHashTable(LockManager.TABLE_SIZE);
 	}
 
-	public LockManager(LockManager other) {
-		lockTable = (TPHashTable) other.lockTable.clone();
-		stampTable = (TPHashTable) other.stampTable.clone();
-		waitTable = (TPHashTable) other.waitTable.clone();
-	}
-
 	public boolean lock(int xid, String strData, int lockType) throws DeadlockException {
 
 		// If any parameter is invalid, then return false
