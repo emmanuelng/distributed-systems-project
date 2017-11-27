@@ -1,5 +1,6 @@
 package cars.impl;
 
+import common.data.RMResource;
 import common.reservations.ReservableItem;
 
 public class Car extends ReservableItem {
@@ -14,6 +15,11 @@ public class Car extends ReservableItem {
 	@Override
 	public String toString() {
 		return "Car(" + getLocation() + ", " + getCount() + ", " + getPrice() + ")";
+	}
+
+	@Override
+	public RMResource copy() {
+		return new Car(getLocation(), getCount(), getPrice());
 	}
 
 }

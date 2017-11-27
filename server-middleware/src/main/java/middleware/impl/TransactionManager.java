@@ -151,10 +151,8 @@ public class TransactionManager {
 	 * Adds a resource manager to the set of involved managers.
 	 */
 	public void enlist(int id, ResourceManager rm) {
-		if (transactions.containsKey(id)) {
-			String rmname = rm.getClass().getInterfaces()[0].getName();
-			transactions.get(id).rms.add(rmname);
-		}
+		String rmname = rm.getClass().getInterfaces()[0].getName();
+		transactions.get(id).rms.add(rmname);
 	}
 
 	/**

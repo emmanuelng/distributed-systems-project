@@ -3,10 +3,11 @@ package customers.impl;
 import java.util.Map.Entry;
 
 import common.data.RMHashtable;
+import common.data.RMResource;
 
-public class Customer {
+public class Customer implements RMResource {
 
-	private class Reservation {
+	private class Reservation implements RMResource {
 
 		private String manager;
 		private String itemId;
@@ -26,6 +27,13 @@ public class Customer {
 		 */
 		public String toString() {
 			return manager + "/" + itemId + "/" + amount;
+		}
+
+		@Override
+		public RMResource copy() {
+			Reservation copy = new Reservation(manager, itemId, price);
+			copy.amount = amount;
+			return copy;
 		}
 
 	};
@@ -111,7 +119,14 @@ public class Customer {
 	 * Cancels all actions that were performed in the given transaction.
 	 */
 	public void cancel(int id) {
-		reservations.cancel(id);
+		reservations.abort(id);
+	}
+
+	@Override
+	public RMResource copy() {
+		Customer copy = new Customer(cid);
+		copy.reservations = reservations.copy();
+		return copy;
 	}
 
 }

@@ -170,4 +170,16 @@ public class TPHashTable implements Serializable {
 			}
 		}
 	}
+
+	public TPHashTable clone() {
+		TPHashTable clone = new TPHashTable(iSize);
+
+		for (Vector<XObj> hash : vect) {
+			for (XObj obj : hash) {
+				clone.add((XObj) obj.clone());
+			}
+		}
+
+		return clone;
+	}
 }

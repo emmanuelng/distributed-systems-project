@@ -1,6 +1,5 @@
 package common.reservations;
 
-import java.util.HashSet;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -23,7 +22,6 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	public ReservationManager() {
 		this.reservableItems = new RMHashtable<>();
 		this.lockManager = new LockManager();
-		new HashSet<>();
 	}
 
 	/**
@@ -193,42 +191,46 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	}
 
 	public boolean prepareCommit(int id) {
-		// Return true only if the transaction is active, i.e. if it was not committed
-		// or aborted yet.
-		return reservableItems.activeTransactions().contains(id);
+		// TODO
+		return true;
 	}
 
 	protected boolean commitTransaction(int id) {
 		log("Committing transaction " + id);
-		boolean success = true;
-
+		
 		lockManager.unlockAll(id);
-		success &= reservableItems.commit(id);
+		reservableItems.commit(id);
 
-		for (ReservableItem ri : reservableItems.values()) {
-			ri.commit(id);
-		}
-
-		return success;
+		return true;
 	}
 
+	/**
+	 * Aborts a transaction.
+	 */
 	protected boolean abortTransaction(int id) {
 		log("Aborting transaction " + id);
+		
 		lockManager.unlockAll(id);
-		reservableItems.cancel(id);
+		reservableItems.abort(id);
 
 		for (ReservableItem ri : reservableItems.values()) {
-			ri.cancel(id);
+			ri.abort(id);
 		}
 
 		return true;
 
 	}
 
+	/**
+	 * Shuts down the RM gracefully.
+	 */
 	protected boolean shutdownManager() {
 		return selfDestroyManager(0);
 	}
 
+	/**
+	 * Stop the RM, and exits the with the given status.
+	 */
 	protected boolean selfDestroyManager(int status) {
 		log("Will shut down in 1 second.");
 

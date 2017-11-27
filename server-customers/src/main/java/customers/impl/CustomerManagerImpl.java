@@ -197,7 +197,7 @@ public class CustomerManagerImpl implements CustomerManager {
 		log("Aborting transaction " + id);
 
 		lockManager.unlockAll(id);
-		customers.cancel(id);
+		customers.abort(id);
 
 		for (Customer customer : customers.values()) {
 			customer.cancel(id);
