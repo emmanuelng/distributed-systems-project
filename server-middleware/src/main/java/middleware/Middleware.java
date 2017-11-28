@@ -8,21 +8,6 @@ import middleware.impl.exceptions.InvalidTransactionException;
 import middleware.impl.exceptions.NotPreparedException;
 import middleware.impl.exceptions.TimeoutException;
 
-/**
- * Simplified version from CSE 593 University of Washington
- *
- * Distributed System in Java.
- * 
- * failure reporting is done using two pieces, exceptions and boolean return
- * values. Exceptions are used for systemy things. Return values are used for
- * operations that would affect the consistency
- * 
- * If there is a boolean return value and you're not sure how it would be used
- * in your implementation, ignore it. I used boolean return values in the
- * interface generously to allow flexibility in implementation. But don't forget
- * to return true when the operation has succeeded.
- */
-
 public interface Middleware extends Remote {
 
 	/**
@@ -38,9 +23,6 @@ public interface Middleware extends Remote {
 	/**
 	 * Add cars to a location. This should look a lot like addFlight, only keyed on
 	 * a string location instead of a flight number.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean addCars(int id, String location, int numCars, int price)
 			throws RemoteException, InvalidTransactionException, TimeoutException;

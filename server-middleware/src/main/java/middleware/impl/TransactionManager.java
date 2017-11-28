@@ -15,6 +15,7 @@ import common.files.SaveFile;
 import common.rm.ResourceManager;
 import middleware.impl.exceptions.InvalidTransactionException;
 import middleware.impl.exceptions.NotPreparedException;
+import middleware.impl.exceptions.TimeoutException;
 
 public class TransactionManager {
 
@@ -89,7 +90,7 @@ public class TransactionManager {
 	 * Prepares a transaction before being committed. Check that every resource
 	 * managers can commit the transaction.
 	 */
-	public boolean prepareTransaction(int id) throws RemoteException {
+	public boolean prepareTransaction(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
 		log("Preparing transaction " + id);
 		boolean success = true;
 		setTransactionStatus(id, Status.IN_PREPARATION);
@@ -111,7 +112,7 @@ public class TransactionManager {
 	/**
 	 * Commits a transaction.
 	 */
-	public boolean commitTransaction(int id) throws RemoteException {
+	public boolean commitTransaction(int id) throws RemoteException, InvalidTransactionException, NotPreparedException {
 		log("Commiting transaction " + id);
 		boolean success = true;
 
@@ -148,7 +149,7 @@ public class TransactionManager {
 	/**
 	 * Aborts a transaction.
 	 */
-	public boolean abortTransaction(int id) throws RemoteException {
+	public boolean abortTransaction(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
 		log("Aborting transaction " + id);
 		boolean success = true;
 
@@ -205,7 +206,7 @@ public class TransactionManager {
 						setTransactionStatus(id, Status.TIMED_OUT);
 						try {
 							abortTransaction(id);
-						} catch (RemoteException e) {
+						} catch (RemoteException | InvalidTransactionException | TimeoutException e) {
 							// Ignore.
 						}
 					} else {
@@ -295,7 +296,7 @@ public class TransactionManager {
 				}
 			}
 
-		} catch (IOException | ClassNotFoundException e) {
+		} catch (Exception e) {
 			save();
 		}
 	}

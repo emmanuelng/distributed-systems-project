@@ -97,13 +97,13 @@ public class Client {
 		while (!exit) {
 			System.out.print("\n> ");
 			command = stdin.readLine();
-			execute(command.trim());
+			execute(command.trim(), 0);
 		}
 
 		System.out.println("Exiting client.");
 	}
 
-	private void execute(String input) {
+	private void execute(String input, int attempts) {
 		if (input.isEmpty()) {
 			return;
 		}
@@ -123,10 +123,14 @@ public class Client {
 					cmd.execute(middleware, args);
 				} catch (ConnectException e) {
 					// Try to reconnect and to re-execute the command
-					connect();
-					execute(input);
+					if (attempts < 5) {
+						connect();
+						execute(input, attempts + 1);
+					} else {
+						System.out.println("Error: Connection lost.");
+						System.exit(1);
+					}
 				} catch (Exception e) {
-					e.printStackTrace();
 					System.out.print("Error");
 					if (e.getMessage() != null) {
 						System.out.println(": " + e.getMessage());

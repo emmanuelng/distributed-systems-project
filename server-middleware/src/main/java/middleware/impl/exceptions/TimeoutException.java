@@ -1,8 +1,6 @@
 package middleware.impl.exceptions;
 
-import java.rmi.RemoteException;
-
-public class TimeoutException extends RemoteException {
+public class TimeoutException extends Exception {
 
 	private static final long serialVersionUID = -3903228385016109502L;
 
