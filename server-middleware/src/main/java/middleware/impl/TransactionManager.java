@@ -113,7 +113,6 @@ public class TransactionManager {
 	 * Commits a transaction.
 	 */
 	public boolean commitTransaction(int id) throws RemoteException, InvalidTransactionException, NotPreparedException {
-		log("Commiting transaction " + id);
 		boolean success = true;
 
 		if (transactions.containsKey(id)) {
@@ -125,6 +124,7 @@ public class TransactionManager {
 
 			case IN_PREPARATION:
 			case PREPARED:
+				log("Commiting transaction " + id);
 				setTransactionStatus(id, Status.IN_PREPARATION);
 
 				for (String rm : transactions.get(id).rms) {
@@ -171,6 +171,7 @@ public class TransactionManager {
 	 */
 	public void enlist(int id, ResourceManager rm) {
 		String rmname = rm.getClass().getInterfaces()[0].getName();
+		log("Enlisting " + rmname + " for transaction " + id);
 		transactions.get(id).rms.add(rmname);
 	}
 
