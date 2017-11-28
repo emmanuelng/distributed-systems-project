@@ -55,7 +55,7 @@ public class CustomerManagerImpl implements CustomerManager {
 	private LockManager lockManager;
 
 	public CustomerManagerImpl() {
-		this.customers = new RMHashtable<>();
+		this.customers = new RMHashtable<>("customers", "customers");
 		this.lockManager = new LockManager();
 	}
 
@@ -180,6 +180,12 @@ public class CustomerManagerImpl implements CustomerManager {
 	}
 
 	@Override
+	public boolean prepare(int id) {
+		// TODO
+		return true;
+	}
+
+	@Override
 	public boolean commit(int id) {
 		log("Committing transaction " + id);
 		lockManager.unlockAll(id);
@@ -191,7 +197,7 @@ public class CustomerManagerImpl implements CustomerManager {
 		log("Aborting transaction " + id);
 
 		lockManager.unlockAll(id);
-		customers.cancel(id);
+		customers.abort(id);
 
 		for (Customer customer : customers.values()) {
 			customer.cancel(id);
@@ -200,14 +206,20 @@ public class CustomerManagerImpl implements CustomerManager {
 		return true;
 	}
 
+	@Override
+	public boolean shutdown() throws RemoteException {
+		// Not necessary. Ignore.
+		return false;
+	}
+
+	@Override
+	public boolean selfDestroy(int status) throws RemoteException {
+		// Not necessary. Ignore.
+		return false;
+	}
+
 	private void log(String message) {
 		System.out.println("[CustomerManager] " + message);
 	}
 
-	@Override
-	public boolean shutdown() throws RemoteException {
-		// Since this manager runs on the middle ware server, this method is not
-		// necessary.
-		return false;
-	}
 }

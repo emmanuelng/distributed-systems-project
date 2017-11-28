@@ -25,37 +25,55 @@ if [ $# -gt 1 ]; then
 		cd $DIR/$dirname
 
 		# Generate the policy file
-		echo "grant codeBase \"file:"$DIR"/"$dirname"/build/libs/"$dirname"-1.0.jar\" {" > $DIR/$dirname/java.policy
+		echo "grant codeBase \"file:$DIR/$dirname/build/libs/$dirname-1.0.jar\" {" > $DIR/$dirname/java.policy
 		echo "	permission java.security.AllPermission;" >> $DIR/$dirname/java.policy
 		echo "};" >> $DIR/$dirname/java.policy
 		echo >> $DIR/$dirname/java.policy
 
-		# Set the classpath
-		classpath="$DIR/client-client/build/libs/client-client-1.0.jar"
-		classpath=$classpath":$DIR/client-performance/build/libs/client-performance-1.0.jar"
-		classpath=$classpath":$DIR/server-common/build/libs/server-common-1.0.0.jar"
-		classpath=$classpath":$DIR/server-cars/build/libs/server-cars-1.0.jar"
-		classpath=$classpath":$DIR/server-flights/build/libs/server-flights-1.0.jar"
-		classpath=$classpath":$DIR/server-hotels/build/libs/server-hotels-1.0.jar"
-		classpath=$classpath":$DIR/server-middleware/build/libs/server-middleware-1.0.jar"
-		classpath=$classpath":$DIR/server-customers/build/libs/server-customers-1.0.jar"
-		export CLASSPATH=$classpath
-
-		# Run the app
+		# Get the parameters
+		policy="$DIR/$dirname/java.policy"
+		classpath="$DIR/$dirname/build/libs/$dirname-1.0.jar"
 		codebase="file:$DIR/$dirname/build/libs/$dirname-1.0.jar"
 
 		if [ $1 == 'server' ]; then
-			codebase=$codebase" file:$DIR/server-common/build/libs/server-common-1.0.0.jar"
+			classpath=$classpath":$DIR/server-common/build/libs/server-common-1.0.jar"
+			codebase=$codebase" file:$DIR/server-common/build/libs/server-common-1.0.jar"
 
+			# Add the RM APIs for the middleware
+			if [ $2 == 'middleware' ]; then
+				classpath=$classpath":$DIR/server-cars/build/libs/server-cars-1.0.jar"
+				classpath=$classpath":$DIR/server-flights/build/libs/server-flights-1.0.jar"
+				classpath=$classpath":$DIR/server-hotels/build/libs/server-hotels-1.0.jar"
+				classpath=$classpath":$DIR/server-customers/build/libs/server-customers-1.0.jar"
+			fi
+
+			# Add permissions for the common codebase
+			echo "grant codeBase \"file:$DIR/server-common/build/libs/server-common-1.0.jar\" {" >> $DIR/$dirname/java.policy
+			echo "	permission java.security.AllPermission;" >> $DIR/$dirname/java.policy
+			echo "};" >> $DIR/$dirname/java.policy
+			echo >> $DIR/$dirname/java.policy
+		else
+			# Add the middleware API to classpath
+			classpath=$classpath":$DIR/server-middleware/build/libs/server-middleware-1.0.jar"
 		fi
 
-		java -Djava.security.policy=$DIR/$dirname/java.policy -Djava.rmi.server.codebase="$codebase" ${APPS[$dirname]} ${@:3}
+		# Run the app
+		cd $DIR
+		export CLASSPATH=$classpath
+		until java -Djava.security.policy=$policy -Djava.rmi.server.codebase="$codebase" ${APPS[$dirname]} ${@:3}; do
+			if [ $1 == 'server' ]; then
+				printf "\nRestarting...\n"
+				sleep 1
+			else
+				break
+			fi
+		done
 	else
 		echo 'Invalid arguments.'
-		echo
 	fi
 else
 	echo 'Usage: ./run.sh client client [args]'
 	echo '   or  ./run.sh server [cars|flights|hotels|middleware|customers] [args]'
-	echo
 fi
+
+echo

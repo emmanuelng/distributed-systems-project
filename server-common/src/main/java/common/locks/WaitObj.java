@@ -8,6 +8,7 @@ package common.locks;
  */
 public class WaitObj extends DataObj {
 
+	private static final long serialVersionUID = 8335500057964397860L;
 	protected Thread thread = null;
 
 	// The data members inherited are

@@ -1,23 +1,28 @@
 package middleware.impl;
 
-import java.rmi.NotBoundException;
+import java.rmi.ConnectException;
 import java.rmi.RMISecurityManager;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
 import cars.CarManager;
 import common.locks.DeadlockException;
+import common.rm.ResourceManager;
 import customers.CustomerManager;
 import customers.impl.CustomerManagerImpl;
 import flights.FlightManager;
 import hotels.HotelManager;
 import middleware.Middleware;
+import middleware.impl.exceptions.InvalidTransactionException;
+import middleware.impl.exceptions.NotPreparedException;
+import middleware.impl.exceptions.TimeoutException;
 
 /**
  * Implementation of the {@link Middleware} interface.
@@ -26,52 +31,30 @@ import middleware.Middleware;
 public class MiddlewareImpl implements Middleware {
 
 	public static void main(String[] args) {
-		// Figure out where server is running
-		int port = 1099;
-
-		// Servers and ports ([0]: cars, [1]: flights, [2]: hotels)
-		String[] servers = new String[3];
-		int[] ports = { 1099, 1099, 1099 };
-
-		if (args.length != 3 && args.length != 6 && args.length != 4 && args.length != 7) {
-			System.err.println("Usage: middleware [cars server] [flight server] [hotel server]\n"
-					+ "\tor middleware [cars server] [flight server] [hotel server] [middleware port]\n"
-					+ "\tor middleware [car server] [flight server] [hotel server] [car port] [flight port] [hotel port]\n"
-					+ "\tor middleware [car server] [flight server] [hotel server] [car port] [flight port] [hotel port] [middleware port]\n");
-			System.exit(1);
-		} else {
-			servers[0] = args[0];
-			servers[1] = args[1];
-			servers[2] = args[2];
-
-			if (args.length == 6) {
-				ports[0] = Integer.parseInt(args[3]);
-				ports[1] = Integer.parseInt(args[4]);
-				ports[2] = Integer.parseInt(args[5]);
-			}
-
-			if (args.length == 4 || args.length == 7) {
-				port = Integer.parseInt(args[args.length - 1]);
-			}
+		// Check the number of arguments
+		if (args.length != 0 && args.length != 1 && args.length != 3 && args.length != 4) {
+			System.out.println("Usage: middleware <carHost[:port]> <flightHost[:port]> <hotelHost[:port]> [port]");
+			return;
 		}
 
 		try {
-			// Find the managers
-			CarManager carManager = (CarManager) lookup(servers[0], ports[0], "cars.group20");
-			FlightManager flightManager = (FlightManager) lookup(servers[1], ports[1], "flights.group20");
-			HotelManager hotelManager = (HotelManager) lookup(servers[2], ports[2], "hotels.group20");
+			// Parse the arguments
+			String carServer = args.length >= 3 ? args[0] : "localhost:1099";
+			String flightServer = args.length >= 3 ? args[1] : "localhost:1099";
+			String hotelServer = args.length >= 3 ? args[2] : "localhost:1099";
+			int port = args.length > 0 && args.length != 3 ? Integer.parseInt(args[args.length - 1]) : 1099;
 
 			// Create a new server object and dynamically generate the stub (client proxy)
-			MiddlewareImpl obj = new MiddlewareImpl(carManager, flightManager, hotelManager);
+			MiddlewareImpl obj = new MiddlewareImpl(carServer, flightServer, hotelServer);
 			Middleware proxyObj = (Middleware) UnicastRemoteObject.exportObject(obj, 0);
 
 			// Bind the remote object's stub in the registry
 			Registry registry = LocateRegistry.getRegistry(port);
 			registry.rebind("middleware.group20", proxyObj);
 
-			System.out.println("Server ready");
+			System.out.println("Middleware ready");
 		} catch (Exception e) {
-			System.err.println("Server exception: " + e.toString());
+			System.err.println("Error: " + e.toString());
 			e.printStackTrace();
 		}
 
@@ -81,52 +64,38 @@ public class MiddlewareImpl implements Middleware {
 		}
 	}
 
-	/**
-	 * Finds the remote object registered with the given name on the given server.
-	 * If the object does not exist, stops the program.
-	 * 
-	 * @param server
-	 *            the server
-	 * @param port
-	 *            the registry port number
-	 * @param name
-	 *            the logical name of the remote object
-	 * @return the object
-	 */
-	private static Remote lookup(String server, int port, String name) {
-		Remote remoteObj = null;
-
-		try {
-			Registry registry = LocateRegistry.getRegistry(server, port);
-			remoteObj = registry.lookup(name);
-
-			if (remoteObj == null) {
-				System.err.println("Error: Unsuccessful connection to " + name);
-				System.exit(1);
-			}
-
-		} catch (RemoteException | NotBoundException e) {
-			System.err.println("Error: Unable to locate " + name + " on " + server);
-			System.exit(1);
-		}
-
-		return remoteObj;
-	}
-
 	private CarManager carManager;
 	private FlightManager flightManager;
 	private HotelManager hotelManager;
 	private CustomerManager customerManager;
 	private TransactionManager tm;
 
-	public MiddlewareImpl(CarManager carManager, FlightManager flightManager, HotelManager hotelManager) {
-		this.carManager = carManager;
-		this.flightManager = flightManager;
-		this.hotelManager = hotelManager;
+	private Map<String, ResourceManager> rms;
+	private String carServer, flightServer, hotelServer;
 
-		// The customers are handled in the middle ware server
+	/**
+	 * Initializes the middle ware.
+	 * 
+	 * @param carServer
+	 *            the address of the cars server
+	 * @param flightServer
+	 *            the address of the flight server
+	 * @param hotelServer
+	 *            the address if the hotel server
+	 */
+	public MiddlewareImpl(String carServer, String flightServer, String hotelServer) {
+		this.rms = new HashMap<>();
+
+		this.carServer = carServer;
+		this.flightServer = flightServer;
+		this.hotelServer = hotelServer;
+
+		this.carManager = (CarManager) connect("cars.group20", carServer);
+		this.flightManager = (FlightManager) connect("flights.group20", flightServer);
+		this.hotelManager = (HotelManager) connect("hotels.group20", hotelServer);
 		this.customerManager = new CustomerManagerImpl();
-		this.tm = new TransactionManager();
+
+		this.tm = new TransactionManager(this);
 	}
 
 	@Override
@@ -139,8 +108,12 @@ public class MiddlewareImpl implements Middleware {
 			return flightManager.addFlight(id, flightNum, flightSeats, flightPrice);
 		} catch (DeadlockException e) {
 			abort(id);
-			return false;
+		} catch (ConnectException e) {
+			reconnect(flightManager);
+			return addFlight(id, flightNum, flightSeats, flightPrice);
 		}
+
+		return false;
 	}
 
 	@Override
@@ -154,6 +127,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return false;
+		} catch (ConnectException e) {
+			reconnect(carManager);
+			return addCars(id, location, numCars, price);
 		}
 	}
 
@@ -168,6 +144,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return false;
+		} catch (ConnectException e) {
+			reconnect(hotelManager);
+			return addRooms(id, location, numRooms, price);
 		}
 	}
 
@@ -181,6 +160,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return 0;
+		} catch (ConnectException e) {
+			reconnect(customerManager);
+			return newCustomer(id);
 		}
 	}
 
@@ -194,6 +176,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(cid);
 			return false;
+		} catch (ConnectException e) {
+			reconnect(customerManager);
+			return newCustomer(id, cid);
 		}
 	}
 
@@ -208,6 +193,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return false;
+		} catch (ConnectException e) {
+			reconnect(flightManager);
+			return deleteFlight(id, flightNum);
 		}
 	}
 
@@ -222,6 +210,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return false;
+		} catch (ConnectException e) {
+			reconnect(carManager);
+			return deleteCars(id, location);
 		}
 	}
 
@@ -236,6 +227,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return false;
+		} catch (ConnectException e) {
+			reconnect(hotelManager);
+			return deleteRooms(id, location);
 		}
 	}
 
@@ -243,8 +237,7 @@ public class MiddlewareImpl implements Middleware {
 	public boolean deleteCustomer(int id, int customer)
 			throws RemoteException, InvalidTransactionException, TimeoutException {
 		checkTransaction(id);
-
-		boolean success = true;
+		boolean success = false;
 
 		try {
 			// Release the items reserved by the customer, then remove the customer
@@ -253,7 +246,7 @@ public class MiddlewareImpl implements Middleware {
 
 			if (reservations != null) {
 				for (String reservation : reservations.split(";")) {
-					System.out.println("[Middleware] Cancelling reservation " + reservation);
+					log("Cancelling reservation " + reservation);
 					String[] splitted = reservation.split("/");
 
 					if (splitted.length == 3) {
@@ -273,20 +266,25 @@ public class MiddlewareImpl implements Middleware {
 							tm.enlist(id, hotelManager);
 							hotelManager.releaseRoom(id, itemId, amount);
 						}
-
 					}
 				}
 
 				// Now that all reservations are cleared, delete the customer
 				customerManager.deleteCustomer(id, customer);
-			} else {
-				success = false;
+				success = true;
 			}
 
 			return success;
 		} catch (DeadlockException e) {
 			abort(id);
 			return false;
+		} catch (ConnectException e) {
+			reconnect(customerManager);
+			reconnect(flightManager);
+			reconnect(carManager);
+			reconnect(hotelManager);
+
+			return deleteCustomer(id, customer);
 		}
 	}
 
@@ -301,6 +299,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return 0;
+		} catch (ConnectException e) {
+			reconnect(flightManager);
+			return queryFlight(id, flightNumber);
 		}
 	}
 
@@ -315,6 +316,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return 0;
+		} catch (ConnectException e) {
+			reconnect(carManager);
+			return queryCars(id, location);
 		}
 	}
 
@@ -329,6 +333,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return 0;
+		} catch (ConnectException e) {
+			reconnect(hotelManager);
+			return queryRooms(id, location);
 		}
 	}
 
@@ -343,6 +350,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return null;
+		} catch (ConnectException e) {
+			reconnect(customerManager);
+			return queryCustomerInfo(id, customer);
 		}
 	}
 
@@ -357,6 +367,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return 0;
+		} catch (ConnectException e) {
+			reconnect(flightManager);
+			return queryFlightPrice(id, flightNumber);
 		}
 	}
 
@@ -371,6 +384,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return 0;
+		} catch (ConnectException e) {
+			reconnect(carManager);
+			return queryCarsPrice(id, location);
 		}
 	}
 
@@ -385,6 +401,9 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return 0;
+		} catch (ConnectException e) {
+			reconnect(hotelManager);
+			return queryRoomsPrice(id, location);
 		}
 	}
 
@@ -405,6 +424,11 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return false;
+		} catch (ConnectException e) {
+			reconnect(flightManager);
+			reconnect(customerManager);
+
+			return reserveFlight(id, customer, flightNumber);
 		}
 	}
 
@@ -420,12 +444,16 @@ public class MiddlewareImpl implements Middleware {
 				tm.enlist(id, customerManager);
 				return customerManager.reserve(id, customer, "cars", location, price);
 			}
-
-			return false;
 		} catch (DeadlockException e) {
 			abort(id);
-			return false;
+		} catch (ConnectException e) {
+			reconnect(carManager);
+			reconnect(customerManager);
+
+			return reserveCar(id, customer, location);
 		}
+
+		return false;
 	}
 
 	@Override
@@ -435,22 +463,28 @@ public class MiddlewareImpl implements Middleware {
 
 		try {
 			tm.enlist(id, hotelManager);
+
 			if (hotelManager.reserveRoom(id, location)) {
 				int price = hotelManager.queryRoomsPrice(id, location);
 				tm.enlist(id, customerManager);
 				return customerManager.reserve(id, customer, "hotels", location, price);
 			}
 
-			return false;
 		} catch (DeadlockException e) {
 			abort(id);
-			return false;
+		} catch (ConnectException e) {
+			reconnect(hotelManager);
+			reconnect(customerManager);
+
+			return reserveRoom(id, customer, location);
 		}
+
+		return false;
 	}
 
 	@Override
-	public boolean itinerary(int id, int customer, Vector<Integer> flightNumbers, String location, boolean car,
-			boolean room) throws RemoteException, InvalidTransactionException, TimeoutException {
+	public boolean itinerary(int id, int customer, Vector<Integer> flights, String location, boolean car, boolean room)
+			throws RemoteException, InvalidTransactionException, TimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -459,34 +493,29 @@ public class MiddlewareImpl implements Middleware {
 			Vector<Object> reservedFlights = new Vector<>();
 			boolean carReserved = false, roomReserved = false;
 
-			for (Integer flightNumber : flightNumbers) {
-				if (!reserveFlight(id, customer, flightNumber)) {
-					success = false;
-				} else {
+			for (Integer flightNumber : flights) {
+				if (reserveFlight(id, customer, flightNumber)) {
 					reservedFlights.add(flightNumber);
-				}
-			}
-
-			if (success && car) {
-				if (reserveCar(id, customer, location)) {
-					carReserved = true;
 				} else {
 					success = false;
 				}
 			}
 
-			if (success && room) {
-				if (reserveRoom(id, customer, location)) {
-					roomReserved = true;
-				} else {
-					success = false;
+			if (success) {
+				if (car) {
+					carReserved = reserveCar(id, customer, location);
+					success = carReserved;
 				}
-			}
 
-			if (!success) {
+				if (room) {
+					roomReserved = reserveRoom(id, customer, location);
+					success = roomReserved;
+				}
+
+			} else {
 				tm.enlist(id, customerManager);
-
 				tm.enlist(id, flightManager);
+
 				for (Object flightNumber : reservedFlights) {
 					flightManager.releaseSeats(id, (int) flightNumber, 1);
 					customerManager.cancelReservation(id, customer, "flights", (String) flightNumber);
@@ -509,6 +538,13 @@ public class MiddlewareImpl implements Middleware {
 		} catch (DeadlockException e) {
 			abort(id);
 			return false;
+		} catch (ConnectException e) {
+			reconnect(carManager);
+			reconnect(flightManager);
+			reconnect(hotelManager);
+			reconnect(customerManager);
+
+			return itinerary(id, customer, flights, location, car, room);
 		}
 	}
 
@@ -518,8 +554,13 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean commit(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
+	public boolean prepare(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
 		checkTransaction(id);
+		return tm.prepareTransaction(id);
+	}
+
+	@Override
+	public boolean commit(int id) throws RemoteException, InvalidTransactionException, NotPreparedException {
 		return tm.commitTransaction(id);
 	}
 
@@ -532,43 +573,193 @@ public class MiddlewareImpl implements Middleware {
 	@Override
 	public boolean shutdown() throws RemoteException {
 		if (tm.canShutDown()) {
-			System.out.println("[Middleware] Shutting down managers...");
-			
-			carManager.shutdown();
-			flightManager.shutdown();
-			hotelManager.shutdown();
+			log("Shutting down managers...");
+			boolean success = true;
 
-			System.out.println("[Middleware] Will shut down in 1 second.");
+			success &= shutdownRM(carManager);
+			success &= shutdownRM(flightManager);
+			success &= shutdownRM(hotelManager);
 
-			Timer shutdownTimer = new Timer();
-			shutdownTimer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					System.exit(0);
-				}
-			}, 1000);
-
-			return true;
+			return success & selfDestroy(0);
 		}
 
 		return false;
 	}
 
-	/**
-	 * Checks if the given id is a valid transaction id. If it is not valid, throws
-	 * an exception.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
-	 */
-	private void checkTransaction(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
-		if (tm.isTimedOut(id)) {
-			throw new TimeoutException();
-		} else if (!tm.isValid(id)) {
-			throw new InvalidTransactionException();
-		} else {
-			tm.resetTimeout(id);
+	@Override
+	public boolean crash(String which) throws RemoteException {
+		boolean success = false;
+
+		try {
+			switch (which.toLowerCase()) {
+			case "middleware":
+				success = selfDestroy(1);
+				break;
+			case "cars":
+				success = carManager.selfDestroy(1);
+				break;
+			case "flights":
+				success = flightManager.selfDestroy(1);
+				break;
+			case "hotels":
+				success = hotelManager.selfDestroy(1);
+				break;
+			default:
+				break;
+			}
+		} catch (ConnectException e) {
+			reconnect(carManager);
+			reconnect(flightManager);
+			reconnect(hotelManager);
+
+			return crash(which);
+		}
+
+		return success;
+	}
+
+	boolean prepare(String rm, int id) throws RemoteException {
+		try {
+			ResourceManager resourceManager = rms.get(rm);
+			return resourceManager.prepare(id);
+		} catch (ConnectException e) {
+			reconnect(rms.get(rm));
+			return prepare(rm, id);
 		}
 	}
 
+	/**
+	 * Sends a commit request using the resource manager key.
+	 */
+	boolean commit(String rm, int id) throws RemoteException, InvalidTransactionException, NotPreparedException {
+		try {
+			ResourceManager resourceManager = rms.get(rm);
+			return resourceManager.commit(id);
+		} catch (ConnectException e) {
+			reconnect(rms.get(rm));
+			return commit(id);
+		}
+	}
+
+	/**
+	 * Sends an abort request using the resource manager key.
+	 */
+	boolean abort(String rm, int id) throws RemoteException, InvalidTransactionException, TimeoutException {
+		try {
+			ResourceManager resourceManager = rms.get(rm);
+			return resourceManager.abort(id);
+		} catch (ConnectException e) {
+			reconnect(rms.get(rm));
+			return abort(id);
+		}
+	}
+
+	/**
+	 * Connects to a resource manager.
+	 * 
+	 * @param name
+	 *            the key of the resource manager in the RMI registry
+	 * @param address
+	 *            the address of the resource manager (host:port)
+	 */
+	private ResourceManager connect(String name, String address) {
+		ResourceManager rm = null;
+
+		String[] splitted = address.split(":");
+		String host = splitted[0];
+		String portStr = splitted.length > 1 ? splitted[1] : "1099";
+
+		try {
+			int port = Integer.parseInt(portStr);
+
+			Registry registry = LocateRegistry.getRegistry(host, port);
+			rm = (ResourceManager) registry.lookup(name);
+			rms.put(rm.getClass().getInterfaces()[0].getName(), rm);
+
+		} catch (Exception e) {
+			log("Unable to connect to " + host + ":" + portStr);
+			System.exit(0);
+		}
+
+		return rm;
+	}
+
+	/**
+	 * Reconnects to a resource manager.
+	 */
+	private ResourceManager reconnect(ResourceManager rm) {
+		ResourceManager result = null;
+
+		if (rm instanceof CarManager) {
+			result = connect("cars.group20", carServer);
+			carManager = (CarManager) result;
+		} else if (rm instanceof FlightManager) {
+			result = connect("flights.group20", flightServer);
+			flightManager = (FlightManager) result;
+		} else if (rm instanceof HotelManager) {
+			result = connect("hotels.group20", hotelServer);
+			hotelManager = (HotelManager) result;
+		}
+
+		return result;
+	}
+
+	/**
+	 * Checks if the given id is a valid transaction id. If it is not valid, throws
+	 * an exception.
+	 */
+	private void checkTransaction(int id) throws InvalidTransactionException, TimeoutException {
+		switch (tm.getStatus(id)) {
+		case ACTIVE:
+		case PREPARED:
+			tm.resetTimeout(id);
+			break;
+		case COMMITTED:
+			throw new InvalidTransactionException("The transaction was already committed");
+		case ABORTED:
+			throw new InvalidTransactionException("The transaction was aborted");
+		case TIMED_OUT:
+			throw new TimeoutException();
+		default:
+			throw new InvalidTransactionException("Invalid transaction id");
+		}
+	}
+
+	/**
+	 * Shut downs a particular resource manager.
+	 */
+	private boolean shutdownRM(ResourceManager rm) throws RemoteException {
+		try {
+			rm.shutdown();
+			return true;
+		} catch (ConnectException e) {
+			return shutdownRM(reconnect(rm));
+		}
+	}
+
+	/**
+	 * Starts a timer that stops the middle ware after one second.
+	 * 
+	 * @return success
+	 */
+	private boolean selfDestroy(int status) {
+		log("Will shut down in 1 second.");
+
+		Timer shutdownTimer = new Timer();
+		shutdownTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				System.exit(status);
+			}
+		}, 1000);
+
+		return true;
+	}
+
+	/**
+	 * Writes a message to log.
+	 */
+	private void log(String message) {
+		System.out.println("[Middleware] " + message);
+	}
 }

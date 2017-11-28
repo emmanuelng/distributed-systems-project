@@ -45,11 +45,8 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 		}
 	}
 
-	/**
-	 * Builds a new {@link CarManagerImpl}.
-	 */
 	public CarManagerImpl() {
-		super();
+		super("cars");
 	}
 
 	@Override
@@ -89,6 +86,11 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 	}
 
 	@Override
+	public boolean prepare(int id) {
+		return prepareCommit(id);
+	}
+
+	@Override
 	public boolean commit(int id) {
 		return commitTransaction(id);
 	}
@@ -101,6 +103,11 @@ public class CarManagerImpl extends ReservationManager<Car> implements CarManage
 	@Override
 	public boolean shutdown() throws RemoteException {
 		return shutdownManager();
+	}
+
+	@Override
+	public boolean selfDestroy(int status) {
+		return selfDestroyManager(status);
 	}
 
 }

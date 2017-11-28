@@ -47,6 +47,10 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 		}
 	}
 
+	public HotelManagerImpl() {
+		super("hotels");
+	}
+
 	@Override
 	public boolean addRooms(int id, String location, int numRooms, int price) throws DeadlockException {
 		if (getItem(id, location) == null) {
@@ -84,6 +88,11 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 	}
 
 	@Override
+	public boolean prepare(int id) {
+		return prepareCommit(id);
+	}
+
+	@Override
 	public boolean commit(int id) {
 		return commitTransaction(id);
 	}
@@ -96,6 +105,11 @@ public class HotelManagerImpl extends ReservationManager<Hotel> implements Hotel
 	@Override
 	public boolean shutdown() throws RemoteException {
 		return shutdownManager();
+	}
+
+	@Override
+	public boolean selfDestroy(int status) throws RemoteException {
+		return selfDestroyManager(status);
 	}
 
 }

@@ -4,23 +4,9 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Vector;
 
-import middleware.impl.InvalidTransactionException;
-import middleware.impl.TimeoutException;
-
-/**
- * Simplified version from CSE 593 University of Washington
- *
- * Distributed System in Java.
- * 
- * failure reporting is done using two pieces, exceptions and boolean return
- * values. Exceptions are used for systemy things. Return values are used for
- * operations that would affect the consistency
- * 
- * If there is a boolean return value and you're not sure how it would be used
- * in your implementation, ignore it. I used boolean return values in the
- * interface generously to allow flexibility in implementation. But don't forget
- * to return true when the operation has succeeded.
- */
+import middleware.impl.exceptions.InvalidTransactionException;
+import middleware.impl.exceptions.NotPreparedException;
+import middleware.impl.exceptions.TimeoutException;
 
 public interface Middleware extends Remote {
 
@@ -30,8 +16,6 @@ public interface Middleware extends Remote {
 	 * existing flight should overwrite the current price of the available seats.
 	 *
 	 * @return success.
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
@@ -39,9 +23,6 @@ public interface Middleware extends Remote {
 	/**
 	 * Add cars to a location. This should look a lot like addFlight, only keyed on
 	 * a string location instead of a flight number.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean addCars(int id, String location, int numCars, int price)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
@@ -49,26 +30,17 @@ public interface Middleware extends Remote {
 	/**
 	 * Add rooms to a location. This should look a lot like addFlight, only keyed on
 	 * a string location instead of a flight number.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean addRooms(int id, String location, int numRooms, int price)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Returns a unique customer identifier.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public int newCustomer(int id) throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * New customer with providing id.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean newCustomer(int id, int cid) throws RemoteException, InvalidTransactionException, TimeoutException;
 
@@ -77,9 +49,7 @@ public interface Middleware extends Remote {
 	 * all reservations. If there is a reservation on the flight, then the flight
 	 * cannot be deleted
 	 *
-	 * @return success.
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
+	 * @return success
 	 */
 	public boolean deleteFlight(int id, int flightNum)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
@@ -89,8 +59,6 @@ public interface Middleware extends Remote {
 	 * reservations for this location.
 	 *
 	 * @return success
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean deleteCars(int id, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
@@ -100,115 +68,77 @@ public interface Middleware extends Remote {
 	 * reservations for this location.
 	 *
 	 * @return success
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean deleteRooms(int id, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Removes the customer and associated reservations.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean deleteCustomer(int id, int customer)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Returns the number of empty seats.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public int queryFlight(int id, int flightNumber)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Return the number of cars available at a location.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public int queryCars(int id, String location) throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Returns the number of rooms available at a location
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public int queryRooms(int id, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Returns a bill
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public String queryCustomerInfo(int id, int customer)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Returns the price of a seat on this flight.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public int queryFlightPrice(int id, int flightNumber)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Returns the price of a car at a location.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public int queryCarsPrice(int id, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Returns the price of a room at a location.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public int queryRoomsPrice(int id, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Reserves a seat on this flight.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean reserveFlight(int id, int customer, int flightNumber)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Reserves a car at this location.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean reserveCar(int id, int customer, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Reserves a room certain at this location.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean reserveRoom(int id, int customer, String location)
 			throws RemoteException, InvalidTransactionException, TimeoutException;
 
 	/**
 	 * Reserves an itinerary.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean itinerary(int id, int customer, Vector<Integer> flightNumbers, String location, boolean car,
 			boolean room) throws RemoteException, InvalidTransactionException, TimeoutException;
@@ -221,24 +151,33 @@ public interface Middleware extends Remote {
 	public int start() throws RemoteException;
 
 	/**
-	 * Commits a transaction.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
+	 * Initiates the first phase of two-phase commit (2PC)
 	 */
-	public boolean commit(int id) throws RemoteException, InvalidTransactionException, TimeoutException;
+	public boolean prepare(int id) throws RemoteException, InvalidTransactionException, TimeoutException;
+
+	/**
+	 * Commits a transaction.
+	 */
+	public boolean commit(int id)
+			throws RemoteException, InvalidTransactionException, TimeoutException, NotPreparedException;
 
 	/**
 	 * Aborts a transaction.
-	 * 
-	 * @throws InvalidTransactionException
-	 * @throws TimeoutException
 	 */
 	public boolean abort(int id) throws RemoteException, InvalidTransactionException, TimeoutException;
-	
+
 	/**
 	 * Shutdowns the system gracefully.
 	 */
 	public boolean shutdown() throws RemoteException;
+
+	/**
+	 * Simulates a crash of a server.
+	 * 
+	 * @param which
+	 *            the name of the server ("cars", "flights", "hotels" or
+	 *            "middleware")
+	 */
+	public boolean crash(String which) throws RemoteException;
 
 }

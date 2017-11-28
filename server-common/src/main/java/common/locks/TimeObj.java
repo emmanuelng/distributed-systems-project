@@ -7,6 +7,7 @@ import java.util.Date;
  */
 public class TimeObj extends XObj {
 
+	private static final long serialVersionUID = 5832920269861495262L;
 	private Date date = new Date();
 
 	// The data members inherited are

@@ -13,7 +13,6 @@ public interface FlightManager extends ResourceManager {
 	 * existing flight should overwrite the current price of the available seats.
 	 *
 	 * @return success.
-	 * @throws DeadlockException
 	 */
 	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice)
 			throws RemoteException, DeadlockException;
@@ -24,21 +23,16 @@ public interface FlightManager extends ResourceManager {
 	 * cannot be deleted
 	 *
 	 * @return success.
-	 * @throws DeadlockException
 	 */
 	public boolean deleteFlight(int id, int flightNum) throws RemoteException, DeadlockException;
 
 	/**
 	 * Returns the number of empty seats.
-	 * 
-	 * @throws DeadlockException
 	 */
 	public int queryFlight(int id, int flightNumber) throws RemoteException, DeadlockException;
 
 	/**
 	 * Returns the price of a seat on this flight.
-	 * 
-	 * @throws DeadlockException
 	 */
 	public int queryFlightPrice(int id, int flightNumber) throws RemoteException, DeadlockException;
 
@@ -46,7 +40,6 @@ public interface FlightManager extends ResourceManager {
 	 * Reserves a seat on this flight.
 	 * 
 	 * @return success
-	 * @throws DeadlockException
 	 */
 	public boolean reserveFlight(int id, int flightNumber) throws RemoteException, DeadlockException;
 
@@ -54,7 +47,6 @@ public interface FlightManager extends ResourceManager {
 	 * Releases reserved seats in the given flight.
 	 * 
 	 * @return success
-	 * @throws DeadlockException
 	 */
 	public boolean releaseSeats(int id, int flightNumber, int amount) throws RemoteException, DeadlockException;
 }

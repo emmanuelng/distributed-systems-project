@@ -1,7 +1,10 @@
 package common.locks;
 
-public class XObj {
+import java.io.Serializable;
 
+public class XObj implements Serializable {
+
+	private static final long serialVersionUID = -2583997600828273125L;
 	protected int xid = 0;
 
 	XObj() {
@@ -19,6 +22,7 @@ public class XObj {
 		}
 	}
 
+	@Override
 	public String toString() {
 		String outString = new String(this.getClass() + "::xid(" + this.xid + ")");
 		return outString;
@@ -28,10 +32,12 @@ public class XObj {
 		return this.xid;
 	}
 
+	@Override
 	public int hashCode() {
 		return this.xid;
 	}
 
+	@Override
 	public boolean equals(Object xobj) {
 		if (xobj == null)
 			return false;
@@ -44,6 +50,7 @@ public class XObj {
 		return false;
 	}
 
+	@Override
 	public Object clone() {
 		try {
 			XObj xobj = (XObj) super.clone();

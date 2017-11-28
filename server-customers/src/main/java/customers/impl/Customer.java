@@ -3,11 +3,15 @@ package customers.impl;
 import java.util.Map.Entry;
 
 import common.data.RMHashtable;
+import common.data.RMResource;
 
-public class Customer {
+public class Customer implements RMResource {
 
-	private class Reservation {
+	private static final long serialVersionUID = 1517200217993301281L;
 
+	private class Reservation implements RMResource {
+
+		private static final long serialVersionUID = -731384985266533262L;
 		private String manager;
 		private String itemId;
 		private int amount;
@@ -24,8 +28,16 @@ public class Customer {
 		 * Returns the reservation as an array of String. The format is [manager,
 		 * itemId, amount].
 		 */
+		@Override
 		public String toString() {
 			return manager + "/" + itemId + "/" + amount;
+		}
+
+		@Override
+		public RMResource copy() {
+			Reservation copy = new Reservation(manager, itemId, price);
+			copy.amount = amount;
+			return copy;
 		}
 
 	};
@@ -38,7 +50,7 @@ public class Customer {
 	 */
 	public Customer(int cid) {
 		this.cid = cid;
-		this.reservations = new RMHashtable<>();
+		this.reservations = new RMHashtable<>("customers", "reservations_" + cid);
 	}
 
 	/**
@@ -111,7 +123,14 @@ public class Customer {
 	 * Cancels all actions that were performed in the given transaction.
 	 */
 	public void cancel(int id) {
-		reservations.cancel(id);
+		reservations.abort(id);
+	}
+
+	@Override
+	public RMResource copy() {
+		Customer copy = new Customer(cid);
+		copy.reservations = new RMHashtable<>(reservations);
+		return copy;
 	}
 
 }

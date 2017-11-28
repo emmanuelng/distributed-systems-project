@@ -1,64 +1,34 @@
 package common.reservations;
 
-import java.util.HashMap;
+import common.data.RMResource;
 
-import common.data.actions.CompositeAction;
-import common.data.actions.DataAction;
+public abstract class ReservableItem implements RMResource {
 
-public abstract class ReservableItem {
-
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 803614182016115952L;
 	private int count;
 	private int price;
 	private int reserved;
 	private String location;
 
-	private HashMap<Integer, CompositeAction> actions;
-
 	public ReservableItem(String location, int count, int price) {
-		this.location = location;
 		this.count = count;
 		this.price = price;
 		this.reserved = 0;
-
-		this.actions = new HashMap<>();
+		this.location = location;
 	}
 
 	public void setCount(int id, int c) {
-		int oldvalue = count;
-
-		compositeAction(id).add(new DataAction() {
-			@Override
-			public void undo() {
-				count = oldvalue;
-			}
-		});
-
 		count = c;
 	}
 
 	public void setPrice(int id, int p) {
-		int oldvalue = price;
-
-		compositeAction(id).add(new DataAction() {
-			@Override
-			public void undo() {
-				price = oldvalue;
-			}
-		});
-
 		price = p;
 	}
 
 	public void setReserved(int id, int r) {
-		int oldvalue = r;
-
-		compositeAction(id).add(new DataAction() {
-			@Override
-			public void undo() {
-				reserved = oldvalue;
-			}
-		});
-
 		reserved = r;
 	}
 
@@ -78,25 +48,15 @@ public abstract class ReservableItem {
 		return location;
 	}
 
-	public void cancel(int id) {
-		if (actions.containsKey(id)) {
-			actions.remove(id).undo();
-		}
+	public void abort(int id) {
+
 	}
-	
+
 	public void commit(int id) {
-		actions.remove(id);
+
 	}
 
 	@Override
 	public abstract String toString();
-
-	private CompositeAction compositeAction(int id) {
-		if (!actions.containsKey(id)) {
-			actions.put(id, new CompositeAction());
-		}
-
-		return actions.get(id);
-	}
 
 }

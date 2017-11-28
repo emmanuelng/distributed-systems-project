@@ -1,10 +1,11 @@
 package common.reservations;
 
-import java.util.HashSet;
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import common.data.RMHashtable;
+import common.files.SaveFile;
 import common.locks.DeadlockException;
 import common.locks.LockManager;
 import common.locks.TrxnObj;
@@ -13,6 +14,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 
 	private RMHashtable<String, R> reservableItems;
 	private LockManager lockManager;
+	private SaveFile<LockManager> locksSaveFile;
 
 	/**
 	 * Builds a new {@link ReservationManager}
@@ -20,10 +22,12 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * @param resourceName
 	 *            the name of the managed resource. Must be unique.
 	 */
-	public ReservationManager() {
-		this.reservableItems = new RMHashtable<>();
+	public ReservationManager(String rm) {
+		this.reservableItems = new RMHashtable<>(rm, "items");
 		this.lockManager = new LockManager();
-		new HashSet<>();
+		this.locksSaveFile = new SaveFile<>(rm, "locks");
+
+		loadSave();
 	}
 
 	/**
@@ -37,6 +41,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		log("addItem(" + id + ", " + key + ") called");
 
 		lockManager.lock(id, "reservableItems", TrxnObj.WRITE);
+		saveLocks();
 
 		if (reservableItems.containsKey(id, key)) {
 			log("addItem(" + id + ", " + key + "): the key already exist. The current value will be overwitten.");
@@ -63,6 +68,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		log("increaseItemCount(" + id + ", " + key + ", " + numItems + ") called");
 
 		lockManager.lock(id, "reservableItems", TrxnObj.WRITE);
+		saveLocks();
 		R item = reservableItems.get(id, key);
 
 		if (item == null) {
@@ -88,6 +94,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 */
 	protected R getItem(int id, String key) throws DeadlockException {
 		lockManager.lock(id, "reservableItems", TrxnObj.READ);
+		saveLocks();
 		return reservableItems.get(id, key);
 	}
 
@@ -102,6 +109,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		log("deleteItem(" + id + ", " + key + ") called");
 
 		lockManager.lock(id, "reservableItems", TrxnObj.WRITE);
+		saveLocks();
 		boolean success = true;
 		R item = reservableItems.get(id, key);
 
@@ -128,6 +136,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		log("queryNum(" + id + ", " + key + ") called");
 
 		lockManager.lock(id, "reservableItems", TrxnObj.READ);
+		saveLocks();
 		int num = 0;
 		ReservableItem item = reservableItems.get(id, key);
 
@@ -150,6 +159,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		log("queryPrice(" + id + ", " + key + ") called");
 
 		lockManager.lock(id, "reservableItems", TrxnObj.READ);
+		saveLocks();
 		int price = 0;
 		ReservableItem item = reservableItems.get(id, key);
 
@@ -174,6 +184,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		log("reserveItem(" + id + ", " + key + ") called");
 
 		lockManager.lock(id, "reservableItems", TrxnObj.READ);
+		saveLocks();
 		boolean success = true;
 		R item = reservableItems.get(id, key);
 
@@ -192,43 +203,79 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		return success;
 	}
 
+	public boolean prepareCommit(int id) {
+		return reservableItems.prepare(id);
+	}
+
 	protected boolean commitTransaction(int id) {
 		log("Committing transaction " + id);
+
 		lockManager.unlockAll(id);
+		saveLocks();
 		reservableItems.commit(id);
 
-		for (ReservableItem ri : reservableItems.values()) {
-			ri.commit(id);
-		}
-
 		return true;
 	}
 
+	/**
+	 * Aborts a transaction.
+	 */
 	protected boolean abortTransaction(int id) {
 		log("Aborting transaction " + id);
+
 		lockManager.unlockAll(id);
-		reservableItems.cancel(id);
+		reservableItems.abort(id);
 
 		for (ReservableItem ri : reservableItems.values()) {
-			ri.cancel(id);
+			ri.abort(id);
 		}
 
 		return true;
 
 	}
 
+	/**
+	 * Shuts down the RM gracefully.
+	 */
 	protected boolean shutdownManager() {
+		return selfDestroyManager(0);
+	}
+
+	/**
+	 * Stop the RM, and exits the with the given status.
+	 */
+	protected boolean selfDestroyManager(int status) {
 		log("Will shut down in 1 second.");
-		
+
 		Timer shutdownTimer = new Timer();
 		shutdownTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				System.exit(0);
+				System.exit(status);
 			}
 		}, 1000);
-		
+
 		return true;
+	}
+
+	private boolean saveLocks() {
+		try {
+			locksSaveFile.save(lockManager);
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			log("Unable to write to disk");
+			return false;
+		}
+	}
+
+	private boolean loadSave() {
+		try {
+			lockManager = locksSaveFile.read();
+			return true;
+		} catch (ClassNotFoundException | IOException e) {
+			return saveLocks();
+		}
 	}
 
 	/**

@@ -47,6 +47,10 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 		}
 	}
 
+	public FlightManagerImpl() {
+		super("flights");
+	}
+
 	@Override
 	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws DeadlockException {
 		if (getItem(id, Integer.toString(flightNum)) == null) {
@@ -84,6 +88,11 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 	}
 
 	@Override
+	public boolean prepare(int id) {
+		return prepareCommit(id);
+	}
+
+	@Override
 	public boolean commit(int id) {
 		return commitTransaction(id);
 	}
@@ -96,6 +105,11 @@ public class FlightManagerImpl extends ReservationManager<Flight> implements Fli
 	@Override
 	public boolean shutdown() throws RemoteException {
 		return shutdownManager();
+	}
+
+	@Override
+	public boolean selfDestroy(int status) throws RemoteException {
+		return selfDestroyManager(status);
 	}
 
 }
