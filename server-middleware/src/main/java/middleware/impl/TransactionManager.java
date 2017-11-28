@@ -89,10 +89,23 @@ public class TransactionManager {
 	 * Prepares a transaction before being committed. Check that every resource
 	 * managers can commit the transaction.
 	 */
-	public boolean prepareTransaction(int id) {
-		// TODO
+	public boolean prepareTransaction(int id) throws RemoteException {
+		log("Preparing transaction " + id);
+		boolean success = true;
+		setTransactionStatus(id, Status.IN_PREPARATION);
+
+		for (String rm : transactions.get(id).rms) {
+			log("Sending prepare request to " + rm);
+			if (!middleware.prepare(rm, id)) {
+				log("Negative response received! Aborting transaction...");
+				abortTransaction(id);
+				success = false;
+			}
+		}
+
 		setTransactionStatus(id, Status.PREPARED);
-		return true;
+		log("Prepare returns " + success);
+		return success;
 	}
 
 	/**
@@ -112,9 +125,12 @@ public class TransactionManager {
 			case IN_PREPARATION:
 			case PREPARED:
 				setTransactionStatus(id, Status.IN_PREPARATION);
+
 				for (String rm : transactions.get(id).rms) {
+					log("Sending commit request to " + rm);
 					success &= middleware.commit(rm, id);
 				}
+
 				break;
 
 			default:
@@ -125,6 +141,7 @@ public class TransactionManager {
 		Status status = success ? Status.COMMITTED : Status.ACTIVE;
 		setTransactionStatus(id, status);
 
+		log("Commit returns " + success);
 		return success;
 	}
 
@@ -137,12 +154,14 @@ public class TransactionManager {
 
 		setTransactionStatus(id, Status.IN_ABORT);
 		for (String rm : transactions.get(id).rms) {
+			log("Sending abort request to " + rm);
 			middleware.abort(rm, id);
 		}
 
 		Status status = success ? Status.ABORTED : Status.ACTIVE;
 		setTransactionStatus(id, status);
 
+		log("Abort returns " + success);
 		return success;
 	}
 

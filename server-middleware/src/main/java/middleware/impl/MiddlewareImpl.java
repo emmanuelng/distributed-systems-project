@@ -558,9 +558,9 @@ public class MiddlewareImpl implements Middleware {
 			log("Shutting down managers...");
 			boolean success = true;
 
-			success &= carManager.shutdown();
-			success &= flightManager.shutdown();
-			success &= hotelManager.shutdown();
+			success &= shutdownRM(carManager);
+			success &= shutdownRM(flightManager);
+			success &= shutdownRM(hotelManager);
 
 			return success & selfDestroy(0);
 		}
@@ -598,6 +598,16 @@ public class MiddlewareImpl implements Middleware {
 		}
 
 		return success;
+	}
+
+	boolean prepare(String rm, int id) throws RemoteException {
+		try {
+			ResourceManager resourceManager = rms.get(rm);
+			return resourceManager.prepare(id);
+		} catch (ConnectException e) {
+			reconnect(rms.get(rm));
+			return prepare(rm, id);
+		}
 	}
 
 	/**
@@ -659,14 +669,21 @@ public class MiddlewareImpl implements Middleware {
 	/**
 	 * Reconnects to a resource manager.
 	 */
-	private void reconnect(ResourceManager rm) {
+	private ResourceManager reconnect(ResourceManager rm) {
+		ResourceManager result = null;
+
 		if (rm instanceof CarManager) {
-			carManager = (CarManager) connect("cars.group20", carServer);
+			result = connect("cars.group20", carServer);
+			carManager = (CarManager) result;
 		} else if (rm instanceof FlightManager) {
-			flightManager = (FlightManager) connect("flights.group20", flightServer);
+			result = connect("flights.group20", flightServer);
+			flightManager = (FlightManager) result;
 		} else if (rm instanceof HotelManager) {
-			hotelManager = (HotelManager) connect("hotels.group20", hotelServer);
+			result = connect("hotels.group20", hotelServer);
+			hotelManager = (HotelManager) result;
 		}
+
+		return result;
 	}
 
 	/**
@@ -687,6 +704,18 @@ public class MiddlewareImpl implements Middleware {
 			throw new TimeoutException();
 		default:
 			throw new InvalidTransactionException("Invalid transaction id");
+		}
+	}
+
+	/**
+	 * Shut downs a particular resource manager.
+	 */
+	private boolean shutdownRM(ResourceManager rm) throws RemoteException {
+		try {
+			rm.shutdown();
+			return true;
+		} catch (ConnectException e) {
+			return shutdownRM(reconnect(rm));
 		}
 	}
 
