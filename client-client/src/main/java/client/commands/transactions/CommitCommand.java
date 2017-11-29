@@ -1,8 +1,12 @@
 package client.commands.transactions;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Scanner;
 
 import client.commands.Command;
+import client.helpers.UnclosableInputStream;
 import middleware.Middleware;
 
 public class CommitCommand extends Command {
@@ -19,7 +23,25 @@ public class CommitCommand extends Command {
 		if (middleware.commit(id)) {
 			System.out.println("Transaction " + id + " committed successfully.");
 		} else {
-			System.out.println("Transaction " + id + " could not commit.");
+			Scanner scanner = new Scanner(new UnclosableInputStream(System.in));
+
+			System.out.print("Commit failed. Abort transaction? (Y/N) ");
+			String answer = scanner.nextLine();
+
+			while (!answer.equals("Y") && !answer.equals("N")) {
+				System.out.print("Please enter Y or N: ");
+				answer = scanner.nextLine();
+			}
+
+			scanner.close();
+
+			if (answer.equals("Y")) {
+				if (middleware.abort(id)) {
+					System.out.println("The transaction was aborted.");
+				} else {
+					System.out.println("The transaction could not abort.");
+				}
+			}
 		}
 	}
 
