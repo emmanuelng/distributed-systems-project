@@ -89,13 +89,18 @@ public class RMHashtable<K, V extends RMResource> {
 	}
 
 	public boolean commit(int id) {
-		snapshots.remove(id);
-		return true;
+		if (snapshots.containsKey(id)) {
+			snapshots.remove(id);
+			return true;
+		}
+
+		return false;
 	}
 
 	public boolean abort(int id) {
 		if (snapshots.containsKey(id)) {
 			data = snapshots.remove(id);
+			return true;
 		}
 
 		return false;

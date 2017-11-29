@@ -1,6 +1,8 @@
 package common.reservations;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -14,7 +16,10 @@ public abstract class ReservationManager<R extends ReservableItem> {
 
 	private RMHashtable<String, R> reservableItems;
 	private LockManager lockManager;
+	private Set<Integer> waitingTransactions;
+
 	private SaveFile<LockManager> locksSaveFile;
+	private SaveFile<Set<Integer>> waitingTransactionsSaveFile;
 
 	/**
 	 * Builds a new {@link ReservationManager}
@@ -25,7 +30,10 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	public ReservationManager(String rm) {
 		this.reservableItems = new RMHashtable<>(rm, "items");
 		this.lockManager = new LockManager();
+		this.waitingTransactions = new HashSet<>();
+
 		this.locksSaveFile = new SaveFile<>(rm, "locks");
+		this.waitingTransactionsSaveFile = new SaveFile<>(rm, "transactions");
 
 		loadSave();
 	}
@@ -204,25 +212,31 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	}
 
 	public boolean prepareCommit(int id) {
+		log("prepare(" + id + ") called");
+		addWaitingTimer(id);
+		saveWaitingTransactions();
 		return reservableItems.prepare(id);
 	}
 
 	protected boolean commitTransaction(int id) {
-		log("Committing transaction " + id);
+		log("commit(" + id + ") called");
 
+		waitingTransactions.remove(id);
+		saveWaitingTransactions();
 		lockManager.unlockAll(id);
 		saveLocks();
-		reservableItems.commit(id);
 
-		return true;
+		return reservableItems.commit(id);
 	}
 
 	/**
 	 * Aborts a transaction.
 	 */
 	protected boolean abortTransaction(int id) {
-		log("Aborting transaction " + id);
+		log("abort(" + id + ") called");
 
+		waitingTransactions.remove(id);
+		saveWaitingTransactions();
 		lockManager.unlockAll(id);
 		reservableItems.abort(id);
 
@@ -258,6 +272,36 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		return true;
 	}
 
+	/**
+	 * Adds a timer that check if a decision was taken for the given transaction. If
+	 * no, aborts the transaction.
+	 */
+	private void addWaitingTimer(int id) {
+		Timer decisionTimer = new Timer();
+		decisionTimer.schedule(new TimerTask() {
+
+			@Override
+			public void run() {
+				if (waitingTransactions.contains(id)) {
+					log("Waited decision for too long. Aborting transaction...");
+					abortTransaction(id);
+				}
+			}
+		}, 30000);
+
+		waitingTransactions.add(id);
+	}
+
+	private boolean saveWaitingTransactions() {
+		try {
+			waitingTransactionsSaveFile.save(waitingTransactions);
+			return true;
+		} catch (Exception e) {
+			log("Unable to write to disk");
+			return false;
+		}
+	}
+
 	private boolean saveLocks() {
 		try {
 			locksSaveFile.save(lockManager);
@@ -272,9 +316,15 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	private boolean loadSave() {
 		try {
 			lockManager = locksSaveFile.read();
+			waitingTransactions = waitingTransactionsSaveFile.read();
+
+			for (int id : waitingTransactions) {
+				addWaitingTimer(id);
+			}
+
 			return true;
 		} catch (ClassNotFoundException | IOException e) {
-			return saveLocks();
+			return saveLocks() && saveWaitingTransactions();
 		}
 	}
 
