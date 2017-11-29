@@ -22,7 +22,7 @@ import hotels.HotelManager;
 import middleware.Middleware;
 import middleware.impl.exceptions.InvalidTransactionException;
 import middleware.impl.exceptions.NotPreparedException;
-import middleware.impl.exceptions.TimeoutException;
+import middleware.impl.exceptions.TransactionTimeoutException;
 
 /**
  * Implementation of the {@link Middleware} interface.
@@ -100,7 +100,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 		tm.enlist(id, flightManager);
 
@@ -118,7 +118,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean addCars(int id, String location, int numCars, int price)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 		tm.enlist(id, carManager);
 
@@ -135,7 +135,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean addRooms(int id, String location, int numRooms, int price)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -151,7 +151,7 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int newCustomer(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
+	public int newCustomer(int id) throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -167,7 +167,7 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean newCustomer(int id, int cid) throws RemoteException, InvalidTransactionException, TimeoutException {
+	public boolean newCustomer(int id, int cid) throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -184,7 +184,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean deleteFlight(int id, int flightNum)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -201,7 +201,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean deleteCars(int id, String location)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -218,7 +218,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean deleteRooms(int id, String location)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -235,7 +235,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean deleteCustomer(int id, int customer)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 		boolean success = false;
 
@@ -290,7 +290,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public int queryFlight(int id, int flightNumber)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -307,7 +307,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public int queryCars(int id, String location)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -324,7 +324,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public int queryRooms(int id, String location)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -341,7 +341,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public String queryCustomerInfo(int id, int customer)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -358,7 +358,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public int queryFlightPrice(int id, int flightNumber)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -375,7 +375,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public int queryCarsPrice(int id, String location)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -392,7 +392,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public int queryRoomsPrice(int id, String location)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -409,7 +409,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean reserveFlight(int id, int customer, int flightNumber)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -434,7 +434,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean reserveCar(int id, int customer, String location)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -458,7 +458,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean reserveRoom(int id, int customer, String location)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -484,7 +484,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean itinerary(int id, int customer, Vector<Integer> flights, String location, boolean car, boolean room)
-			throws RemoteException, InvalidTransactionException, TimeoutException {
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -554,7 +554,7 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean prepare(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
+	public boolean prepare(int id) throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 		return tm.prepareTransaction(id);
 	}
@@ -565,7 +565,7 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean abort(int id) throws RemoteException, InvalidTransactionException, TimeoutException {
+	public boolean abort(int id) throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 		return tm.abortTransaction(id);
 	}
@@ -644,7 +644,7 @@ public class MiddlewareImpl implements Middleware {
 	/**
 	 * Sends an abort request using the resource manager key.
 	 */
-	boolean abort(String rm, int id) throws RemoteException, InvalidTransactionException, TimeoutException {
+	boolean abort(String rm, int id) throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		try {
 			ResourceManager resourceManager = rms.get(rm);
 			return resourceManager.abort(id);
@@ -708,7 +708,7 @@ public class MiddlewareImpl implements Middleware {
 	 * Checks if the given id is a valid transaction id. If it is not valid, throws
 	 * an exception.
 	 */
-	private void checkTransaction(int id) throws InvalidTransactionException, TimeoutException {
+	private void checkTransaction(int id) throws InvalidTransactionException, TransactionTimeoutException {
 		switch (tm.getStatus(id)) {
 		case ACTIVE:
 		case PREPARED:
@@ -719,7 +719,7 @@ public class MiddlewareImpl implements Middleware {
 		case ABORTED:
 			throw new InvalidTransactionException("The transaction was aborted");
 		case TIMED_OUT:
-			throw new TimeoutException();
+			throw new TransactionTimeoutException();
 		default:
 			throw new InvalidTransactionException("Invalid transaction id");
 		}

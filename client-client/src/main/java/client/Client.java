@@ -131,9 +131,12 @@ public class Client {
 						System.exit(1);
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					System.out.print("Error");
 					if (e.getMessage() != null) {
 						System.out.println(": " + e.getMessage());
+					} else {
+						System.out.println();
 					}
 				}
 			} else {
