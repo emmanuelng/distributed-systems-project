@@ -45,13 +45,21 @@ if [ $# -gt 1 ]; then
 				classpath=$classpath":$DIR/server-flights/build/libs/server-flights-1.0.jar"
 				classpath=$classpath":$DIR/server-hotels/build/libs/server-hotels-1.0.jar"
 				classpath=$classpath":$DIR/server-customers/build/libs/server-customers-1.0.jar"
+
+				# Add permissions for the customer codebase
+				echo "grant codeBase \"file:$DIR/server-customers/build/libs/server-customers-1.0.jar\" {" >> $DIR/$dirname/java.policy
+				echo "	permission java.security.AllPermission;" >> $DIR/$dirname/java.policy
+				echo "};" >> $DIR/$dirname/java.policy
+				echo >> $DIR/$dirname/java.policy
 			fi
+
 
 			# Add permissions for the common codebase
 			echo "grant codeBase \"file:$DIR/server-common/build/libs/server-common-1.0.jar\" {" >> $DIR/$dirname/java.policy
 			echo "	permission java.security.AllPermission;" >> $DIR/$dirname/java.policy
 			echo "};" >> $DIR/$dirname/java.policy
 			echo >> $DIR/$dirname/java.policy
+
 		else
 			# Add the middleware API to classpath
 			classpath=$classpath":$DIR/server-middleware/build/libs/server-middleware-1.0.jar"
