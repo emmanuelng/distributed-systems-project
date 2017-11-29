@@ -123,7 +123,9 @@ public class TransactionManager {
 				}
 			}
 
-			setTransactionStatus(id, Status.PREPARED);
+			if (success)
+				setTransactionStatus(id, Status.PREPARED);
+
 		} catch (TimeoutException | ExecutionException | InterruptedException e) {
 			log("Timeout. Aborting transaction...");
 			abortTransaction(id);
