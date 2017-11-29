@@ -202,16 +202,20 @@ public class TransactionManager {
 			timer.schedule(new TimerTask() {
 				@Override
 				public void run() {
-					if (transactions.containsKey(id)) {
-						log("Timeout. Aborting transaction " + id);
-						setTransactionStatus(id, Status.TIMED_OUT);
-						try {
-							abortTransaction(id);
-						} catch (RemoteException | InvalidTransactionException | TimeoutException e) {
-							// Ignore.
+					try {
+						if (transactions.containsKey(id)) {
+							Status status = transactions.get(id).status;
+							if (status != Status.COMMITTED && status != Status.ABORTED && status != Status.IN_ABORT
+									&& status != Status.TIMED_OUT) {
+								log("Timeout. Aborting transaction " + id);
+								abortTransaction(id);
+								setTransactionStatus(id, Status.TIMED_OUT);
+							}
+						} else {
+							timers.remove(id);
 						}
-					} else {
-						timers.remove(id);
+					} catch (Exception e) {
+						// Ignore.
 					}
 				}
 			}, TRANSACTION_TIMEOUT);
