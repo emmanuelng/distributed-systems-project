@@ -49,4 +49,9 @@ public interface FlightManager extends ResourceManager {
 	 * @return success
 	 */
 	public boolean releaseSeats(int id, int flightNumber, int amount) throws RemoteException, DeadlockException;
+
+	/**
+	 * Injects a crash in the manager.
+	 */
+	public boolean injectCrash(String when, String operation) throws RemoteException;
 }

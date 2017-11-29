@@ -1,6 +1,7 @@
 package client;
 
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.ConnectException;
@@ -130,8 +131,9 @@ public class Client {
 						System.out.println("Error: Connection lost.");
 						System.exit(1);
 					}
+				} catch (EOFException e) {
+					System.out.println("Error: Server internal error. Please try again.");
 				} catch (Exception e) {
-					e.printStackTrace();
 					System.out.print("Error");
 					if (e.getMessage() != null) {
 						System.out.println(": " + e.getMessage());

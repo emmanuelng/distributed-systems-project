@@ -56,4 +56,9 @@ public interface CustomerManager extends ResourceManager {
 	 * Removes all the reservations associated with the given item.
 	 */
 	public void clearReservationsForItem(int id, String itemId) throws RemoteException, DeadlockException;
+
+	/**
+	 * Injects a crash in the manager.
+	 */
+	public boolean injectCrash(String when, String operation) throws RemoteException;
 }

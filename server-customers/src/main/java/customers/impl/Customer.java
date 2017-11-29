@@ -70,6 +70,9 @@ public class Customer implements RMResource {
 
 	}
 
+	/**
+	 * Cancels a reservation.
+	 */
 	public synchronized void cancelReservation(int id, String manager, String itemId) {
 		String itemKey = manager + "/" + itemId;
 		Reservation reservation = reservations.get(id, itemKey);
@@ -124,6 +127,13 @@ public class Customer implements RMResource {
 	 */
 	public void cancel(int id) {
 		reservations.abort(id);
+	}
+
+	/**
+	 * Reloads the reservations from disk.
+	 */
+	public void reloadReservations() {
+		reservations.loadSave();
 	}
 
 	@Override

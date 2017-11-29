@@ -13,6 +13,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import common.data.RMHashtable;
+import common.debug.CrashInjector;
 import common.files.SaveFile;
 import common.locks.DeadlockException;
 import common.locks.LockManager;
@@ -61,11 +62,25 @@ public class CustomerManagerImpl implements CustomerManager {
 	private Set<Integer> waitingTransactions;
 	private SaveFile<Set<Integer>> waitingTransactionsSaveFile;
 
+	private CrashInjector crashInjector;
+
 	public CustomerManagerImpl() {
 		this.customers = new RMHashtable<>("customers", "customers");
 		this.lockManager = new LockManager();
 		this.waitingTransactions = new HashSet<>();
 		this.waitingTransactionsSaveFile = new SaveFile<>("customers", "transactions");
+
+		this.crashInjector = new CrashInjector();
+
+		/*
+		 * Make sure that the reservations are reloaded. This is necessary during the
+		 * deserialization, as the customers are not saved when reservations are created
+		 * or removed. Reloading them allows to have the latest version of the
+		 * reservations.
+		 */
+		for (Customer customer : customers.values()) {
+			customer.reloadReservations();
+		}
 
 		loadSave();
 	}
@@ -195,11 +210,22 @@ public class CustomerManagerImpl implements CustomerManager {
 		log("Preparing transaction " + id);
 		addWaitingTimer(id);
 		save();
+
+		// Inject crash if any
+		crashInjector.beforeVote();
+		new Timer().schedule(new TimerTask() {
+			@Override
+			public void run() {
+				crashInjector.afterVote();
+			}
+		}, 100);
+
 		return customers.prepare(id);
 	}
 
 	@Override
 	public boolean commit(int id) {
+		crashInjector.beforeSave();
 		log("Committing transaction " + id);
 
 		waitingTransactions.remove(id);
@@ -211,6 +237,7 @@ public class CustomerManagerImpl implements CustomerManager {
 
 	@Override
 	public boolean abort(int id) {
+		crashInjector.beforeSave();
 		log("Aborting transaction " + id);
 
 		waitingTransactions.remove(id);
@@ -232,6 +259,11 @@ public class CustomerManagerImpl implements CustomerManager {
 	@Override
 	public boolean selfDestroy(int status) throws RemoteException {
 		return false;
+	}
+
+	@Override
+	public boolean injectCrash(String when, String operation) throws RemoteException {
+		return crashInjector.inject(when, operation);
 	}
 
 	/**

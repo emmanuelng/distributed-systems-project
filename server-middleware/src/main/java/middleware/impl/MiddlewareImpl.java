@@ -96,6 +96,7 @@ public class MiddlewareImpl implements Middleware {
 		this.customerManager = new CustomerManagerImpl();
 
 		this.tm = new TransactionManager(this);
+		rms.put(customerManager.getClass().getInterfaces()[0].getName(), customerManager);
 	}
 
 	@Override
@@ -556,12 +557,12 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean prepare(int id) throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
-		checkTransaction(id);
 		return tm.prepareTransaction(id);
 	}
 
 	@Override
-	public boolean commit(int id) throws RemoteException, InvalidTransactionException, NotPreparedException {
+	public boolean commit(int id)
+			throws RemoteException, InvalidTransactionException, NotPreparedException, TransactionTimeoutException {
 		return tm.commitTransaction(id);
 	}
 
@@ -604,8 +605,6 @@ public class MiddlewareImpl implements Middleware {
 			case "hotels":
 				success = hotelManager.selfDestroy(1);
 				break;
-			default:
-				break;
 			}
 		} catch (ConnectException e) {
 			reconnect(carManager);
@@ -613,6 +612,39 @@ public class MiddlewareImpl implements Middleware {
 			reconnect(hotelManager);
 
 			return crash(which);
+		}
+
+		return success;
+	}
+
+	@Override
+	public boolean injectCrash(String where, String when, String operation) throws RemoteException {
+		boolean success = false;
+
+		try {
+			switch (where.toLowerCase()) {
+			case "middleware":
+				success = tm.injectCrash(when, operation);
+				break;
+			case "cars":
+				success = carManager.injectCrash(when, operation);
+				break;
+			case "flights":
+				success = flightManager.injectCrash(when, operation);
+				break;
+			case "hotels":
+				success = hotelManager.injectCrash(when, operation);
+				break;
+			case "customers":
+				success = customerManager.injectCrash(when, operation);
+				break;
+			}
+		} catch (ConnectException e) {
+			reconnect(carManager);
+			reconnect(flightManager);
+			reconnect(hotelManager);
+
+			return injectCrash(where, when, operation);
 		}
 
 		return success;
@@ -631,7 +663,8 @@ public class MiddlewareImpl implements Middleware {
 	/**
 	 * Sends a commit request using the resource manager key.
 	 */
-	boolean commit(String rm, int id) throws RemoteException, InvalidTransactionException, NotPreparedException {
+	boolean commit(String rm, int id)
+			throws RemoteException, InvalidTransactionException, NotPreparedException, TransactionTimeoutException {
 		try {
 			ResourceManager resourceManager = rms.get(rm);
 			return resourceManager.commit(id);

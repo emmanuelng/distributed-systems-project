@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import client.commands.Command;
-import client.commands.CrashCommand;
 import client.commands.HelpCommand;
 import client.commands.QuitCommand;
 import client.commands.ShutdownCommand;
@@ -12,6 +11,8 @@ import client.commands.create.NewCarCommand;
 import client.commands.create.NewCustomerCommand;
 import client.commands.create.NewFlightCommand;
 import client.commands.create.NewRoomCommand;
+import client.commands.debug.CrashCommand;
+import client.commands.debug.InjectCrashCommand;
 import client.commands.delete.DeleteCarCommand;
 import client.commands.delete.DeleteCustomerCommand;
 import client.commands.delete.DeleteFlightCommand;
@@ -40,7 +41,6 @@ public class CommandRegistry {
 		COMMANDS.put("help", new HelpCommand());
 		COMMANDS.put("quit", new QuitCommand());
 		COMMANDS.put("shutdown", new ShutdownCommand());
-		COMMANDS.put("crash", new CrashCommand());
 
 		COMMANDS.put("newflight", new NewFlightCommand());
 		COMMANDS.put("newcar", new NewCarCommand());
@@ -69,6 +69,9 @@ public class CommandRegistry {
 		COMMANDS.put("prepare", new PrepareCommand());
 		COMMANDS.put("commit", new CommitCommand());
 		COMMANDS.put("abort", new AbortCommand());
+
+		COMMANDS.put("crash", new CrashCommand());
+		COMMANDS.put("icrash", new InjectCrashCommand());
 	}
 
 }

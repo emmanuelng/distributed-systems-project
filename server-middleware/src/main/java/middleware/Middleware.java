@@ -182,4 +182,18 @@ public interface Middleware extends Remote {
 	 */
 	public boolean crash(String which) throws RemoteException;
 
+	/**
+	 * Injects a crash in the system at a precise place. When this place is reached,
+	 * crashes the system. If this method is called twice with the same "where", the
+	 * previous injection is overwritten.
+	 * 
+	 * @param where
+	 *            one of "middleware", "cars", "flights", "hotels", "customers"
+	 * @param when
+	 *            one of "before", "in", "after"
+	 * @param operation
+	 *            one of "prepare", "decision"
+	 */
+	public boolean injectCrash(String where, String when, String operation) throws RemoteException;
+
 }

@@ -1,7 +1,8 @@
-package client.commands;
+package client.commands.debug;
 
 import java.util.List;
 
+import client.commands.Command;
 import middleware.Middleware;
 
 public class CrashCommand extends Command {

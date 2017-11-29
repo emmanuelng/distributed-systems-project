@@ -1,6 +1,7 @@
 package common.data;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map;
@@ -9,7 +10,9 @@ import java.util.Set;
 
 import common.files.SaveFile;
 
-public class RMHashtable<K, V extends RMResource> {
+public class RMHashtable<K, V extends RMResource> implements Serializable {
+
+	private static final long serialVersionUID = -3672016922396332114L;
 
 	private String rm;
 	private String name;
@@ -107,6 +110,26 @@ public class RMHashtable<K, V extends RMResource> {
 	}
 
 	/**
+	 * Restores the state of the {@link RMHashtable} from the save files. If they do
+	 * not exist yet, creates them.
+	 */
+	public boolean loadSave() {
+		try {
+			data = dataFile.read();
+			snapshots = snapshotsFile.read();
+			return true;
+	
+		} catch (IOException | ClassNotFoundException e) {
+			return saveData() && saveSnapshots();
+		}
+	}
+
+	@Override
+	public String toString() {
+		return data.toString();
+	}
+
+	/**
 	 * Saves the data to disk.
 	 */
 	private boolean saveData() {
@@ -132,21 +155,6 @@ public class RMHashtable<K, V extends RMResource> {
 			e.printStackTrace();
 			log("Unable to write to disk");
 			return false;
-		}
-	}
-
-	/**
-	 * Restores the state of the {@link RMHashtable} from the save files. If they do
-	 * not exist yet, creates them.
-	 */
-	private boolean loadSave() {
-		try {
-			data = dataFile.read();
-			snapshots = snapshotsFile.read();
-			return true;
-
-		} catch (IOException | ClassNotFoundException e) {
-			return saveData() && saveSnapshots();
 		}
 	}
 

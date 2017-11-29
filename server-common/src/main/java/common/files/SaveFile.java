@@ -6,9 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
-public class SaveFile<T> {
+public class SaveFile<T> implements Serializable {
 
+	private static final long serialVersionUID = 8063721852444447972L;
 	public static final String SAVE_FOLDER = "server-data";
 
 	private File file;

@@ -44,4 +44,9 @@ public interface CarManager extends ResourceManager {
 	 * @return success
 	 */
 	public boolean releaseCars(int id, String location, int amount) throws RemoteException, DeadlockException;
+
+	/**
+	 * Injects a crash in the manager.
+	 */
+	public boolean injectCrash(String when, String operation) throws RemoteException;
 }

@@ -7,6 +7,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import common.data.RMHashtable;
+import common.debug.CrashInjector;
 import common.files.SaveFile;
 import common.locks.DeadlockException;
 import common.locks.LockManager;
@@ -21,6 +22,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	private SaveFile<LockManager> locksSaveFile;
 	private SaveFile<Set<Integer>> waitingTransactionsSaveFile;
 
+	private CrashInjector crashInjector;
+
 	/**
 	 * Builds a new {@link ReservationManager}
 	 * 
@@ -34,6 +37,8 @@ public abstract class ReservationManager<R extends ReservableItem> {
 
 		this.locksSaveFile = new SaveFile<>(rm, "locks");
 		this.waitingTransactionsSaveFile = new SaveFile<>(rm, "transactions");
+
+		this.crashInjector = new CrashInjector();
 
 		loadSave();
 	}
@@ -211,14 +216,25 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		return success;
 	}
 
-	public boolean prepareCommit(int id) {
+	protected boolean prepareCommit(int id) {
 		log("prepare(" + id + ") called");
 		addWaitingTimer(id);
 		saveWaitingTransactions();
+
+		// Inject crashes if any
+		crashInjector.beforeVote();
+		new Timer().schedule(new TimerTask() {
+			@Override
+			public void run() {
+				crashInjector.afterVote();
+			}
+		}, 100);
+
 		return reservableItems.prepare(id);
 	}
 
 	protected boolean commitTransaction(int id) {
+		crashInjector.beforeSave();
 		log("commit(" + id + ") called");
 
 		waitingTransactions.remove(id);
@@ -233,6 +249,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	 * Aborts a transaction.
 	 */
 	protected boolean abortTransaction(int id) {
+		crashInjector.beforeSave();
 		log("abort(" + id + ") called");
 
 		waitingTransactions.remove(id);
@@ -270,6 +287,10 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		}, 1000);
 
 		return true;
+	}
+
+	public boolean injectCrash(String when, String operation) {
+		return crashInjector.inject(when, operation);
 	}
 
 	/**
