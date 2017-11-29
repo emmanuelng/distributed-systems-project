@@ -42,7 +42,8 @@ public interface Middleware extends Remote {
 	/**
 	 * New customer with providing id.
 	 */
-	public boolean newCustomer(int id, int cid) throws RemoteException, InvalidTransactionException, TransactionTimeoutException;
+	public boolean newCustomer(int id, int cid)
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException;
 
 	/**
 	 * Deletes the entire flight. Implies whole deletion of the flight. all seats,
@@ -87,7 +88,8 @@ public interface Middleware extends Remote {
 	/**
 	 * Return the number of cars available at a location.
 	 */
-	public int queryCars(int id, String location) throws RemoteException, InvalidTransactionException, TransactionTimeoutException;
+	public int queryCars(int id, String location)
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException;
 
 	/**
 	 * Returns the number of rooms available at a location

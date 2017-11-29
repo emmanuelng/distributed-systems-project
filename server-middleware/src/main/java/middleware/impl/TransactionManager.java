@@ -96,7 +96,7 @@ public class TransactionManager {
 	 * Prepares a transaction before being committed. Check that every resource
 	 * managers can commit the transaction.
 	 */
-	public boolean prepareTransaction(int id) {
+	public boolean prepareTransaction(int id) throws InvalidTransactionException {
 		log("Preparing transaction " + id);
 		setTransactionStatus(id, Status.IN_PREPARATION);
 
@@ -188,36 +188,41 @@ public class TransactionManager {
 	/**
 	 * Aborts a transaction.
 	 */
-	public boolean abortTransaction(int id) {
+	public boolean abortTransaction(int id) throws InvalidTransactionException {
 		log("Aborting transaction " + id);
-		setTransactionStatus(id, Status.IN_ABORT);
-
 		boolean success = true;
-		ExecutorService executor = Executors.newSingleThreadExecutor();
 
-		for (String rm : transactions.get(id).rms) {
-			try {
-				Future<Boolean> future = executor.submit(new Callable<Boolean>() {
+		if (transactions.containsKey(id)) {
+			setTransactionStatus(id, Status.IN_ABORT);
 
-					@Override
-					public Boolean call() throws Exception {
-						log("Sending abort request to " + rm);
-						return middleware.abort(rm, id);
-					}
-				});
+			ExecutorService executor = Executors.newSingleThreadExecutor();
 
-				future.get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+			for (String rm : transactions.get(id).rms) {
+				try {
+					Future<Boolean> future = executor.submit(new Callable<Boolean>() {
 
-			} catch (TimeoutException | ExecutionException | InterruptedException e) {
-				log("Timeout. Going to the next resource manager...");
-				success = false;
+						@Override
+						public Boolean call() throws Exception {
+							log("Sending abort request to " + rm);
+							return middleware.abort(rm, id);
+						}
+					});
+
+					future.get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+
+				} catch (TimeoutException | ExecutionException | InterruptedException e) {
+					log("Timeout. Going to the next resource manager...");
+					success = false;
+				}
 			}
+
+			Status status = success ? Status.ABORTED : Status.ACTIVE;
+			setTransactionStatus(id, status);
+
+		} else {
+			throw new InvalidTransactionException("The transaction is not active.");
 		}
 
-		Status status = success ? Status.ABORTED : Status.ACTIVE;
-		setTransactionStatus(id, status);
-
-		log("Abort returns " + success);
 		return success;
 	}
 
@@ -308,8 +313,6 @@ public class TransactionManager {
 	 * does not exist, creates a new one.
 	 */
 	private boolean save() {
-		log("Saving data to disk...");
-
 		try {
 			saveFile.save(transactions);
 		} catch (IOException e) {

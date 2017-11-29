@@ -167,7 +167,8 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean newCustomer(int id, int cid) throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean newCustomer(int id, int cid)
+			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
 		checkTransaction(id);
 
 		try {
@@ -566,7 +567,6 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean abort(int id) throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
-		checkTransaction(id);
 		return tm.abortTransaction(id);
 	}
 
@@ -711,9 +711,10 @@ public class MiddlewareImpl implements Middleware {
 	private void checkTransaction(int id) throws InvalidTransactionException, TransactionTimeoutException {
 		switch (tm.getStatus(id)) {
 		case ACTIVE:
-		case PREPARED:
 			tm.resetTimeout(id);
 			break;
+		case PREPARED:
+			throw new InvalidTransactionException("The transaction was prepared and cannot be modified");
 		case COMMITTED:
 			throw new InvalidTransactionException("The transaction was already committed");
 		case ABORTED:
