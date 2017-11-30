@@ -21,7 +21,7 @@ import flights.FlightManager;
 import hotels.HotelManager;
 import middleware.Middleware;
 import middleware.impl.exceptions.InvalidTransactionException;
-import middleware.impl.exceptions.NotPreparedException;
+import middleware.impl.exceptions.ServerException;
 import middleware.impl.exceptions.TransactionTimeoutException;
 
 /**
@@ -101,33 +101,29 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+			throws RemoteException, ServerException {
 		checkTransaction(id);
 		tm.enlist(id, flightManager);
 
 		try {
 			return flightManager.addFlight(id, flightNum, flightSeats, flightPrice);
 		} catch (DeadlockException e) {
-			abort(id);
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(flightManager);
 			return addFlight(id, flightNum, flightSeats, flightPrice);
 		}
-
-		return false;
 	}
 
 	@Override
-	public boolean addCars(int id, String location, int numCars, int price)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean addCars(int id, String location, int numCars, int price) throws RemoteException, ServerException {
 		checkTransaction(id);
 		tm.enlist(id, carManager);
 
 		try {
 			return carManager.addCars(id, location, numCars, price);
 		} catch (DeadlockException e) {
-			abort(id);
-			return false;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(carManager);
 			return addCars(id, location, numCars, price);
@@ -135,16 +131,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean addRooms(int id, String location, int numRooms, int price)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, hotelManager);
 			return hotelManager.addRooms(id, location, numRooms, price);
 		} catch (DeadlockException e) {
-			abort(id);
-			return false;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(hotelManager);
 			return addRooms(id, location, numRooms, price);
@@ -152,15 +146,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int newCustomer(int id) throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public int newCustomer(int id) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, customerManager);
 			return customerManager.newCustomer(id);
 		} catch (DeadlockException e) {
-			abort(id);
-			return 0;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(customerManager);
 			return newCustomer(id);
@@ -168,16 +161,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean newCustomer(int id, int cid)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean newCustomer(int id, int cid) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, customerManager);
 			return customerManager.newCustomer(id, cid);
 		} catch (DeadlockException e) {
-			abort(cid);
-			return false;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(customerManager);
 			return newCustomer(id, cid);
@@ -185,16 +176,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean deleteFlight(int id, int flightNum)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean deleteFlight(int id, int flightNum) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, flightManager);
 			return flightManager.deleteFlight(id, flightNum);
 		} catch (DeadlockException e) {
-			abort(id);
-			return false;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(flightManager);
 			return deleteFlight(id, flightNum);
@@ -202,16 +191,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean deleteCars(int id, String location)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean deleteCars(int id, String location) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, carManager);
 			return carManager.deleteCars(id, location);
 		} catch (DeadlockException e) {
-			abort(id);
-			return false;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(carManager);
 			return deleteCars(id, location);
@@ -219,16 +206,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean deleteRooms(int id, String location)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean deleteRooms(int id, String location) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, hotelManager);
 			return hotelManager.deleteRooms(id, location);
 		} catch (DeadlockException e) {
-			abort(id);
-			return false;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(hotelManager);
 			return deleteRooms(id, location);
@@ -236,8 +221,7 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean deleteCustomer(int id, int customer)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean deleteCustomer(int id, int customer) throws RemoteException, ServerException {
 		checkTransaction(id);
 		boolean success = false;
 
@@ -278,8 +262,7 @@ public class MiddlewareImpl implements Middleware {
 
 			return success;
 		} catch (DeadlockException e) {
-			abort(id);
-			return false;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(customerManager);
 			reconnect(flightManager);
@@ -291,16 +274,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int queryFlight(int id, int flightNumber)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public int queryFlight(int id, int flightNumber) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, flightManager);
 			return flightManager.queryFlight(id, flightNumber);
 		} catch (DeadlockException e) {
-			abort(id);
-			return 0;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(flightManager);
 			return queryFlight(id, flightNumber);
@@ -308,16 +289,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int queryCars(int id, String location)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public int queryCars(int id, String location) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, carManager);
 			return carManager.queryCars(id, location);
 		} catch (DeadlockException e) {
-			abort(id);
-			return 0;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(carManager);
 			return queryCars(id, location);
@@ -325,16 +304,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int queryRooms(int id, String location)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public int queryRooms(int id, String location) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, hotelManager);
 			return hotelManager.queryRooms(id, location);
 		} catch (DeadlockException e) {
-			abort(id);
-			return 0;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(hotelManager);
 			return queryRooms(id, location);
@@ -342,16 +319,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public String queryCustomerInfo(int id, int customer)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public String queryCustomerInfo(int id, int customer) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, customerManager);
 			return customerManager.queryCustomerInfo(id, customer);
 		} catch (DeadlockException e) {
-			abort(id);
-			return null;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(customerManager);
 			return queryCustomerInfo(id, customer);
@@ -359,16 +334,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int queryFlightPrice(int id, int flightNumber)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public int queryFlightPrice(int id, int flightNumber) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, flightManager);
 			return flightManager.queryFlightPrice(id, flightNumber);
 		} catch (DeadlockException e) {
-			abort(id);
-			return 0;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(flightManager);
 			return queryFlightPrice(id, flightNumber);
@@ -376,16 +349,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int queryCarsPrice(int id, String location)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public int queryCarsPrice(int id, String location) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, carManager);
 			return carManager.queryCarsPrice(id, location);
 		} catch (DeadlockException e) {
-			abort(id);
-			return 0;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(carManager);
 			return queryCarsPrice(id, location);
@@ -393,16 +364,14 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public int queryRoomsPrice(int id, String location)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public int queryRoomsPrice(int id, String location) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
 			tm.enlist(id, hotelManager);
 			return hotelManager.queryRoomsPrice(id, location);
 		} catch (DeadlockException e) {
-			abort(id);
-			return 0;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(hotelManager);
 			return queryRoomsPrice(id, location);
@@ -410,8 +379,7 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean reserveFlight(int id, int customer, int flightNumber)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
@@ -424,8 +392,7 @@ public class MiddlewareImpl implements Middleware {
 
 			return false;
 		} catch (DeadlockException e) {
-			abort(id);
-			return false;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(flightManager);
 			reconnect(customerManager);
@@ -435,8 +402,7 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean reserveCar(int id, int customer, String location)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean reserveCar(int id, int customer, String location) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
@@ -447,7 +413,7 @@ public class MiddlewareImpl implements Middleware {
 				return customerManager.reserve(id, customer, "cars", location, price);
 			}
 		} catch (DeadlockException e) {
-			abort(id);
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(carManager);
 			reconnect(customerManager);
@@ -459,8 +425,7 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean reserveRoom(int id, int customer, String location)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean reserveRoom(int id, int customer, String location) throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
@@ -473,7 +438,7 @@ public class MiddlewareImpl implements Middleware {
 			}
 
 		} catch (DeadlockException e) {
-			abort(id);
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(hotelManager);
 			reconnect(customerManager);
@@ -486,7 +451,7 @@ public class MiddlewareImpl implements Middleware {
 
 	@Override
 	public boolean itinerary(int id, int customer, Vector<Integer> flights, String location, boolean car, boolean room)
-			throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+			throws RemoteException, ServerException {
 		checkTransaction(id);
 
 		try {
@@ -538,8 +503,7 @@ public class MiddlewareImpl implements Middleware {
 
 			return success;
 		} catch (DeadlockException e) {
-			abort(id);
-			return false;
+			throw new ServerException();
 		} catch (ConnectException e) {
 			reconnect(carManager);
 			reconnect(flightManager);
@@ -556,18 +520,17 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean prepare(int id) throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean prepare(int id) throws RemoteException, ServerException {
 		return tm.prepareTransaction(id);
 	}
 
 	@Override
-	public boolean commit(int id)
-			throws RemoteException, InvalidTransactionException, NotPreparedException, TransactionTimeoutException {
+	public boolean commit(int id) throws RemoteException, ServerException {
 		return tm.commitTransaction(id);
 	}
 
 	@Override
-	public boolean abort(int id) throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	public boolean abort(int id) throws RemoteException, ServerException {
 		return tm.abortTransaction(id);
 	}
 
@@ -663,8 +626,7 @@ public class MiddlewareImpl implements Middleware {
 	/**
 	 * Sends a commit request using the resource manager key.
 	 */
-	boolean commit(String rm, int id)
-			throws RemoteException, InvalidTransactionException, NotPreparedException, TransactionTimeoutException {
+	boolean commit(String rm, int id) throws RemoteException, ServerException {
 		try {
 			ResourceManager resourceManager = rms.get(rm);
 			return resourceManager.commit(id);
@@ -677,7 +639,7 @@ public class MiddlewareImpl implements Middleware {
 	/**
 	 * Sends an abort request using the resource manager key.
 	 */
-	boolean abort(String rm, int id) throws RemoteException, InvalidTransactionException, TransactionTimeoutException {
+	boolean abort(String rm, int id) throws RemoteException, ServerException {
 		try {
 			ResourceManager resourceManager = rms.get(rm);
 			return resourceManager.abort(id);
@@ -741,7 +703,7 @@ public class MiddlewareImpl implements Middleware {
 	 * Checks if the given id is a valid transaction id. If it is not valid, throws
 	 * an exception.
 	 */
-	private void checkTransaction(int id) throws InvalidTransactionException, TransactionTimeoutException {
+	private void checkTransaction(int id) throws ServerException {
 		switch (tm.getStatus(id)) {
 		case ACTIVE:
 			tm.resetTimeout(id);

@@ -1,6 +1,6 @@
 package middleware.impl.exceptions;
 
-public class TransactionTimeoutException extends Exception {
+public class TransactionTimeoutException extends ServerException {
 
 	private static final long serialVersionUID = -3903228385016109502L;
 

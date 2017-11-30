@@ -1,6 +1,6 @@
 package middleware.impl.exceptions;
 
-public class NotPreparedException extends Exception {
+public class NotPreparedException extends ServerException {
 
 	private static final long serialVersionUID = 2996913934140204771L;
 
