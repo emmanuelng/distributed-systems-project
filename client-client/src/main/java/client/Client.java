@@ -116,7 +116,8 @@ public class Client {
 			args.add(tokenizer.nextToken().trim());
 		}
 
-		Command cmd = CommandRegistry.COMMANDS.get(args.remove(0));
+		String commandName = args.remove(0);
+		Command cmd = CommandRegistry.COMMANDS.get(commandName);
 
 		if (cmd != null) {
 			if (args.size() >= cmd.minArgs() && (cmd.maxArgs() < 0 || args.size() <= cmd.maxArgs())) {
@@ -142,7 +143,7 @@ public class Client {
 					}
 				}
 			} else {
-				System.out.println(cmd.invalidArgsNbMsg());
+				System.out.println(cmd.invalidArgsNbMsg(commandName));
 			}
 		} else {
 			System.out.println("The interface does not support this command\n");

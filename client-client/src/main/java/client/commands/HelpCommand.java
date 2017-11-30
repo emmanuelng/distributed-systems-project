@@ -18,7 +18,7 @@ public class HelpCommand extends Command {
 	}
 
 	@Override
-	public String invalidArgsNbMsg() {
+	public String invalidArgsNbMsg(String commandName) {
 		return "Improper use of help command. Type help or help, <commandname>";
 	}
 
@@ -51,7 +51,7 @@ public class HelpCommand extends Command {
 			System.out.println("Purpose:");
 			System.out.println("\t" + cmd.purpose() + "\n");
 			System.out.println("Usage");
-			System.out.println("\t" + commandName + "," + cmd.argsDescription() + "\n");
+			System.out.println("\t" + commandName + " " + cmd.argsDescription() + "\n");
 		} else {
 			System.out.println(commandName);
 			System.out.println("The interface does not support this command.");

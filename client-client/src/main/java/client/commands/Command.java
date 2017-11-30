@@ -12,9 +12,8 @@ public abstract class Command {
 		return minArgs();
 	}
 
-	public String invalidArgsNbMsg() {
-		return "The number of arguments provided in this command are wrong.\n"
-				+ "Type help, <commandname> to check usage of this command.\n";
+	public String invalidArgsNbMsg(String commandName) {
+		return "Syntax error. \nCorrect usage: " + commandName + " " + argsDescription();
 	}
 
 	public abstract void execute(Middleware middleware, List<String> arguments) throws Exception;

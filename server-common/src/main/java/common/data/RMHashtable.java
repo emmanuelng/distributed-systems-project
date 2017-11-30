@@ -118,7 +118,7 @@ public class RMHashtable<K, V extends RMResource> implements Serializable {
 			data = dataFile.read();
 			snapshots = snapshotsFile.read();
 			return true;
-	
+
 		} catch (IOException | ClassNotFoundException e) {
 			return saveData() && saveSnapshots();
 		}
