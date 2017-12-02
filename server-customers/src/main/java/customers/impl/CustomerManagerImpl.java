@@ -281,7 +281,7 @@ public class CustomerManagerImpl implements CustomerManager {
 					abort(id);
 				}
 			}
-		}, 30000);
+		}, 60000);
 
 		waitingTransactions.add(id);
 	}

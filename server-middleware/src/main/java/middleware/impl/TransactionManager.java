@@ -171,6 +171,9 @@ public class TransactionManager {
 			resetTimeout(id);
 
 			switch (transaction.status) {
+			case COMMITTED:
+				throw new InvalidTransactionException("The transaction was already committed");
+			
 			case ACTIVE:
 				throw new NotPreparedException();
 
@@ -194,6 +197,7 @@ public class TransactionManager {
 						});
 
 						success &= future.get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+						log("success = " + success);
 						crashInjector.inDecision(i, transactions.get(id).rms.size());
 						i++;
 

@@ -230,7 +230,9 @@ public abstract class ReservationManager<R extends ReservableItem> {
 			}
 		}, 100);
 
-		return reservableItems.prepare(id);
+		boolean result = reservableItems.prepare(id);
+		log("prepare(" + id + ") returning " + result);
+		return result;
 	}
 
 	protected boolean commitTransaction(int id) {
@@ -241,8 +243,10 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		saveWaitingTransactions();
 		lockManager.unlockAll(id);
 		saveLocks();
-
-		return reservableItems.commit(id);
+		
+		boolean result = reservableItems.commit(id);
+		log("commit(" + id + ") returning " + result);
+		return result;
 	}
 
 	/**
@@ -308,7 +312,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 					abortTransaction(id);
 				}
 			}
-		}, 30000);
+		}, 60000);
 
 		waitingTransactions.add(id);
 	}

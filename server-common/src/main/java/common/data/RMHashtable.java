@@ -92,12 +92,8 @@ public class RMHashtable<K, V extends RMResource> implements Serializable {
 	}
 
 	public boolean commit(int id) {
-		if (snapshots.containsKey(id)) {
-			snapshots.remove(id);
-			return true;
-		}
-
-		return false;
+		snapshots.remove(id);
+		return true;
 	}
 
 	public boolean abort(int id) {

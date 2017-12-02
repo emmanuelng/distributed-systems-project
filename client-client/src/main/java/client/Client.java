@@ -1,12 +1,12 @@
 package client;
 
 import java.io.BufferedReader;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.ConnectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.UnmarshalException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
@@ -122,19 +122,18 @@ public class Client {
 		if (cmd != null) {
 			if (args.size() >= cmd.minArgs() && (cmd.maxArgs() < 0 || args.size() <= cmd.maxArgs())) {
 				try {
-					cmd.execute(middleware, args);
+					if (attempts <= 5) {
+						cmd.execute(middleware, args);
+					}
 				} catch (ConnectException e) {
 					// Try to reconnect and to re-execute the command
-					if (attempts < 5) {
-						connect();
-						execute(input, attempts + 1);
-					} else {
-						System.out.println("Error: Connection lost.");
-						System.exit(1);
-					}
-				} catch (EOFException e) {
-					System.out.println("Error: Server internal error. Please try again.");
+					connect();
+					execute(input, attempts + 1);
+				} catch (UnmarshalException e) {
+					// Unidentified exception
+					System.out.println("An error occured. Please try again.");
 				} catch (Exception e) {
+					// Other exceptions
 					System.out.print("Error");
 					if (e.getMessage() != null) {
 						System.out.println(": " + e.getMessage());
