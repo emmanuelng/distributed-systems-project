@@ -20,7 +20,7 @@ public class PrepareCommand extends Command {
 		Scanner scanner = new Scanner(new UnclosableInputStream(System.in));
 
 		if (middleware.prepare(id)) {
-			System.out.print("The transaction was committed!");
+			System.out.println("Prepared and committed successfully!");
 		} else {
 			System.out.print("Prepare failed. Retry?(Y/N) ");
 			String answer = scanner.nextLine();

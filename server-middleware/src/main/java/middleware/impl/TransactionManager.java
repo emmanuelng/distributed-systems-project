@@ -21,7 +21,6 @@ import common.files.SaveFile;
 import common.rm.ResourceManager;
 import middleware.impl.debug.CrashInjector;
 import middleware.impl.exceptions.InvalidTransactionException;
-import middleware.impl.exceptions.TransactionTimeoutException;
 
 public class TransactionManager {
 
@@ -98,7 +97,7 @@ public class TransactionManager {
 			throw new InvalidTransactionException("The transaction does not exist.");
 		}
 
-		if (transaction.status != Status.ACTIVE) {
+		if (transaction.status != Status.ACTIVE && transaction.status != Status.IN_PREPARE) {
 			if (transaction.status == Status.IN_COMMIT) {
 				return commitTransaction(id);
 			} else {
@@ -146,6 +145,7 @@ public class TransactionManager {
 		crashInjector.afterPrepare();
 
 		if (success) {
+			setTransactionStatus(id, Status.IN_COMMIT);
 			return commitTransaction(id);
 		} else {
 			setTransactionStatus(id, Status.ACTIVE);
@@ -207,14 +207,14 @@ public class TransactionManager {
 	/**
 	 * Aborts a transaction.
 	 */
-	public boolean abortTransaction(int id) throws InvalidTransactionException, TransactionTimeoutException {
+	public boolean abortTransaction(int id) throws InvalidTransactionException {
 		Transaction transaction = transactions.get(id);
 
 		if (transaction == null) {
 			throw new InvalidTransactionException("The transaction does not exist");
 		}
 
-		if (transaction.status != Status.ACTIVE || transaction.status != Status.IN_ABORT) {
+		if (transaction.status == Status.COMMITTED || transaction.status == Status.ABORTED) {
 			throw new InvalidTransactionException(
 					"Cannot abort this transaction (status: " + transaction.status + ").");
 		}

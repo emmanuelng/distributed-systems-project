@@ -11,9 +11,11 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 
 import client.commands.Command;
+import client.helpers.UnclosableInputStream;
 import middleware.Middleware;
 
 public class Client {
@@ -131,7 +133,20 @@ public class Client {
 					execute(input, attempts + 1);
 				} catch (UnmarshalException e) {
 					// Unidentified exception
-					System.out.println("An error occured. Please try again.");
+					Scanner scanner = new Scanner(new UnclosableInputStream(System.in));
+					System.out.print("An error occured. Retry? (Y/N) ");
+					String answer = scanner.nextLine();
+
+					while (!answer.equals("Y") && !answer.equals("N")) {
+						System.out.print("Please enter Y or N: ");
+						answer = scanner.nextLine();
+					}
+
+					if (answer.equals("Y")) {
+						execute(input, attempts + 1);
+					}
+
+					scanner.close();
 				} catch (Exception e) {
 					// Other exceptions
 					System.out.print("Error");
