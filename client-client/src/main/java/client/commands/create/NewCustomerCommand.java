@@ -13,13 +13,31 @@ public class NewCustomerCommand extends Command {
 	}
 
 	@Override
+	public int maxArgs() {
+		return 2;
+	}
+
+	@Override
 	public void execute(Middleware middleware, List<String> arguments) throws Exception {
-		System.out.println("\nAdding a new Customer using id:" + arguments.get(0) + "\n");
+		if (arguments.size() == 1) {
+			System.out.println("\nAdding a new Customer using id:" + arguments.get(0) + "\n");
 
-		int id = Integer.parseInt(arguments.get(0));
-		int customerId = middleware.newCustomer(id);
+			int id = Integer.parseInt(arguments.get(0));
+			int customerId = middleware.newCustomer(id);
 
-		System.out.println("New customer id:" + customerId);
+			System.out.println("New customer id: " + customerId);
+		} else {
+			System.out.println(
+					"\nAdding a new Customer using id:" + arguments.get(0) + " and cid:" + arguments.get(1) + "\n");
+			int id = Integer.parseInt(arguments.get(0));
+			int cid = Integer.parseInt(arguments.get(1));
+			
+			if (middleware.newCustomer(id, cid)) {
+				System.out.println("New customer id: " + cid);
+			} else {
+				System.out.println("Customer could not be created.");
+			}
+		}
 	}
 
 	@Override
@@ -34,7 +52,7 @@ public class NewCustomerCommand extends Command {
 
 	@Override
 	public String argsDescription() {
-		return "<id>";
+		return "<id> [<cid>]";
 	}
 
 }
