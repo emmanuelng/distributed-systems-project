@@ -173,7 +173,7 @@ public class TransactionManager {
 			switch (transaction.status) {
 			case COMMITTED:
 				throw new InvalidTransactionException("The transaction was already committed");
-			
+
 			case ACTIVE:
 				throw new NotPreparedException();
 
@@ -239,9 +239,11 @@ public class TransactionManager {
 			case ABORTED:
 				throw new InvalidTransactionException("The transaction was already aborted");
 
+			case PREPARED:
+				throw new InvalidTransactionException("Cannot abort a prepared transaction");
+
 			case ACTIVE:
 			case IN_ABORT:
-			case PREPARED:
 			case IN_PREPARATION:
 				setTransactionStatus(id, Status.IN_ABORT);
 				ExecutorService executor = Executors.newSingleThreadExecutor();
