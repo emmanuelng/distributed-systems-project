@@ -102,7 +102,8 @@ public class TransactionManager {
 			if (transaction.status == Status.IN_COMMIT) {
 				return commitTransaction(id);
 			} else {
-				throw new InvalidTransactionException("Cannot prepare this transaction.");
+				throw new InvalidTransactionException(
+						"Cannot prepare this transaction (status: " + transaction.status + ").");
 			}
 		}
 
@@ -159,8 +160,13 @@ public class TransactionManager {
 	private boolean commitTransaction(int id) throws InvalidTransactionException {
 		Transaction transaction = transactions.get(id);
 
+		if (transaction == null) {
+			throw new InvalidTransactionException("The transaction does not exist.");
+		}
+
 		if (transaction == null || transaction.status != Status.IN_COMMIT) {
-			throw new InvalidTransactionException("Cannot commit this transaction");
+			throw new InvalidTransactionException(
+					"Cannot commit this transaction (status: " + transaction.status + ").");
 		}
 
 		boolean success = true;
@@ -209,7 +215,8 @@ public class TransactionManager {
 		}
 
 		if (transaction.status != Status.ACTIVE || transaction.status != Status.IN_ABORT) {
-			throw new InvalidTransactionException("Cannot abort this transaction");
+			throw new InvalidTransactionException(
+					"Cannot abort this transaction (status: " + transaction.status + ").");
 		}
 
 		boolean success = true;
