@@ -145,7 +145,6 @@ public class TransactionManager {
 		crashInjector.afterPrepare();
 
 		if (success) {
-			setTransactionStatus(id, Status.IN_COMMIT);
 			return commitTransaction(id);
 		} else {
 			setTransactionStatus(id, Status.ACTIVE);
@@ -164,7 +163,7 @@ public class TransactionManager {
 			throw new InvalidTransactionException("The transaction does not exist.");
 		}
 
-		if (transaction == null || transaction.status != Status.IN_COMMIT) {
+		if (transaction.status != Status.IN_PREPARE && transaction.status != Status.IN_COMMIT) {
 			throw new InvalidTransactionException(
 					"Cannot commit this transaction (status: " + transaction.status + ").");
 		}
@@ -175,6 +174,7 @@ public class TransactionManager {
 
 		crashInjector.beforeDecision();
 		log("Commiting transaction " + id);
+		setTransactionStatus(id, Status.IN_COMMIT);
 		resetTimeout(id);
 
 		for (String rm : transactions.get(id).rms) {
@@ -214,7 +214,7 @@ public class TransactionManager {
 			throw new InvalidTransactionException("The transaction does not exist");
 		}
 
-		if (transaction.status == Status.COMMITTED || transaction.status == Status.ABORTED) {
+		if (transaction.status != Status.ACTIVE && transaction.status != Status.IN_ABORT) {
 			throw new InvalidTransactionException(
 					"Cannot abort this transaction (status: " + transaction.status + ").");
 		}
