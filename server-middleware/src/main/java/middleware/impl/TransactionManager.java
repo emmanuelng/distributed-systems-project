@@ -113,11 +113,9 @@ public class TransactionManager {
 		crashInjector.beforePrepare();
 		log("Preparing transaction " + id);
 		setTransactionStatus(id, Status.IN_PREPARE);
-		resetTimeout(id);
 
 		try {
 			for (String rm : transaction.rms) {
-				// Configure the ExecutorService
 				Future<Boolean> future = executor.submit(new Callable<Boolean>() {
 					@Override
 					public Boolean call() throws Exception {
@@ -175,7 +173,6 @@ public class TransactionManager {
 		crashInjector.beforeDecision();
 		log("Commiting transaction " + id);
 		setTransactionStatus(id, Status.IN_COMMIT);
-		resetTimeout(id);
 
 		for (String rm : transactions.get(id).rms) {
 			try {
@@ -290,8 +287,7 @@ public class TransactionManager {
 					try {
 						if (transactions.containsKey(id)) {
 							Status status = transactions.get(id).status;
-							if (status != Status.COMMITTED && status != Status.ABORTED && status != Status.IN_ABORT
-									&& status != Status.TIMED_OUT) {
+							if (status == Status.ACTIVE) {
 								log("Timeout. Aborting transaction " + id);
 								abortTransaction(id);
 								setTransactionStatus(id, Status.TIMED_OUT);
