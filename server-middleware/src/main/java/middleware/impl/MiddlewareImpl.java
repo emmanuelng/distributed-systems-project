@@ -525,11 +525,6 @@ public class MiddlewareImpl implements Middleware {
 	}
 
 	@Override
-	public boolean commit(int id) throws RemoteException, ServerException {
-		return tm.commitTransaction(id);
-	}
-
-	@Override
 	public boolean abort(int id) throws RemoteException, ServerException {
 		return tm.abortTransaction(id);
 	}
@@ -632,7 +627,7 @@ public class MiddlewareImpl implements Middleware {
 			return resourceManager.commit(id);
 		} catch (ConnectException e) {
 			reconnect(rms.get(rm));
-			return commit(id);
+			return commit(rm, id);
 		}
 	}
 
@@ -708,8 +703,6 @@ public class MiddlewareImpl implements Middleware {
 		case ACTIVE:
 			tm.resetTimeout(id);
 			break;
-		case PREPARED:
-			throw new InvalidTransactionException("The transaction was prepared and cannot be modified");
 		case COMMITTED:
 			throw new InvalidTransactionException("The transaction was already committed");
 		case ABORTED:
@@ -717,7 +710,7 @@ public class MiddlewareImpl implements Middleware {
 		case TIMED_OUT:
 			throw new TransactionTimeoutException();
 		default:
-			throw new InvalidTransactionException("Invalid transaction id");
+			throw new InvalidTransactionException("Invalid transaction");
 		}
 	}
 

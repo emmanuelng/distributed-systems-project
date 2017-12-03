@@ -29,7 +29,6 @@ import client.commands.reserve.ReserveFlightCommand;
 import client.commands.reserve.ReserveItineraryCommand;
 import client.commands.reserve.ReserveRoomCommand;
 import client.commands.transactions.AbortCommand;
-import client.commands.transactions.CommitCommand;
 import client.commands.transactions.PrepareCommand;
 import client.commands.transactions.StartCommand;
 
@@ -67,7 +66,6 @@ public class CommandRegistry {
 
 		COMMANDS.put("start", new StartCommand());
 		COMMANDS.put("prepare", new PrepareCommand());
-		COMMANDS.put("commit", new CommitCommand());
 		COMMANDS.put("abort", new AbortCommand());
 
 		COMMANDS.put("crash", new CrashCommand());

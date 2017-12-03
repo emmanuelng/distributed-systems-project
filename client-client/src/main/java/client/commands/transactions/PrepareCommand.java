@@ -20,22 +20,7 @@ public class PrepareCommand extends Command {
 		Scanner scanner = new Scanner(new UnclosableInputStream(System.in));
 
 		if (middleware.prepare(id)) {
-			System.out.print("Prepare succeeded. Commit?(Y/N) ");
-			String answer = scanner.nextLine();
-
-			while (!answer.equals("Y") && !answer.equals("N")) {
-				System.out.print("Please enter Y or N: ");
-				answer = scanner.nextLine();
-			}
-
-			if (answer.equals("Y")) {
-				if (middleware.commit(id)) {
-					System.out.println("Committed!");
-				} else {
-					System.out.println("Could not commit. Please try again.");
-				}
-			}
-
+			System.out.print("The transaction was committed!");
 		} else {
 			System.out.print("Prepare failed. Retry?(Y/N) ");
 			String answer = scanner.nextLine();
@@ -56,7 +41,7 @@ public class PrepareCommand extends Command {
 
 	@Override
 	public String description() {
-		return "Initiates the first phase of the two phase commit (2PC)";
+		return "Prepare and commit a transaction";
 	}
 
 	@Override

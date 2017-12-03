@@ -21,7 +21,6 @@ import common.files.SaveFile;
 import common.rm.ResourceManager;
 import middleware.impl.debug.CrashInjector;
 import middleware.impl.exceptions.InvalidTransactionException;
-import middleware.impl.exceptions.NotPreparedException;
 import middleware.impl.exceptions.TransactionTimeoutException;
 
 public class TransactionManager {
@@ -33,15 +32,7 @@ public class TransactionManager {
 	 * Represents the status of a transaction
 	 */
 	public static enum Status {
-		ACTIVE, // The transaction is active (not saved)
-		IN_PREPARATION, // The prepare phase was started, but no decision was taken
-		PREPARED, // The first phase is done. The transaction is ready to commit.
-		IN_COMMIT, // The commit was started, but not all servers received the request
-		COMMITTED, // The transaction is committed on all sites
-		IN_ABORT, // The abort was started, but not all servers received the request
-		ABORTED, // The transaction is aborted on all sites
-		TIMED_OUT, // The transaction was aborted due to a timeout
-		INVALID // An error occurred during the transaction processing
+		ACTIVE, IN_PREPARE, IN_COMMIT, COMMITTED, IN_ABORT, ABORTED, TIMED_OUT, INVALID
 	}
 
 	/**
@@ -101,125 +92,108 @@ public class TransactionManager {
 	 * managers can commit the transaction.
 	 */
 	public boolean prepareTransaction(int id) throws InvalidTransactionException {
-		crashInjector.beforePrepare();
-		boolean success = false;
+		Transaction transaction = transactions.get(id);
 
-		if (transactions.containsKey(id)) {
-			Transaction transaction = transactions.get(id);
-			resetTimeout(id);
+		if (transaction == null) {
+			throw new InvalidTransactionException("The transaction does not exist.");
+		}
 
-			switch (transaction.status) {
-			case PREPARED:
-				throw new InvalidTransactionException("The transaction is already prepared");
-
-			case ACTIVE:
-			case IN_PREPARATION:
-				log("Preparing transaction " + id);
-				setTransactionStatus(id, Status.IN_PREPARATION);
-				ExecutorService executor = Executors.newSingleThreadExecutor();
-
-				success = true;
-				int i = 1;
-
-				try {
-					for (String rm : transaction.rms) {
-						Future<Boolean> future = executor.submit(new Callable<Boolean>() {
-							@Override
-							public Boolean call() throws Exception {
-								log("Sending prepare request to " + rm);
-								middleware.prepare(rm, id);
-								return middleware.prepare(rm, id);
-							}
-						});
-
-						if (!future.get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS)) {
-							log("Negative response received. Returning false...");
-							success = false;
-							break;
-						}
-
-						crashInjector.inPrepare(i, transactions.get(id).rms.size());
-						i++;
-					}
-				} catch (TimeoutException | ExecutionException | InterruptedException e) {
-					log("Timeout. Sending failure status...");
-					success = false;
-				}
-
-				Status status = success ? Status.PREPARED : Status.ACTIVE;
-				setTransactionStatus(id, status);
-				crashInjector.afterPrepare();
-				break;
-
-			default:
+		if (transaction.status != Status.ACTIVE) {
+			if (transaction.status == Status.IN_COMMIT) {
+				return commitTransaction(id);
+			} else {
 				throw new InvalidTransactionException("Cannot prepare this transaction.");
 			}
 		}
 
-		return success;
+		boolean success = true;
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		int i = 1;
+
+		crashInjector.beforePrepare();
+		log("Preparing transaction " + id);
+		setTransactionStatus(id, Status.IN_PREPARE);
+		resetTimeout(id);
+
+		try {
+			for (String rm : transaction.rms) {
+				// Configure the ExecutorService
+				Future<Boolean> future = executor.submit(new Callable<Boolean>() {
+					@Override
+					public Boolean call() throws Exception {
+						log("Sending prepare request to " + rm);
+						middleware.prepare(rm, id);
+						return middleware.prepare(rm, id);
+					}
+				});
+
+				// One resource manager voted NO
+				if (!future.get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS)) {
+					log("Negative response received. Returning false...");
+					success = false;
+					break;
+				}
+
+				crashInjector.inPrepare(i, transactions.get(id).rms.size());
+				i++;
+			}
+		} catch (TimeoutException | ExecutionException | InterruptedException e) {
+			// One resource manager crashed
+			success = false;
+		}
+
+		crashInjector.afterPrepare();
+
+		if (success) {
+			return commitTransaction(id);
+		} else {
+			setTransactionStatus(id, Status.ACTIVE);
+		}
+
+		return false;
 	}
 
 	/**
 	 * Commits a transaction.
 	 */
-	public boolean commitTransaction(int id)
-			throws NotPreparedException, InvalidTransactionException, TransactionTimeoutException {
+	private boolean commitTransaction(int id) throws InvalidTransactionException {
+		Transaction transaction = transactions.get(id);
+
+		if (transaction == null || transaction.status != Status.IN_COMMIT) {
+			throw new InvalidTransactionException("Cannot commit this transaction");
+		}
+
 		boolean success = true;
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		int i = 1;
 
-		if (transactions.containsKey(id)) {
-			Transaction transaction = transactions.get(id);
-			resetTimeout(id);
+		crashInjector.beforeDecision();
+		log("Commiting transaction " + id);
+		resetTimeout(id);
 
-			switch (transaction.status) {
-			case COMMITTED:
-				throw new InvalidTransactionException("The transaction was already committed");
-
-			case ACTIVE:
-				throw new NotPreparedException();
-
-			case PREPARED:
-			case IN_COMMIT:
-				crashInjector.beforeDecision();
-				log("Commiting transaction " + id);
-
-				ExecutorService executor = Executors.newSingleThreadExecutor();
-				setTransactionStatus(id, Status.IN_COMMIT);
-
-				int i = 1;
-				for (String rm : transactions.get(id).rms) {
-					try {
-						Future<Boolean> future = executor.submit(new Callable<Boolean>() {
-							@Override
-							public Boolean call() throws Exception {
-								log("Sending commit request to " + rm);
-								return middleware.commit(rm, id);
-							}
-						});
-
-						success &= future.get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
-						log("success = " + success);
-						crashInjector.inDecision(i, transactions.get(id).rms.size());
-						i++;
-
-					} catch (TimeoutException | ExecutionException | InterruptedException e) {
-						log("Timeout. Sending failure status...");
-						success = false;
-						break;
+		for (String rm : transactions.get(id).rms) {
+			try {
+				Future<Boolean> future = executor.submit(new Callable<Boolean>() {
+					@Override
+					public Boolean call() throws Exception {
+						log("Sending commit request to " + rm);
+						return middleware.commit(rm, id);
 					}
-				}
+				});
 
-				Status status = success ? Status.COMMITTED : Status.PREPARED;
-				setTransactionStatus(id, status);
-				crashInjector.afterDecision();
+				success &= future.get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+				crashInjector.inDecision(i, transactions.get(id).rms.size());
+				i++;
+			} catch (TimeoutException | ExecutionException | InterruptedException e) {
+				// One resource manager crashed
+				success = false;
 				break;
-
-			case TIMED_OUT:
-				throw new TransactionTimeoutException();
-
-			default:
-				throw new InvalidTransactionException("Invalid transaction has an invalid status");
 			}
 		}
+
+		Status status = success ? Status.COMMITTED : Status.IN_COMMIT;
+		setTransactionStatus(id, status);
+		crashInjector.afterDecision();
 
 		return success;
 	}
@@ -228,61 +202,46 @@ public class TransactionManager {
 	 * Aborts a transaction.
 	 */
 	public boolean abortTransaction(int id) throws InvalidTransactionException, TransactionTimeoutException {
+		Transaction transaction = transactions.get(id);
+
+		if (transaction == null) {
+			throw new InvalidTransactionException("The transaction does not exist");
+		}
+
+		if (transaction.status != Status.ACTIVE || transaction.status != Status.IN_ABORT) {
+			throw new InvalidTransactionException("Cannot abort this transaction");
+		}
+
+		boolean success = true;
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		int i = 1;
+
 		crashInjector.beforeDecision();
 		log("Aborting transaction " + id);
-		boolean success = true;
+		setTransactionStatus(id, Status.IN_ABORT);
 
-		if (transactions.containsKey(id)) {
-			Transaction transaction = transactions.get(id);
-
-			switch (transaction.status) {
-			case ABORTED:
-				throw new InvalidTransactionException("The transaction was already aborted");
-
-			case PREPARED:
-				throw new InvalidTransactionException("Cannot abort a prepared transaction");
-
-			case ACTIVE:
-			case IN_ABORT:
-			case IN_PREPARATION:
-				setTransactionStatus(id, Status.IN_ABORT);
-				ExecutorService executor = Executors.newSingleThreadExecutor();
-
-				int i = 1;
-				for (String rm : transactions.get(id).rms) {
-					try {
-						Future<Boolean> future = executor.submit(new Callable<Boolean>() {
-							@Override
-							public Boolean call() throws Exception {
-								log("Sending abort request to " + rm);
-								return middleware.abort(rm, id);
-							}
-						});
-
-						future.get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
-						crashInjector.inDecision(i, transactions.get(id).rms.size());
-						i++;
-					} catch (TimeoutException | ExecutionException | InterruptedException e) {
-						log("Timeout. Going to the next resource manager...");
-						success = false;
+		for (String rm : transactions.get(id).rms) {
+			try {
+				Future<Boolean> future = executor.submit(new Callable<Boolean>() {
+					@Override
+					public Boolean call() throws Exception {
+						log("Sending abort request to " + rm);
+						return middleware.abort(rm, id);
 					}
-				}
+				});
 
-				Status status = success ? Status.ABORTED : Status.ACTIVE;
-				setTransactionStatus(id, status);
-				crashInjector.afterDecision();
-				break;
-
-			case TIMED_OUT:
-				throw new TransactionTimeoutException();
-
-			default:
-				throw new InvalidTransactionException("This transaction cannot be aborted");
+				success &= future.get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+				crashInjector.inDecision(i, transactions.get(id).rms.size());
+				i++;
+			} catch (TimeoutException | ExecutionException | InterruptedException e) {
+				// One resource manager crashed
+				success = false;
 			}
-
-		} else {
-			throw new InvalidTransactionException("The transaction does not exist.");
 		}
+
+		Status status = success ? Status.ABORTED : Status.IN_ABORT;
+		setTransactionStatus(id, status);
+		crashInjector.afterDecision();
 
 		return success;
 	}
@@ -401,7 +360,6 @@ public class TransactionManager {
 	private void loadSave() {
 		try {
 			Map<Integer, Transaction> data = saveFile.read();
-
 			for (Entry<Integer, Transaction> entry : data.entrySet()) {
 				tid = entry.getKey() > tid ? entry.getKey() : tid;
 				transactions.put(entry.getKey(), entry.getValue());
@@ -410,19 +368,16 @@ public class TransactionManager {
 				case ACTIVE:
 					resetTimeout(entry.getKey());
 					break;
-				case IN_PREPARATION:
+
+				case IN_PREPARE:
+				case IN_COMMIT:
 					prepareTransaction(entry.getKey());
 					break;
-				case IN_COMMIT:
-					try {
-						commitTransaction(entry.getKey());
-					} catch (InvalidTransactionException | NotPreparedException e) {
-						// Ignore. These exceptions should not occur.
-					}
-					break;
+
 				case IN_ABORT:
 					abortTransaction(entry.getKey());
 					break;
+
 				default:
 					break;
 				}

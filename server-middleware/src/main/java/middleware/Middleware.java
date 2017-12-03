@@ -134,14 +134,10 @@ public interface Middleware extends Remote {
 	public int start() throws RemoteException;
 
 	/**
-	 * Initiates the first phase of two-phase commit (2PC)
+	 * Initiates the first phase of two-phase commit (2PC) and commits the
+	 * transaction in case of success
 	 */
 	public boolean prepare(int id) throws RemoteException, ServerException;
-
-	/**
-	 * Commits a transaction.
-	 */
-	public boolean commit(int id) throws RemoteException, ServerException;
 
 	/**
 	 * Aborts a transaction.
