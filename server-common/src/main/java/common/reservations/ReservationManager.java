@@ -1,8 +1,6 @@
 package common.reservations;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -17,11 +15,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 
 	private RMHashtable<String, R> reservableItems;
 	private LockManager lockManager;
-	private Set<Integer> waitingTransactions;
-
 	private SaveFile<LockManager> locksSaveFile;
-	private SaveFile<Set<Integer>> waitingTransactionsSaveFile;
-
 	private CrashInjector crashInjector;
 
 	/**
@@ -33,11 +27,7 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	public ReservationManager(String rm) {
 		this.reservableItems = new RMHashtable<>(rm, "items");
 		this.lockManager = new LockManager();
-		this.waitingTransactions = new HashSet<>();
-
 		this.locksSaveFile = new SaveFile<>(rm, "locks");
-		this.waitingTransactionsSaveFile = new SaveFile<>(rm, "transactions");
-
 		this.crashInjector = new CrashInjector();
 
 		loadSave();
@@ -218,8 +208,6 @@ public abstract class ReservationManager<R extends ReservableItem> {
 
 	protected boolean prepareCommit(int id) {
 		log("prepare(" + id + ") called");
-		addWaitingTimer(id);
-		saveWaitingTransactions();
 
 		// Inject crashes if any
 		crashInjector.beforeVote();
@@ -239,11 +227,9 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		crashInjector.beforeSave();
 		log("commit(" + id + ") called");
 
-		waitingTransactions.remove(id);
-		saveWaitingTransactions();
 		lockManager.unlockAll(id);
 		saveLocks();
-		
+
 		boolean result = reservableItems.commit(id);
 		log("commit(" + id + ") returning " + result);
 		return result;
@@ -256,8 +242,6 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		crashInjector.beforeSave();
 		log("abort(" + id + ") called");
 
-		waitingTransactions.remove(id);
-		saveWaitingTransactions();
 		lockManager.unlockAll(id);
 		reservableItems.abort(id);
 
@@ -297,36 +281,6 @@ public abstract class ReservationManager<R extends ReservableItem> {
 		return crashInjector.inject(when, operation);
 	}
 
-	/**
-	 * Adds a timer that check if a decision was taken for the given transaction. If
-	 * no, aborts the transaction.
-	 */
-	private void addWaitingTimer(int id) {
-		Timer decisionTimer = new Timer();
-		decisionTimer.schedule(new TimerTask() {
-
-			@Override
-			public void run() {
-				if (waitingTransactions.contains(id)) {
-					log("Waited decision for too long. Aborting transaction...");
-					abortTransaction(id);
-				}
-			}
-		}, 60000);
-
-		waitingTransactions.add(id);
-	}
-
-	private boolean saveWaitingTransactions() {
-		try {
-			waitingTransactionsSaveFile.save(waitingTransactions);
-			return true;
-		} catch (Exception e) {
-			log("Unable to write to disk");
-			return false;
-		}
-	}
-
 	private boolean saveLocks() {
 		try {
 			locksSaveFile.save(lockManager);
@@ -341,15 +295,9 @@ public abstract class ReservationManager<R extends ReservableItem> {
 	private boolean loadSave() {
 		try {
 			lockManager = locksSaveFile.read();
-			waitingTransactions = waitingTransactionsSaveFile.read();
-
-			for (int id : waitingTransactions) {
-				addWaitingTimer(id);
-			}
-
 			return true;
 		} catch (ClassNotFoundException | IOException e) {
-			return saveLocks() && saveWaitingTransactions();
+			return saveLocks();
 		}
 	}
 

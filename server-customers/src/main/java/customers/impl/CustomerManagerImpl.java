@@ -6,15 +6,12 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import common.data.RMHashtable;
 import common.debug.CrashInjector;
-import common.files.SaveFile;
 import common.locks.DeadlockException;
 import common.locks.LockManager;
 import common.locks.TrxnObj;
@@ -59,17 +56,11 @@ public class CustomerManagerImpl implements CustomerManager {
 
 	private RMHashtable<Integer, Customer> customers;
 	private LockManager lockManager;
-	private Set<Integer> waitingTransactions;
-	private SaveFile<Set<Integer>> waitingTransactionsSaveFile;
-
 	private CrashInjector crashInjector;
 
 	public CustomerManagerImpl() {
 		this.customers = new RMHashtable<>("customers", "customers");
 		this.lockManager = new LockManager();
-		this.waitingTransactions = new HashSet<>();
-		this.waitingTransactionsSaveFile = new SaveFile<>("customers", "transactions");
-
 		this.crashInjector = new CrashInjector();
 
 		/*
@@ -81,8 +72,6 @@ public class CustomerManagerImpl implements CustomerManager {
 		for (Customer customer : customers.values()) {
 			customer.reloadReservations();
 		}
-
-		loadSave();
 	}
 
 	@Override
@@ -208,8 +197,6 @@ public class CustomerManagerImpl implements CustomerManager {
 	@Override
 	public boolean prepare(int id) {
 		log("Preparing transaction " + id);
-		addWaitingTimer(id);
-		save();
 
 		// Inject crash if any
 		crashInjector.beforeVote();
@@ -227,9 +214,6 @@ public class CustomerManagerImpl implements CustomerManager {
 	public boolean commit(int id) {
 		crashInjector.beforeSave();
 		log("Committing transaction " + id);
-
-		waitingTransactions.remove(id);
-		save();
 		lockManager.unlockAll(id);
 
 		return customers.commit(id);
@@ -239,9 +223,6 @@ public class CustomerManagerImpl implements CustomerManager {
 	public boolean abort(int id) {
 		crashInjector.beforeSave();
 		log("Aborting transaction " + id);
-
-		waitingTransactions.remove(id);
-		save();
 		lockManager.unlockAll(id);
 
 		for (Customer customer : customers.values()) {
@@ -264,57 +245,6 @@ public class CustomerManagerImpl implements CustomerManager {
 	@Override
 	public boolean injectCrash(String when, String operation) throws RemoteException {
 		return crashInjector.inject(when, operation);
-	}
-
-	/**
-	 * Adds a timer that check if a decision was taken for the given transaction. If
-	 * no, aborts the transaction.
-	 */
-	private void addWaitingTimer(int id) {
-		Timer decisionTimer = new Timer();
-		decisionTimer.schedule(new TimerTask() {
-
-			@Override
-			public void run() {
-				if (waitingTransactions.contains(id)) {
-					log("Waited decision for too long. Aborting transaction...");
-					abort(id);
-				}
-			}
-		}, 60000);
-
-		waitingTransactions.add(id);
-	}
-
-	/**
-	 * Saves the state to disk.
-	 */
-	private boolean save() {
-		try {
-			waitingTransactionsSaveFile.save(waitingTransactions);
-			return true;
-		} catch (Exception e) {
-			log("Unable to write to disk");
-			return false;
-		}
-	}
-
-	/**
-	 * Restores the state of the {@link CustomerManagerImpl} from the save file. If
-	 * it does not exist yet, creates it.
-	 */
-	private boolean loadSave() {
-		try {
-			waitingTransactions = waitingTransactionsSaveFile.read();
-
-			for (int id : waitingTransactions) {
-				addWaitingTimer(id);
-			}
-
-			return true;
-		} catch (Exception e) {
-			return save();
-		}
 	}
 
 	private void log(String message) {
